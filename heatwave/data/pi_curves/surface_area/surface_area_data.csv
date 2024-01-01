@@ -1,0 +1,14 @@
+colony_id,Sample,Diameter,weight1.g,weight2.g,Notes
+1,Standard,7.44,140.4,146,"bubbles, may remove"
+2,Standard,6.22,93.271,96.842,
+3,Standard,5.08,46.368,48.827,
+4,Standard,3.16,10.977,11.685,
+5,Standard,2.52,6.212,6.59,
+6,Standard,1.9,2.204,2.411,
+7,Standard,1.18,0.577,0.649,
+ACR-1,Coral,NA,3.364,3.817,
+ACR-2,Coral,NA,7.583,8.607,
+ACR-3,Coral,NA,1.222,1.54,
+ACR-4,Coral,NA,4.889,5.52,
+ACR-5,Coral,NA,3.02,3.385,
+,,,,,

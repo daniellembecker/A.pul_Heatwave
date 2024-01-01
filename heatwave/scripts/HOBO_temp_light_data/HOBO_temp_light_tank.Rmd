@@ -1,0 +1,286 @@
+---
+title: "HOBO_temp_light"
+author: "daniellembecker"
+date: "4/7/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Install and Load necessary libraries
+if("lubridate" %in% rownames(installed.packages()) == 'FALSE') install.packages('lubridate') 
+if("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if("emmeans" %in% rownames(installed.packages()) == 'FALSE') install.packages('emmeans') 
+if("gridExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('gridExtra') 
+
+library(lubridate)
+library(tidyverse)
+library(emmeans)
+library(gridExtra)
+```
+
+
+```{r }
+##### CONTINUOUS TEMPERATURE DATA FROM HOBO LOGGERS #####
+
+##### QC Hobo Files #####
+
+# Read in temp data 
+Tank1 <- read.csv("data/HOBO/20220420_readout/Tank1_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank2 <- read.csv("data/HOBO/20220420_readout/Tank2_21335987_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank2 <- Tank2[1:nrow(Tank1),]
+Tank3 <- read.csv("data/HOBO/20220420_readout/Tank3_21335980_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank3 <- Tank3[1:nrow(Tank1),]
+Tank4 <- read.csv("data/HOBO/20220420_readout/Tank4_21002973_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank4 <- Tank4[1:nrow(Tank1),]
+Tank5 <- read.csv("data/HOBO/20220420_readout/Tank5_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank5 <- Tank5[1:nrow(Tank1),]
+Tank6 <- read.csv("data/HOBO/20220420_readout/Tank6_21002982_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank6 <- Tank6[1:nrow(Tank1),]
+Tank7 <- read.csv("data/HOBO/20220420_readout/Tank7_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank7 <- Tank7[1:nrow(Tank1),]
+Tank8 <- read.csv("data/HOBO/20220420_readout/Tank8_21002976_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank8 <- Tank8[1:nrow(Tank1),]
+Tank9 <- read.csv("data/HOBO/20220420_readout/Tank9_21002977_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank9 <- Tank9[1:nrow(Tank1),]
+Tank10 <- read.csv("data/HOBO/20220420_readout/Tank10_21002972_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank10 <- Tank10[1:nrow(Tank1),]
+Tank11 <- read.csv("data/HOBO/20220420_readout/Tank11_21335984_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank11 <- Tank11[1:nrow(Tank1),]
+Tank12 <- read.csv("data/HOBO/20220420_readout/Tank12_21002981_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank12 <- Tank12[1:nrow(Tank1),]
+Tank13 <- read.csv("data/HOBO/20220420_readout/Tank13_20937873_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank13 <- Tank13[1:nrow(Tank1),]
+Tank14 <- read.csv("data/HOBO/20220420_readout/Tank14_21002975_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank14 <- Tank14[1:nrow(Tank1),]
+Tank15 <- read.csv("data/HOBO/20220420_readout/Tank15_21002980_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank15 <- Tank15[1:nrow(Tank1),]
+Tank16 <- read.csv("data/HOBO/20220420_readout/Tank16_20937872_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank16 <- Tank16[1:nrow(Tank1),]
+Tank17 <- read.csv("data/HOBO/20220420_readout/Tank17_21002974_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank17 <- Tank17[1:nrow(Tank1),]
+Tank18 <- read.csv("data/HOBO/20220420_readout/Tank18_21335986_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank18 <- Tank18[1:nrow(Tank1),]
+Tank19 <- read.csv("data/HOBO/20220420_readout/Tank19_20937871_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank19 <- Tank19[1:nrow(Tank1),]
+Tank20 <- read.csv("data/HOBO/20220420_readout/Tank20_21335989_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank20 <- Tank20[1:nrow(Tank1),]
+Tank21 <- read.csv("data/HOBO/20220420_readout/Tank21_21002978_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank21 <- Tank21[1:nrow(Tank1),]
+Tank22 <- read.csv("data/HOBO/20220420_readout/Tank22_20937870_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank22 <- Tank22[1:nrow(Tank1),]
+Tank23 <- read.csv("data/HOBO/20220420_readout/Tank23_21002979_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank23 <- Tank23[1:nrow(Tank1),]
+Tank24 <- read.csv("data/HOBO/20220420_readout/Tank24_20937868_20220420.csv", sep=",", skip=c(6), header=FALSE, na.strings = "NA")[ ,2:4]
+Tank24 <- Tank24[1:nrow(Tank1),]
+
+
+Tank1$Tank <- "Tank1"
+Tank2$Tank <- "Tank2"
+Tank3$Tank <- "Tank3"
+Tank4$Tank <- "Tank4"
+Tank5$Tank <- "Tank5"
+Tank6$Tank <- "Tank6"
+Tank7$Tank <- "Tank7"
+Tank8$Tank <- "Tank8"
+Tank9$Tank <- "Tank9"
+Tank10$Tank <- "Tank10"
+Tank11$Tank <- "Tank11"
+Tank12$Tank <- "Tank12"
+Tank13$Tank <- "Tank13"
+Tank14$Tank <- "Tank14"
+Tank15$Tank <- "Tank15"
+Tank16$Tank <- "Tank16"
+Tank17$Tank <- "Tank17"
+Tank18$Tank <- "Tank18"
+Tank19$Tank <- "Tank19"
+Tank20$Tank <- "Tank20"
+Tank21$Tank <- "Tank21"
+Tank22$Tank <- "Tank22"
+Tank23$Tank <- "Tank23"
+Tank24$Tank <- "Tank24"
+
+Tank1$Treatment <- "Ambient"
+Tank2$Treatment <- "Hot"
+Tank3$Treatment <- "Ambient"
+Tank4$Treatment <- "Hot"
+Tank5$Treatment <- "Ambient"
+Tank6$Treatment <- "Hot"
+Tank7$Treatment <- "Ambient"
+Tank8$Treatment <- "Hot"
+Tank9$Treatment <- "Ambient"
+Tank10$Treatment <- "Hot"
+Tank11$Treatment <- "Ambient"
+Tank12$Treatment <- "Hot"
+Tank13$Treatment <- "Ambient"
+Tank14$Treatment <- "Ambient"
+Tank15$Treatment <- "Hot"
+Tank16$Treatment <- "Hot"
+Tank17$Treatment <- "Ambient"
+Tank18$Treatment <- "Hot"
+Tank19$Treatment <- "Ambient"
+Tank20$Treatment <- "Hot"
+Tank21$Treatment <- "Ambient"
+Tank22$Treatment <- "Hot"
+Tank23$Treatment <- "Hot"
+Tank24$Treatment <- "Ambient"
+
+
+data <- rbind(Tank1, Tank2, Tank3, Tank4, Tank5, Tank6,
+              Tank7, Tank8, Tank9, Tank10, Tank11,
+              Tank12, Tank13, Tank14, Tank15, Tank16, Tank17, Tank18, Tank19, Tank20, Tank21, Tank22, Tank23, Tank24)
+
+colnames(data) <- c("Date.Time", "Temp", "Light", "Tank", "Treatment")
+data$Date.Time <- parse_date_time(data$Date.Time, "%m-%d-%Y %H:%M:%S", tz = "UTC")
+
+
+write.csv(data,file="output/HOBO_temp_light_tanks/All_Tank_HoboTempLight_data.csv")
+
+#filter for first two days of tanks
+data.filtered <-data %>%
+  filter(!(Date.Time < "2022-03-20 23:59:00")) %>%
+  filter(!(Date.Time > "2022-04-19 10:00:00"))
+
+
+#temp data across date summarized, remove NAs from temp
+data.subset.mean.temp <-data.filtered %>%
+  group_by(Date.Time, Treatment) %>% #tells to group by treatment
+  summarise(mean=mean(Temp, na.rm=TRUE), se=sd(Temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+data.subset.mean.temp
+
+data.subset.mean.temp$mean.adj <- data.subset.mean.temp$mean - 0.3
+
+dates_vline <- as_datetime(c("2022-03-21 09:00:00", "2022-03-26 09:00:00", "2022-03-31 09:00:00", "2022-04-10 09:00:00", "2022-04-18 09:00:00"))               
+
+#Define positions of vline
+
+#dates_vline <- which(data.subset.mean.temp$Date.Time %in% dates_vline)
+ 
+#data.subset.mean.temp <- separate(data.subset.mean.temp, da, c("date", "time"), sep = " ")
+
+
+#colnames(data.subset.mean.temp)[1] <- "Date"
+#data.subset.mean.temp$Date = as.Date(data.subset.mean.temp$Date.Time, format='%Y-%m-%d %H:%M:%S')
+
+#tried to make vetor to add onto scale_x_dates
+#dates <- c("2022-03-21 09:00:00", "2022-03-26 09:00:00", "2022-03-31 09:00:00", "2022-04-10 09:00:00", "2022-04-18 09:00:00")
+#dates <- ymd_hms(dates)
+
+#plot mean temp per day by date
+temps <-data.subset.mean.temp %>%
+  ggplot(aes(x=Date.Time, y=mean.adj, color = Treatment))+
+  geom_line() + 
+  geom_point() +
+  #scale_x_datetime(date_breaks = c("2022-03-21 09:00:00", "2022-03-26 09:00:00", "2022-03-31 09:00:00", "2022-04-10 09:00:00", "2022-04-18 09:00:00", date_labels = "%y-%m-%d %h-%m-%s")) +
+  #scale_x_date(breaks = as_Date(c("2022-03-21 09:00:00", "2022-03-26 09:00:00", "2022-03-31 09:00:00", "2022-04-10 09:00:00", "2022-04-18 09:00:00"))) +
+  #scale_x_date(date_labels="%y-%m-%d %h-%m-%s", breaks = as.Date(c("2022-03-21 09:00:00", "2022-03-26 09:00:00", "2022-03-31 09:00:00", "2022-04-10 09:00:00", "2022-04-18 09:00:00"))) +
+  scale_x_datetime(date_breaks = "week", date_labels = "%m-%d") +
+  scale_color_manual(values = c("blue", "red")) +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(limits=c(28, 30.5)) +
+  ylab("Temperature (°C) HOBO")+
+  xlab("Date")+
+  geom_vline(xintercept=ymd("2022-03-21 10:00:00"),color="red") +
+  theme(axis.title=element_text(face="bold", size=60),
+      axis.text=element_text(size=60, color="black"), 
+      legend.title=element_text(size=60, face = "bold"), 
+    legend.text=element_text(size=60)) + guides(color= guide_legend(override.aes = list(size = 6)));temps
+
+temps <- temps + geom_vline(xintercept = as.numeric(dates_vline),
+             col = "black", lwd = 0.5); temps
+
+ggsave("output/HOBO_temp_light_tanks/All_Tank_HoboTemp.png", dpi=300, plot = temps, width = 49, height = 30, units="in")
+ggsave("output/HOBO_temp_light_tanks/All_Tank_HoboTemp.pdf", dpi=300, plot = temps, width = 49, height = 30, units="in")
+
+
+```
+
+#load Mahana temp data
+
+```{r}
+mahana.temp.hobo.06 <- read.csv("../RAnalysis/data/HOBO/April2022_mahana_loggers/Mahana_6.csv")
+mahana.temp.hobo.09 <- read.csv("../RAnalysis/data/HOBO/April2022_mahana_loggers/Mahana_9.csv")
+```
+
+
+#bind all data sets together into one data frame
+
+```{r}
+mahana.data <- rbind(mahana.temp.hobo.06, mahana.temp.hobo.09)
+```
+
+
+#remove any NA's from the data frame
+```{r}
+mahana.data <- na.omit(mahana.data)
+
+view(mahana.data)
+```
+
+#modify the date and time structure
+
+```{r}
+mahana.data$date.time <- mdy_hm(mahana.data$date.time, quiet=FALSE, tz="UTC", truncated=0) #format date and time
+```
+ 
+
+#make logger number a factor
+```{r}
+mahana.data$logger.number = as.factor(mahana.data$logger.number)
+```
+
+
+#subset temp data for March through April 
+```{r}
+mahana.data.subset <- mahana.data %>%
+  filter(lubridate::month(date.time) %in% c(03:04)) 
+```
+
+#add column for Treatment for Mahana
+```{r}
+mahana.data.subset$Treatment <- "Mahana"
+```
+
+#summarize mahana temp data
+```{r}
+#temp data across date summarized, remove NAs from temp
+mahana.subset.mean.temp <- mahana.data.subset %>%
+  group_by(date.time, Treatment) %>% #tells to group by treatment
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+mahana.subset.mean.temp
+```
+
+#make plot with treatments and Mahana data on same plot
+```{r}
+
+#rename date.time for mahana data before full join
+names(mahana.subset.mean.temp)[1] <- "Date.Time"
+
+#combine data frames
+heatwave.mahana <- full_join(mahana.subset.mean.temp, data.subset.mean.temp)
+
+#filter for mahana dates
+#heatwave.mahana.filtered <- heatwave.mahana %>%
+ # filter(!(Date.Time < "2022-03-17 00:00:00")) %>%
+ # filter(!(Date.Time > "2022-04-05 08:50:00"))
+
+#plot mean temp per day by date
+heatwave.mahana.plot <- heatwave.mahana %>%
+  ggplot(aes(x=Date.Time, y=mean, color = Treatment))+
+  geom_line() + 
+  geom_point() +
+  #facet_wrap(~Treatment) +
+  scale_x_datetime(date_breaks = "1 day", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C) HOBO")+
+  xlab("Date");heatwave.mahana.plot
+
+ggsave("output/HOBO_temp_light_tanks/heatwave.mahana.temps.pdf", plot = heatwave.mahana.plot, width = 20, height = 10)
+```
+
+

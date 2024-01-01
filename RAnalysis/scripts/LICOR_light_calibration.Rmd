@@ -1,0 +1,264 @@
+---
+title: "LICOR_light_calibration_20220224"
+author: "daniellembecker"
+edited by: "daniellembecker"
+date: "2/18/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Install and Load necessary libraries
+if("lubridate" %in% rownames(installed.packages()) == 'FALSE') install.packages('lubridate') 
+if("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if("emmeans" %in% rownames(installed.packages()) == 'FALSE') install.packages('emmeans') 
+if("gridExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('gridExtra') 
+if("tibbletime" %in% rownames(installed.packages()) == 'FALSE') install.packages('tibbletime') 
+
+library(lubridate)
+library(tidyverse)
+library(emmeans)
+library(gridExtra)
+library(tibbletime)
+```
+
+
+
+```{r }
+
+#read in individual light logger data from hobos
+
+#upload each individual light record for each serial number light/temp logger, we want to skip the first two rows with serial number data and only have date, time, and recorded lux
+#rename columns for each csv
+
+light.logger.1 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 20937868 2022-02-24 11_12_06 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.2 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 20937870 2022-02-24 11_11_30 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+
+#match the logger number of rows with the first logger so they are all equal
+light.logger.2 <- light.logger.2[1:nrow(light.logger.1),]
+
+light.logger.3 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 20937871 2022-02-24 11_11_48 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.3 <- light.logger.3[1:nrow(light.logger.1),]
+light.logger.4 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 20937872 2022-02-24 11_09_55 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.4 <- light.logger.4[1:nrow(light.logger.1),]
+light.logger.5 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 20937873 2022-02-24 11_13_03 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.5 <- light.logger.5[1:nrow(light.logger.1),]
+light.logger.6 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002972 2022-02-24 11_09_21 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.6 <- light.logger.6[1:nrow(light.logger.1),]
+light.logger.7 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002973 2022-02-24 11_12_44 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.7 <- light.logger.7[1:nrow(light.logger.1),]
+light.logger.8 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002974 2022-02-24 11_08_35 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.8 <- light.logger.8[1:nrow(light.logger.1),]
+light.logger.9 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002975 2022-02-24 11_10_54 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.9 <- light.logger.9[1:nrow(light.logger.1),]
+light.logger.10 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002976 2022-02-24 11_11_12 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.10 <- light.logger.10[1:nrow(light.logger.1),]
+light.logger.11 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002977 2022-02-24 11_10_37 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.11 <- light.logger.11[1:nrow(light.logger.1),]
+light.logger.12 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002978 2022-02-24 11_08_59 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.12 <- light.logger.12[1:nrow(light.logger.1),]
+light.logger.13 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002979 2022-02-24 11_10_19 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.13 <- light.logger.13[1:nrow(light.logger.1),]
+light.logger.14 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002980 2022-02-24 11_08_00 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.14 <- light.logger.14[1:nrow(light.logger.1),]
+light.logger.15 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002981 2022-02-24 11_12_26 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.15 <- light.logger.15[1:nrow(light.logger.1),]
+light.logger.16 <- read.csv("RAnalysis/data/light_calibration/logger_data/SN 21002982 2022-02-24 11_09_38 -0500.csv", sep=",", skip=c(3), header=FALSE, na.strings = "NA")[ ,1:3]
+light.logger.16 <- light.logger.16[1:nrow(light.logger.1),]
+
+data.bind <- cbind(light.logger.1, 
+              light.logger.2$V2, light.logger.2$V3, 
+              light.logger.3$V2, light.logger.3$V3, 
+              light.logger.4$V2, light.logger.4$V3,
+              light.logger.5$V2, light.logger.5$V3,
+              light.logger.6$V2, light.logger.6$V3,
+              light.logger.7$V2, light.logger.7$V3,
+              light.logger.8$V2, light.logger.8$V3,
+              light.logger.9$V2, light.logger.9$V3,
+              light.logger.10$V2, light.logger.10$V3,
+              light.logger.11$V2, light.logger.11$V3,
+              light.logger.12$V2, light.logger.12$V3,
+              light.logger.13$V2, light.logger.15$V3,
+              light.logger.14$V2, light.logger.16$V3,
+              light.logger.15$V2, light.logger.15$V3,
+              light.logger.16$V2, light.logger.16$V3)
+
+
+data <- na.omit(data.bind)
+
+colnames(data) <- c("Date.Time", 
+                    "light.logger.1_Temp", "light.logger.1_Light",
+                    "light.logger.2_Temp", "light.logger.2_Light",
+                    "light.logger.3_Temp", "light.logger.3_Light",
+                    "light.logger.4_Temp", "light.logger.4_Light",
+                    "light.logger.5_Temp", "light.logger.5_Light",
+                    "light.logger.6_Temp", "light.logger.6_Light",
+                    "light.logger.7_Temp", "light.logger.7_Light",
+                    "light.logger.8_Temp", "light.logger.8_Light",
+                    "light.logger.9_Temp", "light.logger.9_Light",
+                    "light.logger.10_Temp", "light.logger.10_Light",
+                    "light.logger.11_Temp", "light.logger.11_Light",
+                    "light.logger.12_Temp", "light.logger.12_Light",
+                    "light.logger.13_Temp", "light.logger.13_Light",
+                    "light.logger.14_Temp", "light.logger.14_Light",
+                    "light.logger.15_Temp", "light.logger.15_Light",
+                    "light.logger.16_Temp", "light.logger.16_Light")
+
+
+#reformat date and time using lubridate
+data$Date.Time <- ymd_hms(data$Date.Time)
+
+#filter for date and time to match number of records between loggers and licor
+data <- data %>% 
+  filter(Date.Time > ymd_hms("2022-02-23 10:59:00") & Date.Time < ymd_hms("2022-02-24 10:34:00"))
+
+
+#Save data to file
+write.csv(data,file="RAnalysis/output/light_calibrations/20220224/20220224_calib_HOBO_light.csv")
+```
+
+
+```{r }
+# Select only temperature 
+temp.data <- data[,c("Date.Time", 
+                     "light.logger.1_Temp", 
+                     "light.logger.2_Temp", 
+                     "light.logger.3_Temp",
+                     "light.logger.4_Temp",
+                     "light.logger.5_Temp", 
+                     "light.logger.6_Temp", 
+                     "light.logger.7_Temp",
+                     "light.logger.8_Temp",
+                     "light.logger.9_Temp",
+                     "light.logger.10_Temp", 
+                     "light.logger.11_Temp", 
+                     "light.logger.12_Temp", 
+                     "light.logger.13_Temp",
+                     "light.logger.14_Temp", 
+                     "light.logger.15_Temp", 
+                     "light.logger.16_Temp")]
+
+# Rename columns
+colnames(temp.data) <- c("Date.Time", 
+                     "light.logger.1", 
+                     "light.logger.2", 
+                     "light.logger.3",
+                     "light.logger.4",
+                     "light.logger.5", 
+                     "light.logger.6", 
+                     "light.logger.7",
+                     "light.logger.8",
+                     "light.logger.9",
+                     "light.logger.10", 
+                     "light.logger.11", 
+                     "light.logger.12", 
+                     "light.logger.13",
+                     "light.logger.14", 
+                     "light.logger.15", 
+                     "light.logger.16")
+
+# Convert to Long
+temp.trt.data <- pivot_longer(temp.data, cols = light.logger.1:light.logger.16, names_to="light.logger." )
+
+## Need to remove times when logger was out of water
+
+# Plot and save 
+ggplot(temp.trt.data, aes(x=Date.Time, y=value)) +
+  geom_line(aes(color = light.logger.), size = 1)+
+  #ylim(5,15)+
+  ylab("Temperature °C")
+ggsave("RAnalysis/output/light_calibrations/20220224/20220224_calib_HOBO_temp.pdf", plot = last_plot(), width = 8, height = 4)
+
+```
+
+
+
+```{r }
+# Select only light 
+light.data <- data[,c("Date.Time", 
+                     "light.logger.1_Light", 
+                     "light.logger.2_Light", 
+                     "light.logger.3_Light",
+                     "light.logger.4_Light",
+                     "light.logger.5_Light", 
+                     "light.logger.6_Light", 
+                     "light.logger.7_Light",
+                     "light.logger.8_Light",
+                     "light.logger.9_Light",
+                     "light.logger.10_Light", 
+                     "light.logger.11_Light", 
+                     "light.logger.12_Light", 
+                     "light.logger.13_Light",
+                     "light.logger.14_Light", 
+                     "light.logger.15_Light", 
+                     "light.logger.16_Light")]
+colnames(light.data) <- c("Date.Time", 
+                     "light.logger.1", 
+                     "light.logger.2", 
+                     "light.logger.3",
+                     "light.logger.4",
+                     "light.logger.5", 
+                     "light.logger.6", 
+                     "light.logger.7",
+                     "light.logger.8",
+                     "light.logger.9",
+                     "light.logger.10", 
+                     "light.logger.11", 
+                     "light.logger.12", 
+                     "light.logger.13",
+                     "light.logger.14", 
+                     "light.logger.15", 
+                     "light.logger.16")
+
+# Convert to Long
+light.trt.data <- pivot_longer(light.data, cols = light.logger.1:light.logger.16, names_to="light.logger" )
+
+#I was getting NAs introduced by coercion error below because the light data had , inbetween numbers, by removing them I got ride of the error
+light.trt.data$value <- gsub(",", "", light.trt.data$value) 
+
+#convert value column contents from characters to numeric
+light.trt.data$value <- as.numeric(light.trt.data$value)
+
+# Plot and save
+ggplot(light.trt.data, aes(x=Date.Time, y=value)) +
+  geom_line(aes(color = light.logger)) +
+  scale_fill_brewer("Dark2") +
+  ylab("Light (lux)")
+  
+ggsave("RAnalysis/output/light_calibrations/20220224/20220224_calib_HoboLight.pdf", plot = last_plot(), width = 8, height = 4)
+
+```
+
+```{r}
+# Read in licor data 
+licor <- read_csv("RAnalysis/data/light_calibration/LICOR_data.csv") [ ,3:5]
+
+# format date and time for licor data
+licor$Date.Time <- paste(licor$Date, licor$Time)
+licor$Date.Time <- parse_date_time(licor$Date.Time, orders = "mdy HMS")
+
+# Plot licor only 
+ggplot(licor, aes(x=Date.Time, y=INPUT2)) +
+  geom_line() + 
+  ylab("Light (µmol photons m^2 s^-1)")
+
+# convert umol to lux 
+licor_lux <- licor %>%
+  select(INPUT2, Date.Time)
+licor_lux <- licor_lux %>%
+  mutate(value = INPUT2 * 54)
+licor_lux$light.logger <- c("LICOR")
+licor_lux <- licor_lux[c("Date.Time", "light.logger", "value")]
+
+# join hobo and licor data 
+data.all <- bind_rows(light.trt.data, licor_lux)
+
+# Plot hobo and licor data together 
+ggplot(data.all, aes(x=Date.Time, y=value)) +
+  geom_line(aes(color = light.logger), size = 1) +
+  scale_fill_brewer("Dark2") +
+  ylab("Light (lux)")
+ggsave("RAnalysis/output/light_calibrations/20220224/20220224_calib_LICOR_HoboLight.pdf", plot = last_plot(), width = 8, height = 4)
+
+```

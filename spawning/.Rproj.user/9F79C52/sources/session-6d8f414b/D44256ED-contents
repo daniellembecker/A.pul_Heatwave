@@ -1,0 +1,213 @@
+---
+title: "Univariate analysis of heatwave time series biological data"
+author: "Ariana S Huffmyer, E5 RoL Team"
+edited by: "DM Becker-Polinski"
+date: "20220830"
+output: github_document
+editor_options: 
+  chunk_output_type: consoles
+--- 
+
+# Set Up    
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r}
+## install packages if you dont already have them
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+if (!require("lme4")) install.packages("lme4")
+if (!require("lmerTest")) install.packages("lmerTest")
+if (!require("car")) install.packages("car")
+if (!require("effects")) install.packages("effects")
+if (!require("ggfortify")) install.packages("ggfortify")
+if (!require("cowplot")) install.packages("cowplot")
+if (!require("vegan")) install.packages("vegan")
+if (!require("corrr")) install.packages("corrr")
+if (!require("ggcorrplot")) install.packages("ggcorrplot")
+if (!require("GGally")) install.packages("GGally")
+if (!require("broom")) install.packages("broom")
+if (!require("cowplot")) install.packages("cowplot")
+
+# load packages
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(lme4)
+library(lmerTest)
+library(car)
+library(effects)
+library(ggfortify)
+library(cowplot)
+library(vegan)
+library(corrr)
+library(ggcorrplot)
+library(GGally)
+library(broom)
+library(cowplot)
+```
+
+# Load dataframe
+
+Load in master dataframe generated from 1_assemble_data.Rmd.  
+```{r}
+master<-read.csv("Output/master_timeseries.csv")
+
+```
+
+# Univariate Responses  
+
+Plot univariate response plots and then generate panel of all plots at the end of this section. Individual plots will not be displayed.  
+
+### Plot: Symbiont Densities
+ 
+View by treatment and timepoint.
+```{r}
+symbplot_cm2<-master %>%
+  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, cells.cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = cells.cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Symbiont Cells cm"^-2))))+
+    theme_classic() + 
+    theme(legend.position = c(.95, .90),
+    legend.justification = c("right", "top"),
+      legend.title=element_text(face="bold", size=30),
+      legend.text=element_text(size=28),
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      )
+```
+
+### Plot: Host Protein   
+
+View by treatment and timepoint.    
+```{r}
+host_prot_cm2<-master %>%
+  filter(!is.na(host_prot_mg.cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, host_prot_mg.cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = host_prot_mg.cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Host Protein ( mg cm"^-2, ")"))))+
+    theme_classic() + 
+    theme(
+      legend.title=element_text(face="bold", size=30),
+      legend.text=element_text(size=28),
+      legend.position = "none",
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      )
+```
+
+### Plot: Holobiont protein  
+
+View by treatment and timepoint.   
+```{r}
+holobiont_prot_cm2<-master %>%
+  filter(!is.na(holobiont_prot_mg.cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, holobiont_prot_mg.cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = holobiont_prot_mg.cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Holobiont Protein (mg cm"^-2, ")"))))+
+    theme_classic() + 
+     theme(
+      legend.title=element_text(face="bold", size=20),
+      legend.text=element_text(size=20),
+      legend.position = "none",
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      )
+```
+
+### Plot: CHL-a
+
+View by treatment and timepoint.   
+```{r}
+chla_cm2<-master %>%
+  filter(!is.na(chla.ug.cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, chla.ug.cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = chla.ug.cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Chlorophyll a (", mu, "g cm"^-2, ")"))))+
+    theme_classic() + 
+    theme(
+      legend.title=element_text(face="bold", size=20),
+      legend.text=element_text(size=20),
+      legend.position = "none",
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      )
+```
+
+### Plot: CHL-c
+
+View by treatment and timepoint.   
+```{r}
+chlc_prot_cm2<-master %>%
+  filter(!is.na(chlc2.ug.cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, chlc2.ug.cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = chlc2.ug.cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Chlorophyll c2 (", mu, "g cm"^-2, ")"))))+
+    theme_classic() + 
+    theme(
+      legend.title=element_text(face="bold", size=20),
+      legend.text=element_text(size=20),
+      legend.position = "none",
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      )
+```
+
+
+Join all plots for each normalization together.  
+
+```{r}
+phys_figure<-plot_grid(symbplot_cm2, chla_cm2, chlc_prot_cm2, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
+
+ggsave(filename="Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=25, units="in")
+ggsave(filename="Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=25, units="in")
+```
+

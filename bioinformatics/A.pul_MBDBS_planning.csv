@@ -1,0 +1,15 @@
+﻿date.published,species,depth.reads,genome.assembly.size,number.CpGs,paper,MBDBS library prep
+20211011,Montipora capitata,5x,~886 Mbp,"28,684,519 CpGs",Trigg et al. 2021 ,Pico Methyl-Seq Library Prep Kit 
+20211011,Pocillopora acuta,5x,~352 Mbp,"9,155,620 CpGs",Trigg et al. 2021 ,Pico Methyl-Seq Library Prep Kit 
+20190429,Acropora millepora,NA,~410 Mbp,NA,Ying et al. 2019,NA
+20110724,Acropora digitata ,NA,420 Mbp,NA,Shinzato et al. 2011,NA
+20230823,Pocillopora acuta,5x,~352 Mbp,NA,Stephens et al. 2023,NA
+NA,Acropora pulchra,10x recommended,~400-450 Mbp,NA,NA,Pico Methyl-Seq Library Prep Kit 
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+Price estimate for MBDBS,,,,,,
+Lab kits are Pico Methyl-Seq Library Prep Kits,,,,,,
+Inventory in lab 20231030,115 preps left,,,,,
