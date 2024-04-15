@@ -1,0 +1,94 @@
+---
+title: "isoform_analysis"
+author: "daniellembecker"
+date: "2024-04-15"
+output: html_document
+---
+
+# Use processed isoform output files from RSEM output run on HPC outlined in this workflow: https://github.com/daniellembecker/DanielleBecker_Lab_Notebook/blob/master/_posts/2023-08-31-Acropora-pulchra-denovo-transcriptome.md
+# isoform_expr.isoform.TPM.not_cross_norm file contains Transcripts Per Million (TPM) values, which are length-normalized expression values
+# gene_to_isoform.map file is the mapping file that links gene identifiers to their corresponding isoform identifiers and positions
+
+# Load required libraries
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+# Load data frames
+```{r}
+# Load isoform expression data
+isoform_expr <- read.delim("../../../isoform_expr.isoform.TPM.not_cross_norm", row.names = 1)
+# "TRINITY_DN805066" - Prefix for de novo assembled transcript
+# "c0" - Component or cluster number
+# "g1" - Gene number within the component
+# "i1" - Isoform identifier, denoting the first isoform of this gene
+
+# Load extracted isoform positions
+extracted.pos <- read.delim("../../../output_gene_to_isoform.map", header = FALSE)
+
+# Remove the "V2" column
+test <- extracted.pos[, c("V1", "V3")]
+
+# Remove anything after ".p" in the "V1" column
+test$V1 <- sub("\\.p.*", "", test$V1)
+
+#rename coloum 3 to potisions
+colnames(test) <- c("isoform", "position")
+
+# Load gene-to-isoform mapping
+isoform_positions <- read.delim("../../../gene_to_isoform.map", header = FALSE)
+colnames(isoform_positions) <- c("gene", "isoform")
+
+#combine with isoform positiins dataframe
+
+
+
+```
+
+
+
+
+
+
+
+
+
+# Create plots to look at isoforms positions and expression for a given gene
+```{r}
+# Function to plot isoform positions and expression for a given gene
+plot_isoforms <- function(gene) {
+  # Filter isoforms for the given gene
+  gene_isoforms <- isoform_positions %>%
+    filter(gene == !!gene) %>%
+    mutate(isoform = as.character(isoform))
+  
+  # Extract isoform expression values
+  isoform_expr_values <- isoform_expr[gene_isoforms$isoform, ]
+  
+  # Create a data frame for plotting
+  plot_data <- data.frame(
+    isoform = gene_isoforms$isoform,
+    expression = rowMeans(isoform_expr_values)
+  )
+  
+  # Plot isoform expression
+  ggplot(plot_data, aes(x = isoform, y = expression)) +
+    geom_bar(stat = "identity") +
+    labs(x = "Isoform", y = "Mean Expression", title = paste("Gene:", gene)) +
+    theme_minimal()
+}
+
+# Display the plot
+print(plot_isoforms("GENE1"))
+
+```
+
+# Analyze isoform expression and positions for each gene
+```{r}
+# Analyze isoform expression and positions for each gene
+for (gene in unique(isoform_positions$gene)) {
+  print(plot_isoforms(gene))
+}
+```
+

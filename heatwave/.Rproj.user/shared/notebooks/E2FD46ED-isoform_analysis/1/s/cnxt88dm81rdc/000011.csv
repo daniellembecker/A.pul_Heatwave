@@ -1,0 +1,6 @@
+"0","# Load gene-to-isoform mapping
+isoform_positions <- read.delim(""../../../gene_to_isoform.map"", header = FALSE)
+"
+"2","Warning: cannot open file '../../../gene_to_isoform.map': No such file or directory"
+"2","Error in file(file, ""rt"") : cannot open the connection
+"
