@@ -1,4 +1,0 @@
-"0","# Analyze isoform expression and positions for each gene"
-"0","for (gene in unique(isoform_positions$gene)) {"
-"0","  print(plot_isoforms(gene))"
-"0","}"
