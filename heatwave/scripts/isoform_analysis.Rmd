@@ -13,6 +13,7 @@ output: html_document
 ```{r}
 library(ggplot2)
 library(dplyr)
+library(data.table)
 ```
 
 # Load data frames
@@ -35,54 +36,106 @@ isoform_positions <- read.delim("../../../gene_to_isoform.map", header = FALSE)
 colnames(isoform_positions) <- c("gene", "isoform")
 
 #combine with isoform positiins dataframe
-
-
+merged.isoforms <- left_join(isoform_positions, extracted.pos)
 
 ```
 
+# Find out how many genes have more than one transcript mapping to them in a de novo transcriptome assembly,
+```{r}
+# Assuming your data is in a data frame called 'transcripts' with columns 'gene' and 'transcript'
+genes_with_multiple_isoforms <- isoform_positions %>%
+  group_by(gene) %>%
+  filter(n() > 1) %>%
+  summarise(num_isoforms = n()) %>%
+  nrow()
 
+print(paste0("Number of genes with more than one transcript: ", genes_with_multiple_isoforms))
 
-
-
-
-
+#189,307 out of 1,476,390 = 12.8% of genes have more than one transcript
+```
 
 
 # Create plots to look at isoforms positions and expression for a given gene
 ```{r}
-# Function to plot isoform positions and expression for a given gene
-plot_isoforms <- function(gene) {
-  # Filter isoforms for the given gene
-  gene_isoforms <- isoform_positions %>%
-    filter(gene == !!gene) %>%
-    mutate(isoform = as.character(isoform))
-  
-  # Extract isoform expression values
-  isoform_expr_values <- isoform_expr[gene_isoforms$isoform, ]
-  
-  # Create a data frame for plotting
-  plot_data <- data.frame(
-    isoform = gene_isoforms$isoform,
-    expression = rowMeans(isoform_expr_values)
-  )
-  
-  # Plot isoform expression
-  ggplot(plot_data, aes(x = isoform, y = expression)) +
-    geom_bar(stat = "identity") +
-    labs(x = "Isoform", y = "Mean Expression", title = paste("Gene:", gene)) +
-    theme_minimal()
-}
+# Group data by gene
+grouped_data <- merged.isoforms %>%
+  group_by(gene)
 
-# Display the plot
-print(plot_isoforms("GENE1"))
+# Create a new column with isoform ranges
+grouped_data <- grouped_data %>%
+  mutate(isoform_range = paste0(isoform, ": ", start, "-", stop))
+
+# Subset the data to a smaller number of genes
+subset_genes <- unique(grouped_data$gene)[1:20]  # Change the number to adjust the subset size
+subset_data <- grouped_data[grouped_data$gene %in% subset_genes, ]
+
+# Visualize isoform stacking for the subset of genes
+ggplot(subset_data, aes(x = gene, y = isoform_range, fill = isoform)) +
+  geom_tile() +
+  scale_y_discrete(expand = c(0, 0)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
 
 ```
 
-# Analyze isoform expression and positions for each gene
+# analyze the percentage of isoforms that are stacking (overlapping) in the same positions and same gene in your dataset
 ```{r}
-# Analyze isoform expression and positions for each gene
-for (gene in unique(isoform_positions$gene)) {
-  print(plot_isoforms(gene))
+# Function to check for overlapping isoforms
+check_overlap <- function(start1, stop1, start2, stop2) {
+  return(start1 <= stop2 && stop1 >= start2)
 }
+
+# Calculate stacking percentage for each gene
+gene_stacking_percentages <- grouped_data %>%
+  mutate(stacking = FALSE) %>%
+  group_map(~ {
+    gene_isoforms <- .x
+    total_isoforms <- nrow(gene_isoforms)
+    stacking_count <- 0
+    
+    for (i in 1:nrow(gene_isoforms)) {
+      isoform1 <- gene_isoforms[i, ]
+      start1 <- isoform1$start
+      stop1 <- isoform1$stop
+      
+      for (j in 1:nrow(gene_isoforms)) {
+        if (i != j) {
+          isoform2 <- gene_isoforms[j, ]
+          start2 <- isoform2$start
+          stop2 <- isoform2$stop
+          
+          if (check_overlap(start1, stop1, start2, stop2)) {
+            stacking_count <- stacking_count + 1
+            gene_isoforms$stacking[i] <- TRUE
+            gene_isoforms$stacking[j] <- TRUE
+            break
+          }
+        }
+      }
+    }
+    
+    stacking_percentage <- (stacking_count / total_isoforms) * 100
+    return(list(gene_isoforms = gene_isoforms, stacking_percentage = stacking_percentage))
+  }) %>%
+  transpose()
+
+# Extract gene-wise stacking percentages
+gene_stacking_percentages <- gene_stacking_percentages$stacking_percentage
+
+# Calculate overall stacking percentage
+overall_stacking_percentage <- sum(gene_stacking_percentages * sapply(gene_stacking_percentages, length)) / sum(sapply(gene_stacking_percentages, length))
+
+# Print overall stacking percentage
+print(paste0("Overall Percentage of Stacking Isoforms: ", round(overall_stacking_percentage, 2), "%"))
+
 ```
+
+
+
+
+
+
+
+
+
 
