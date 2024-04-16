@@ -1,0 +1,37 @@
+"0","# Calculate stacking percentage for each gene
+gene_stacking_percentages <- grouped_data %>%
+  mutate(stacking = FALSE) %>%
+  group_map(~ {
+    gene_isoforms <- .x
+    total_isoforms <- nrow(gene_isoforms)
+    stacking_count <- 0
+    
+    for (i in 1:nrow(gene_isoforms)) {
+      isoform1 <- gene_isoforms[i, ]
+      start1 <- isoform1$start
+      stop1 <- isoform1$stop
+      
+      for (j in 1:nrow(gene_isoforms)) {
+        if (i != j) {
+          isoform2 <- gene_isoforms[j, ]
+          start2 <- isoform2$start
+          stop2 <- isoform2$stop
+          
+          if (check_overlap(start1, stop1, start2, stop2)) {
+            stacking_count <- stacking_count + 1
+            gene_isoforms$stacking[i] <- TRUE
+            gene_isoforms$stacking[j] <- TRUE
+            break
+          }
+        }
+      }
+    }
+    
+    stacking_percentage <- (stacking_count / total_isoforms) * 100
+    return(list(gene_isoforms = gene_isoforms, stacking_percentage = stacking_percentage))
+  }) %>%
+  transpose()
+"
+"2","Error in if (start1 <= stop2 && start2 <= stop1) { : 
+  missing value where TRUE/FALSE needed
+"
