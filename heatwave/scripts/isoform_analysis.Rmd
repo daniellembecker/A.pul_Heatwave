@@ -27,14 +27,8 @@ isoform_expr <- read.delim("../../../isoform_expr.isoform.TPM.not_cross_norm", r
 # Load extracted isoform positions
 extracted.pos <- read.delim("../../../output_gene_to_isoform.map", header = FALSE)
 
-# Remove the "V2" column
-test <- extracted.pos[, c("V1", "V3")]
-
-# Remove anything after ".p" in the "V1" column
-test$V1 <- sub("\\.p.*", "", test$V1)
-
-#rename coloum 3 to potisions
-colnames(test) <- c("isoform", "position")
+#rename coloum 2 and 3 to positions
+colnames(extracted.pos) <- c("isoform", "start", "stop")
 
 # Load gene-to-isoform mapping
 isoform_positions <- read.delim("../../../gene_to_isoform.map", header = FALSE)
