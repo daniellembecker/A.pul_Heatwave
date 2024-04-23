@@ -239,10 +239,7 @@ There is a significant difference in egg size between groups with higher from ho
 Kruskal-Wallis rank sum test
 
 data:  volume by treatment
-Kruskal-Wallis chi-squared = 41.682, df = 1, p-value = 1.074e-10
-
-
-
+Kruskal-Wallis chi-squared = 50.381, df = 1, p-value = 1.266e-12
 
 
 
