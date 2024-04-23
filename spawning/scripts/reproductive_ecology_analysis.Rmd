@@ -129,12 +129,6 @@ size %>%
   theme_classic()
 ```
 
-Remove the outlier in the metamorphosed polyp group. 
-```{r}
-size<-size%>%
-  filter(volume<0.3)
-```
-
 Present means and standard error of each group and save summary table.  
 
 ```{r}
