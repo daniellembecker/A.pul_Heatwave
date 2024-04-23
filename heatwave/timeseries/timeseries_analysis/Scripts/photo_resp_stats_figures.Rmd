@@ -119,25 +119,34 @@ rm(list = ls(pattern = "*_df"))
 Read in tag metadata frame. 
 ```{r}
 #Load tag metadata sheet 
-tags<-read.csv("../fragment_ metadata.csv")
+tags <- read.csv("fragment_ metadata.csv")
 ```
 
 
-### Plot: Photosynthesis  
+# Organize data frame for  
 
-View by site and timepoint for each species.    
 ```{r}
-
-test <- PR_dataset %>%
+# change from long to wide data format
+data.org <- PR_dataset %>%
   pivot_wider(names_from = Assay, values_from = micromol.cm2.h)
 
-#test <- test[-c(1)] #remove first X column
+#remove first X column
+data.org <- data.org[-c(1)] 
+
+#remove date column to remove NAs later
+data.org <- data.org[, -6]  
 
 #Summarize all response values by group (fragment ID + timepoint + Treatment).
-summary_fragments <- group_by(test, fragment_ID, timepoint, Treatment) %>%
+summary_fragments <- group_by(data.org, fragment_ID, timepoint, Treatment) %>%
   summarise(across(.cols=everything(), ~mean(.x, na.rm = TRUE)))%>%
   drop_na("timepoint")%>%
-  write_csv(., "Output/summary_respo_fragment_ID.csv")
+  write_csv(., "timeseries_analysis/Output/summary_respo_fragment_ID.csv")
+
+# Add in tank.num metadata 
+summary_fragments <- left_join(summary_fragments, tags)
+
+#remove notes column
+summary_fragments <- summary_fragments[, -17]  
 
 #make respiration positive 
 summary_fragments$Rd <- -summary_fragments$Rd
@@ -150,22 +159,22 @@ summary_fragments$GP.R <- abs(summary_fragments$GP)/abs(summary_fragments$Rd)
 #calculate ratio with absolute values
 #remove outliers detected by values of P:R ratio data
 
-complete_sum<-summary_fragments%>%
+#summarize data for each timepoint
+complete_sum <-summary_fragments%>%
   group_by(Treatment, timepoint)%>%
   summarise(across(.cols=everything(), ~mean(.x, na.rm = TRUE)))%>%
-  drop_na("timepoint")%>%
-  write_csv(., "Output/summary_respo_timepoint.csv")
+  drop_na("timepoint")
 
+#remove columns with no data
+complete_sum <- complete_sum[, -c(3, 10:13, 15)] %>%
+  write_csv(., "timeseries_analysis/Output/summary_respo_timepoint.csv")
 
-#View boxplots for each metric. Check for outliers.   
-boxplot(summary_fragments$Rd)
-summary_fragments<-summary_fragments%>%filter(Rd < 2.3) #filter out outlier for Rd 
-boxplot(summary_fragments$P)
-boxplot(summary_fragments$GP)
-boxplot(summary_fragments$GP.R)
+# check for and remove NP outliers
+NP_clean <- summary_fragments %>%
+  filter(P < 0.80)
 
-
-NP_plot <- summary_fragments %>%
+#make NP plot
+NP_plot <- NP_clean %>%
   filter(!is.na(P)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, Treatment, P, Rd) %>%
@@ -185,8 +194,15 @@ scale_fill_manual(values = c("blue", "red", "gray")) + #change gradient color
       strip.text.x=element_text(face="italic", size=40)
       ); NP_plot
 
+#check for and remove Rd outliers
+Rd_clean <- summary_fragments %>%
+  filter(Rd < 0.97)
 
-Rd_plot <- summary_fragments %>%
+Rd_clean <- Rd_clean %>%
+  filter(Rd > 0.0)
+
+#make Rd plot
+Rd_plot <- Rd_clean %>%
   filter(!is.na(Rd)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, Treatment, P, Rd)%>%
@@ -207,8 +223,15 @@ Rd_plot <- summary_fragments %>%
       ); Rd_plot
 
 
+#check for and remove GP outliers
+GP_clean <- summary_fragments %>%
+  filter(GP < 2.0)
 
-GP_plot <- summary_fragments %>%
+GP_clean <- GP_clean %>%
+  filter(GP > 0.3)
+
+#make GP plot
+GP_plot <- GP_clean %>%
   filter(!is.na(GP)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, Treatment, P, Rd, GP)%>%
@@ -221,14 +244,15 @@ GP_plot <- summary_fragments %>%
   theme_classic() + 
     theme(
       legend.position="right",
-      legend.title=element_text(face="bold", size=30),
-      legend.text=element_text(size=30),
-      axis.title=element_text(face="bold", size=30),
-      axis.text=element_text(size=30, color="black"), 
-      strip.text.x=element_text(face="italic", size=30)
+      legend.title=element_text(face="bold", size=40),
+      legend.text=element_text(size=40),
+      axis.title=element_text(face="bold", size=40),
+      axis.text=element_text(size=40, color="black"), 
+      strip.text.x=element_text(face="italic", size=40)
       ); GP_plot
 
 
+#make GP:R plot
 GP_R_plot <- summary_fragments %>%
   filter(!is.na(GP.R)) %>%
   filter(!is.na(timepoint)) %>%
@@ -242,11 +266,11 @@ GP_R_plot <- summary_fragments %>%
   theme_classic() + 
     theme(
       legend.position="right",
-      legend.title=element_text(face="bold", size=22),
-      legend.text=element_text(size=18),
-      axis.title=element_text(face="bold", size=22),
-      axis.text=element_text(size=16, color="black"), 
-      strip.text.x=element_text(face="italic", size=18)
+      legend.title=element_text(face="bold", size=40),
+      legend.text=element_text(size=40),
+      axis.title=element_text(face="bold", size=40),
+      axis.text=element_text(size=40, color="black"), 
+      strip.text.x=element_text(face="italic", size=40)
       ); GP_R_plot
 
 ```
@@ -256,103 +280,89 @@ Join all plots together.
 
 ```{r}
 
-all_resp_Figure<-plot_grid(NP_plot, Rd_plot, GP_plot, GP_R_plot, ncol=4, nrow=1, labels = c('A', 'B', 'C', 'D'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 22)
+all_resp_Figure<-plot_grid(NP_plot, Rd_plot, GP_plot, GP_R_plot, ncol=2, nrow=2, labels = c('A', 'B', 'C', 'D'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1), label_y=1, align="h", label_size = 30)
 
-ggsave(filename="Figures/all_resp_figure.pdf", plot=all_resp_Figure, dpi=500, width=25, height=10, units="in")
-ggsave(filename="Figures/all_resp_figure.png", plot=all_resp_Figure, dpi=500, width=25, height=10, units="in")
+ggsave(filename="timeseries_analysis/Figures/all_resp_figure.pdf", plot=all_resp_Figure, dpi=500, width=30, height=30, units="in")
+ggsave(filename="timeseries_analysis/Figures/all_resp_figure.png", plot=all_resp_Figure, dpi=500, width=30, height=30, units="in")
 ```
 
 ```{r}
 
 NP_Rd <-plot_grid(NP_plot, Rd_plot, ncol=2, nrow=1, labels = c('A', 'B'), label_size = 50)
 
-ggsave(filename="Figures/NP_Rd_Figure.png", plot=NP_Rd, dpi=500, width=35, height=20, units="in")
-ggsave(filename="Figures/NP_Rd_Figure.pdf", plot=NP_Rd, dpi=500, width=35, height=20, units="in")
+ggsave(filename="timeseries_analysis/Figures/NP_Rd_Figure.png", plot=NP_Rd, dpi=500, width=35, height=20, units="in")
+ggsave(filename="timeseries_analysis/Figures/NP_Rd_Figure.pdf", plot=NP_Rd, dpi=500, width=35, height=20, units="in")
 ```
 
 ### Analysis of P   
 
 Build a mixed model for univariate analysis and examine data distribution. 
 
-`P_model<-lmer(P~timepoint*Treatment+(1|tank.num), na.action=na.omit, data=master)` 
+`P_model<-lmer(P~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)` 
 
 ```{r}
-P_model<-lmer(P~timepoint*Treatment+(1|tank.num), na.action=na.omit, data=summary_fragments)
+P_model<-lmer(P~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)
 qqPlot(residuals(P_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`P_model<-lmer(log(P)~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)` 
+`P_model<-lmer(log(P~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))` 
 
 ```{r}
-P_model<-lmer(log(P)~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)
+P_model<-lmer(log(P~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))
 qqPlot(residuals(P_model))
-```
-
-Generate a Type II Anova of model.    
-
-```{r}
-anova(P_model, type="II")
-summary(P_model)
-```
-
-
-`P_model_poc<-lmer(log(P)~timepoint*site+(1|tank.num), na.action=na.omit, data=master, subset=c(species=="Pocillopora"))` 
-
-```{r}
-P_model_poc<-lmer(log(P)~timepoint*site+(1|tank.num), na.action=na.omit, data=master, subset=c(species=="Pocillopora"))
-qqPlot(residuals(P_model_poc))
 ```
 
 Generate a Type III Anova of model.    
 
 ```{r}
-anova(P_model_poc, type="III")
-summary(P_model_poc)
+anova(P_model, type="III")
+summary(P_model)
 ```
 
+Timepoint x treatment is significant and main effect of timepoint
+
+Type III Analysis of Variance Table with Satterthwaite's method
+                     Sum Sq  Mean Sq NumDF  DenDF F value   Pr(>F)   
+timepoint           0.60076 0.150191     4 94.067  4.0892 0.004232 **
+Treatment           0.00299 0.002994     1 35.419  0.0815 0.776910   
+timepoint:Treatment 0.44468 0.148226     3 88.623  4.0357 0.009696 **
 
 ### Analysis of Rd   
 
 Build a mixed model for univariate analysis and examine data distribution. 
 
-`rd_model<-lmer(Rd~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)` 
+`Rd_model<-lmer(Rd~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)` 
 
 ```{r}
-rd_model<-lmer(Rd~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)
+rd_model<-lmer(Rd~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)
 qqPlot(residuals(rd_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`rd_model<-lmer(log(Rd)~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)` 
+`rd_model<-lmer(log(Rd~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))` 
 
 ```{r}
-rd_model<-lmer(log(Rd)~timepoint*species*site+(1|tank.num), na.action=na.omit, data=master)
+rd_model<-lmer(log(Rd~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))
 qqPlot(residuals(rd_model))
 ```
 
-Generate a Type II Anova of model.    
+Generate a Type III Anova of model.    
 
 ```{r}
-anova(rd_model, type="III")
+anova(rd_model, type="II")
 summary(rd_model)
 ```
 
+Main effect of timepoint is significant:
 
-`rd_model_acr<-lmer(log(Rd)~timepoint*site+(1|tank.num), na.action=na.omit, data=master, subset=c(species=="Acropora"))` 
+Type III Analysis of Variance Table with Satterthwaite's method
+                     Sum Sq Mean Sq NumDF DenDF F value  Pr(>F)   
+timepoint           0.88435 0.22109     4   111  3.7734 0.00646 **
+Treatment           0.12358 0.12358     1   111  2.1092 0.14924   
+timepoint:Treatment 0.35109 0.11703     3   111  1.9974 0.11852
 
-```{r}
-rd_model_acr<-lmer(log(Rd)~timepoint*site+(1|tank.num), na.action=na.omit, data=master, subset=c(species=="Acropora"))
-qqPlot(residuals(rd_model_acr))
-```
-
-Generate a Type II Anova of model.    
-
-```{r}
-anova(rd_model_acr, type="III")
-summary(rd_model_acr)
-```
 
 

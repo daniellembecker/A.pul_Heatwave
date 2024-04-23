@@ -12,14 +12,17 @@
     "properties": {
         "chunk_output_type": "console",
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "working_dir": "project",
+        "cursorPosition": "364,63",
+        "scrollLine": "348"
     },
     "folds": "",
-    "lastKnownWriteTime": 1710175632,
+    "lastKnownWriteTime": 1713911873,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1710175632,
+    "last_content_update": 1713911873637,
     "read_only": false,
     "read_only_alternatives": []
 }
