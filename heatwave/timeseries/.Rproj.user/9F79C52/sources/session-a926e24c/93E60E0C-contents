@@ -1,6 +1,7 @@
 ---
 title: "biomass.Rmd"
 author: "HM Putnam, AS Huffmyer"
+updated by: "DM Becker"
 date: "10/26/2021"
 output: html_document
 editor_options: 
@@ -22,22 +23,22 @@ library(plotrix)
 
 ```{r }
 #Read in biomass data
-Data <- read.csv("timepoint1/1_data/1_biomass/1_biomass.csv")
+Data <- read.csv("January_2022/data/2_biomass/2_biomass.csv")
 Data <- na.omit(Data)
-
+  
 # calculated mass per ml
 #different volumes for sym (5ml) and host (4ml)
 sym <- 5
 host <- 4
 
 #Load tissue homogenate volume
-homog_vol <- read.csv("timepoint1/1_data/1_homogenate_vols/1_homogenate_vols.csv", header=TRUE)
+homog_vol <- read.csv("January_2022/data/2_homogenate_vols/2_homogenate_vols.csv", header=TRUE)
 
 # Load Surface area data
-sa <- read.csv("timepoint1/1_output/1_surface.area.calc.csv")
+sa <- read.csv("January_2022/output/2_surface.area.calc.csv")
 
 # Coral sample metadata
-metadata <- read_csv("timepoint1/1_metadata.csv")
+metadata <- read_csv("January_2022/2_corals_sampled.csv") 
 
 # Join homogenate volumes and surface area with sample metadata
 metadata <- full_join(metadata, homog_vol) %>%
@@ -50,8 +51,8 @@ Data <- Data %>%
 
 # Standardize for the total homogenate volume
 Data <- left_join(Data, homog_vol)  %>%
-  mutate(dry.pan.mass.g.vol.corr = dry.pan.mass.g.ml*homogenate_vol_ml, 
-         burnt.pan.mass.g.vol.corr = burnt.pan.mass.g.ml*homogenate_vol_ml)
+  mutate(dry.pan.mass.g.vol.corr = dry.pan.mass.g.ml*homog_vol_ml, 
+         burnt.pan.mass.g.vol.corr = burnt.pan.mass.g.ml*homog_vol_ml)
 
 
 # Calculate Dry Biomass
@@ -72,30 +73,30 @@ Output biomass data to .csv.
 
 ```{r}
 afdw <- afdw %>%
-  group_by(fragment_ID, partner)%>%
+  group_by(colony_id, partner)%>%
   summarise(AFDW.mg.cm2=mean(AFDW.mg.cm2))%>%
   left_join(.,metadata)%>% #add metadata back into file
-  select(fragment_ID, partner, treatment, AFDW.mg.cm2) %>%
-  mutate(timepoint="TP1"); afdw
+  select(colony_id, partner, species, AFDW.mg.cm2) %>%
+  mutate(timepoint="JAN")
 
 dw<-dw %>% 
-  group_by(fragment_ID, partner)%>%
+  group_by(colony_id, partner)%>%
   summarise(DW.mg.cm2=mean(DW.mg.cm2))%>%
   left_join(.,metadata)%>% #add metadata back into file
-  select(fragment_ID, partner, treatment, DW.mg.cm2) %>%
-  mutate(timepoint="TP1"); dw
+  select(colony_id, partner, species, DW.mg.cm2) %>%
+  mutate(timepoint="JAN")
   
 output<-left_join(afdw,dw)%>%
-  write_csv(path = "timepoint1/1_output/1_biomass.csv")
+  write_csv(path = "January_2022/output/2_biomass.csv")
 ```
 
 ```{r}
-#summarize Dry Biomass mean and sem by treatment and timepoint
+#summarize Dry Biomass mean and sem by partner and plot
   
 dw %>% 
-  group_by(treatment, timepoint, partner)%>%
+  group_by(partner, timepoint)%>%
   summarise(mean.value = mean(DW.mg.cm2), se = std.error(DW.mg.cm2)) %>%
-  ggplot(aes(x = timepoint, y = mean.value, group = treatment, color = partner)) +
+  ggplot(aes(x = timepoint, y = mean.value, color = partner))+
   ylab("DW mg cm-2")+
   geom_point(size = 3)+
   geom_errorbar(aes(x = timepoint, ymin = mean.value-se, ymax = mean.value+se), width = 0.5)
@@ -104,18 +105,15 @@ dw %>%
 ```
 
 ```{r}
-#summarize AFDW mean and sem by treatment and timepoint
+#summarize AFDW mean and sem by site, species, and partner and plot
 
 afdw %>% 
-  group_by(treatment, timepoint, partner)%>%
+  group_by(partner, timepoint)%>%
   summarise(mean.value = mean(AFDW.mg.cm2), se = std.error(AFDW.mg.cm2)) %>%
-  ggplot(aes(x = timepoint, y = mean.value, group = treatment, color = partner)) +
+  ggplot(aes(x = timepoint, y = mean.value, color = partner))+
   ylab("AFDW mg cm-2")+
   geom_point(size = 3)+
   geom_errorbar(aes(x = timepoint, ymin = mean.value-se, ymax = mean.value+se), width = 0.5)
 
 
 ```
-
-
- 

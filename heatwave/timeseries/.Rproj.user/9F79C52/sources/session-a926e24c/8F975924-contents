@@ -85,6 +85,7 @@ symbplot_cm2<-master.sym %>%
     scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
+    scale_y_continuous(labels = scales::label_scientific())+ # Use scientific notation on y-axis
     xlab("Timepoint") + 
     ylab(expression(bold(paste("Symbiont Cells cm"^-2))))+
     theme_classic() + 
