@@ -56,7 +56,7 @@ Load in master dataframe generated from 1_assemble_physiological_data.Rmd
 master<-read.csv("timeseries_analysis/Output/master_timeseries.csv")
 
 #remove notes column to remove NAs
-master <- master[, -28]  # Remove the 28th column
+master <- master[, -29]  # Remove the 28th column
 
 ```
 
@@ -241,6 +241,45 @@ chlc_prot_cm2<-filtered_master %>%
       ); chlc_prot_cm2
 ```
 
+### Plot: total CHL
+
+View by treatment and timepoint.   
+```{r}
+# Define the specific timepoint
+specific_timepoint <- "TP5" 
+
+# Define the total chl threshold for outlier detection
+threshold <- 5
+
+# Filter the data to remove the outlier point at timepoint 5
+filtered_master <- master %>%
+  filter(!(timepoint == specific_timepoint & Total_Chl_cm2 > threshold))
+
+#create plot
+tot_chl <- filtered_master %>%
+  filter(!is.na(Total_Chl_cm2)) %>%
+  filter(!is.na(timepoint))%>%
+  select(fragment_ID, timepoint, treatment, Total_Chl_cm2)%>%
+  
+  ggplot(., aes(x = timepoint, y = Total_Chl_cm2, fill = treatment)) +
+    geom_boxplot(outlier.size = 0) +
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    labs(fill = "Treatment") +
+    #facet_wrap(~timepoint) +
+    xlab("Timepoint") + 
+    ylab(expression(bold(paste("Total Chlorophyll (", mu, "g cm"^-2, ")"))))+
+    theme_classic() + 
+    theme(
+      legend.title=element_text(face="bold", size=20),
+      legend.text=element_text(size=20),
+      legend.position = "none",
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      ); tot_chl
+```
+
 
 Join all plots for each normalization together.  
 
@@ -255,12 +294,21 @@ ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure,
 
 Build a mixed model for univariate analysis and examine data distribution.
 
+# Remove initial timepoint from analysis because we want to see differences in treatments across timepoints
+
+```{r}
+master <- master %>%
+  filter(!is.na(treatment) & treatment != "initial") 
+
+```
+
+
 # For symbiont densities 
 
 `sym_model<-lmer(cells.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master)` 
 
 ```{r}
-sym_model<-lmer(cells.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+sym_model<-lmer(cells.cm2~timepoint*treatment + (1|colony_ID), na.action=na.omit, data=master)
 qqPlot(residuals(sym_model))
 ```
 
@@ -283,9 +331,9 @@ Main effects of treatment and timepoint are significant but timepoint:treatment 
 
 Type III Analysis of Variance Table with Satterthwaite's method
                         Sum Sq    Mean Sq NumDF      DenDF F value   Pr(>F)   
-timepoint           2.8024e+12 7.0059e+11     4        Inf  3.9404 0.003356 **
-treatment           1.0416e+12 1.0416e+12     1 1.0654e+42  5.8583 0.015504 * 
-timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.8656 0.458037 
+timepoint           2.7402e+12 9.1339e+11     3        Inf  4.5875 0.003247 **
+treatment           1.0416e+12 1.0416e+12     1 1.1543e+39  5.2313 0.022183 * 
+timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.7730 0.508898   
 
 # For chla
 
@@ -315,9 +363,9 @@ Main effects of timepoint are significant but timepoint:treatment are not.
 
 Type III Analysis of Variance Table with Satterthwaite's method
                     Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
-timepoint           69.418 17.3544     4   111 16.4514 1.303e-10 ***
-treatment            1.558  1.5576     1   111  1.4766    0.2269    
-timepoint:treatment  2.615  0.8718     3   111  0.8264    0.4820   
+timepoint           67.186 22.3952     3    88 19.3240 1.032e-09 ***
+treatment            1.558  1.5576     1    88  1.3440    0.2495    
+timepoint:treatment  2.615  0.8718     3    88  0.7522    0.5240   
 
 # For chlc
 
@@ -347,9 +395,11 @@ Main effects of timepoint are significant but timepoint:treatment are not.
 
 Type III Analysis of Variance Table with Satterthwaite's method
                      Sum Sq Mean Sq NumDF DenDF F value Pr(>F)    
-timepoint           189.130  47.282     4   111 34.7826 <2e-16 ***
-treatment             1.038   1.038     1   111  0.7635 0.3841    
-timepoint:treatment   2.628   0.876     3   111  0.6445 0.5880  
+timepoint           187.365  62.455     3    88 50.2759 <2e-16 ***
+treatment             1.038   1.038     1    88  0.8355 0.3632    
+timepoint:treatment   2.628   0.876     3    88  0.7053 0.5514   
+
+# Combine chlorophyll a and chlorophyll c2 for total chlorophyll
 
 # For host protein
 
@@ -379,9 +429,9 @@ Main effects of treatment and timepoint are significant but timepoint:treatment 
 
 Type III Analysis of Variance Table with Satterthwaite's method
                         Sum Sq    Mean Sq NumDF      DenDF F value   Pr(>F)   
-timepoint           2.8024e+12 7.0059e+11     4        Inf  3.9404 0.003356 **
-treatment           1.0416e+12 1.0416e+12     1 1.0654e+42  5.8583 0.015504 * 
-timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.8656 0.458037  
+timepoint           2.7402e+12 9.1339e+11     3        Inf  4.5875 0.003247 **
+treatment           1.0416e+12 1.0416e+12     1 1.1543e+39  5.2313 0.022183 * 
+timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.7730 0.508898   
 
 # For holo protein
 
@@ -411,7 +461,7 @@ Main effects of treatment and timepoint are significant but timepoint:treatment 
 
 Type III Analysis of Variance Table with Satterthwaite's method
                         Sum Sq    Mean Sq NumDF      DenDF F value   Pr(>F)   
-timepoint           2.8024e+12 7.0059e+11     4        Inf  3.9404 0.003356 **
-treatment           1.0416e+12 1.0416e+12     1 1.0654e+42  5.8583 0.015504 * 
-timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.8656 0.458037  
+timepoint           2.7402e+12 9.1339e+11     3        Inf  4.5875 0.003247 **
+treatment           1.0416e+12 1.0416e+12     1 1.1543e+39  5.2313 0.022183 * 
+timepoint:treatment 4.6172e+11 1.5391e+11     3        Inf  0.7730 0.508898  
 
