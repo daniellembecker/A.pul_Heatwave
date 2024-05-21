@@ -284,7 +284,7 @@ tot_chl <- filtered_master %>%
 Join all plots for each normalization together.  
 
 ```{r}
-phys_figure<-plot_grid(symbplot_cm2, chla_cm2, chlc_prot_cm2, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
+phys_figure<-plot_grid(symbplot_cm2, chla_cm2, chlc_prot_cm2, tot_chl, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E', 'F'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
 
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=25, units="in")
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=25, units="in")
@@ -362,10 +362,10 @@ anova(chla_model, type="III")
 Main effects of timepoint are significant but timepoint:treatment are not.
 
 Type III Analysis of Variance Table with Satterthwaite's method
-                    Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
-timepoint           67.186 22.3952     3    88 19.3240 1.032e-09 ***
-treatment            1.558  1.5576     1    88  1.3440    0.2495    
-timepoint:treatment  2.615  0.8718     3    88  0.7522    0.5240   
+                    Sum Sq Mean Sq NumDF DenDF F value   Pr(>F)    
+timepoint           42.315 14.1051     3    88 15.5012 3.54e-08 ***
+treatment            6.115  6.1147     1    88  6.7200  0.01116 *  
+timepoint:treatment  0.273  0.0908     3    88  0.0998  0.95990  
 
 # For chlc
 
@@ -394,12 +394,43 @@ anova(chlc_model, type="III")
 Main effects of timepoint are significant but timepoint:treatment are not.
 
 Type III Analysis of Variance Table with Satterthwaite's method
-                     Sum Sq Mean Sq NumDF DenDF F value Pr(>F)    
-timepoint           187.365  62.455     3    88 50.2759 <2e-16 ***
-treatment             1.038   1.038     1    88  0.8355 0.3632    
-timepoint:treatment   2.628   0.876     3    88  0.7053 0.5514   
+                     Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+timepoint           133.944  44.648     3    88 51.1823 < 2.2e-16 ***
+treatment             6.696   6.696     1    88  7.6762  0.006826 ** 
+timepoint:treatment   5.130   1.710     3    88  1.9601  0.125824     
 
-# Combine chlorophyll a and chlorophyll c2 for total chlorophyll
+
+# For tot chl
+
+`tot_chl_model <- lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)` 
+
+```{r}
+tot_chl_model<-lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+qqPlot(residuals(tot_chl_model))
+```
+
+Residuals are not normally distributed. Attempt with log transformation.      
+
+`tot_chl_model<-lmer(log(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master))` 
+
+```{r}
+tot_chl_model<-lmer(log(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master))
+qqPlot(residuals(tot_chl_model))
+```
+
+Generate a Type III Anova of model.    
+
+```{r}
+anova(tot_chl_model, type="III")
+```
+
+Main effects of timepoint are significant but timepoint:treatment are not.
+
+Type III Analysis of Variance Table with Satterthwaite's method
+                    Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+timepoint           320.21 106.737     3    88 34.7833 6.401e-15 ***
+treatment            25.61  25.609     1    88  8.3453  0.004867 ** 
+timepoint:treatment   7.42   2.474     3    88  0.8063  0.493713      
 
 # For host protein
 

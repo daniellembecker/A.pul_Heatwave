@@ -271,7 +271,7 @@ master.1<-master%>%
 master.1 <- master.1 %>% 
  #mutate(Ratio_AFDW.mg.cm2=Sym_AFDW.mg.cm2/(Sym_AFDW.mg.cm2+Host_AFDW.mg.cm2))%>%
  #mutate(Total_Chl=chla.ug.mgAFDW+chlc2.ug.mgAFDW)%>%
- mutate(Total_Chl_cell=chla.ug.cell+chlc2.ug.cell)
+ mutate(Total_Chl_cm2=chla.ug.cm2+chlc2.ug.cm2)
 
 head(master.1)
 ```
@@ -283,7 +283,7 @@ Write master file to csv.
 #merge metadata with master timeseries
 metadata_master <- full_join(master.1, tags)
 
-write_csv(metadata_master, "../Output/master_timeseries.csv")
+write_csv(metadata_master, "timeseries_analysis/Output/master_timeseries.csv")
 ```
 
 
@@ -297,13 +297,13 @@ summary_fragments<-metadata_master%>%
   group_by(fragment_ID, treatment, timepoint)%>%
   summarise(across(.cols=everything(), ~mean(.x, na.rm = TRUE)))%>%
   drop_na("timepoint")%>%
-  write_csv(., "../Output/sumamry_physio_fragment.csv")
+  write_csv(., "timeseries_analysis/Output/sumamry_physio_fragment.csv")
 
 summary_group<-metadata_master%>%
   group_by(treatment, timepoint)%>%
   summarise(across(.cols=everything(), ~mean(.x, na.rm = TRUE)))%>%
   drop_na("timepoint")%>%
-  write_csv(., "../Output/summary_physio_timepoint.csv")
+  write_csv(., "timeseries_analysis/Output/summary_physio_timepoint.csv")
            
 ```
 
