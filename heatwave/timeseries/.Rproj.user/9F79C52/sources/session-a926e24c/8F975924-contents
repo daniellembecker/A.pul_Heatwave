@@ -252,11 +252,15 @@ specific_timepoint <- "TP5"
 threshold <- 5
 
 # Filter the data to remove the outlier point at timepoint 5
-filtered_master <- master %>%
+filtered_master.tot.chl <- master %>%
   filter(!(timepoint == specific_timepoint & Total_Chl_cm2 > threshold))
 
+# filter outlier for tp3
+filtered_master.tot.chl <- filtered_master.tot.chl %>%
+  filter(Total_Chl_cm2 < 10)
+
 #create plot
-tot_chl <- filtered_master %>%
+tot_chl <- filtered_master.tot.chl %>%
   filter(!is.na(Total_Chl_cm2)) %>%
   filter(!is.na(timepoint))%>%
   select(fragment_ID, timepoint, treatment, Total_Chl_cm2)%>%

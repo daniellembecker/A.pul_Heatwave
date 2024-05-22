@@ -1,0 +1,8 @@
+"0",""
+"0","Blch$group <- paste0(Blch$treatment,""_"", Blch$Photo_date)"
+"0",""
+"0","#identify outliers"
+"0","outlier.plot <- ggbetweenstats(Blch,group, Bleaching.Score, outlier.tagging = TRUE)"
+"2","Number of labels is greater than default palette color count.
+[36m•[39m Select another color `palette` (and/or `package`)."
+"0","outlier.plot"

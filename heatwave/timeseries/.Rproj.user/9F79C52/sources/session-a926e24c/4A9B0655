@@ -1,0 +1,27 @@
+{
+    "id": "4A9B0655",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/RAnalysis/scripts/Photographic_Bleaching.Rmd",
+    "project_path": null,
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1716389555982.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "207,74",
+        "scrollLine": "201",
+        "working_dir": "project"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1716406801,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1716406801488,
+    "read_only": false,
+    "read_only_alternatives": []
+}

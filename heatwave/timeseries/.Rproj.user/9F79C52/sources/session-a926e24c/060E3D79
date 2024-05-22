@@ -1,0 +1,28 @@
+{
+    "id": "060E3D79",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave/timeseries/timeseries_analysis/Scripts/photo_resp_stats_figures.Rmd",
+    "project_path": "timeseries_analysis/Scripts/photo_resp_stats_figures.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1716387768939.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "working_dir": "project",
+        "cursorPosition": "360,13",
+        "scrollLine": "347"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1713911873,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1716387921827,
+    "read_only": false,
+    "read_only_alternatives": []
+}
