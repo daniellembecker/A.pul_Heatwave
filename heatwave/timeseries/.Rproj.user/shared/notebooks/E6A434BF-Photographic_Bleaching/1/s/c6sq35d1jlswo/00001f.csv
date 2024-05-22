@@ -1,1 +1,0 @@
-"0","plot(fitted(Color_qrt), residuals(Color_qrt))#view variance"

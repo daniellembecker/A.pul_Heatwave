@@ -1,3 +1,0 @@
-"0",""
-"0","Color_sq <- lmer(((Bleaching.Score+500)^2) ~ treatment*Photo_date + (1|ColonyID), na.action=na.omit, data=data)"
-"0","par(mfrow = c(2, 2))"

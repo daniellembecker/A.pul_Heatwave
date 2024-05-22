@@ -1,6 +1,0 @@
-"0",""
-"0","write.table(Blch, file = ""RAnalysis/output/color_score/color_score_colony_output.csv"", append = FALSE, quote = TRUE, sep = "","", eol = ""\n"", na = ""NA"", dec = ""."", row.names = TRUE, col.names = TRUE, qmethod = c(""escape"", ""double""), fileEncoding = """")"
-"2","Warning: cannot open file 'RAnalysis/output/color_score/color_score_colony_output.csv': No such file or directory"
-"2","Error in file(file, ifelse(append, ""a"", ""w"")) : 
-  cannot open the connection
-"

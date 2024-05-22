@@ -1,7 +1,0 @@
-"0","Data <- read.csv(""../../RAnalysis/data/color_score/color_score_colonies.csv"", header=T, sep="","", na.string=""NA"") #read in data file"
-"0","Data <-na.omit(Data) # removing all rows with NA values"
-"0","Data$SP.Time.ID <- paste0(Data$ColonyID, ""_"",Data$Photo_date, ""_"", Data$treatment)# generating a grouping factor"
-"0",""
-"0","#make photo.date a factor"
-"0","Data$Photo_date = as.factor(Data$Photo_date)"
-"0",""
