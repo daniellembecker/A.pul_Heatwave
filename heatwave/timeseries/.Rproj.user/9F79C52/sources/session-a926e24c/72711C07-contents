@@ -294,7 +294,7 @@ ggsave(filename="timeseries_analysis/Figures/NP_Rd_Figure.png", plot=NP_Rd, dpi=
 ggsave(filename="timeseries_analysis/Figures/NP_Rd_Figure.pdf", plot=NP_Rd, dpi=500, width=35, height=20, units="in")
 ```
 
-### Analysis of NP   
+### Analysis of P   
 
 Build a mixed model for univariate analysis and examine data distribution. 
 
@@ -352,7 +352,7 @@ qqPlot(residuals(rd_model))
 Generate a Type III Anova of model.    
 
 ```{r}
-anova(rd_model, type="III")
+anova(rd_model, type="II")
 summary(rd_model)
 ```
 
@@ -363,68 +363,6 @@ Type III Analysis of Variance Table with Satterthwaite's method
 timepoint           0.88435 0.22109     4   111  3.7734 0.00646 **
 Treatment           0.12358 0.12358     1   111  2.1092 0.14924   
 timepoint:Treatment 0.35109 0.11703     3   111  1.9974 0.11852
-
-
-### Analysis of GP
-
-Build a mixed model for univariate analysis and examine data distribution. 
-
-`GP_model<-lmer(GP~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)` 
-
-```{r}
-GP_model<-lmer(GP~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)
-qqPlot(residuals(GP_model))
-```
-
-Residuals are not normally distributed. Attempt with log transformation.      
-
-`rd_model<-lmer(log(Rd~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))` 
-
-```{r}
-GP_model<-lmer(log(GP~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments))
-qqPlot(residuals(GP_model))
-```
-
-
-Generate a Type III Anova of model.    
-
-```{r}
-anova(GP_model, type="III")
-summary(GP_model)
-```
-
-Type III Analysis of Variance Table with Satterthwaite's method
-                     Sum Sq Mean Sq NumDF DenDF F value  Pr(>F)  
-timepoint           2.04112 0.51028     4   111  3.3810 0.01190 *
-Treatment           0.17404 0.17404     1   111  1.1532 0.28522  
-timepoint:Treatment 1.50219 0.50073     3   111  3.3178 0.02255 *
-
-### Analysis of GP:R  
-
-Build a mixed model for univariate analysis and examine data distribution. 
-
-`GP.R_model<-lmer(GP.R~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)` 
-
-```{r}
-GP.R_model<-lmer(GP.R~timepoint*Treatment+(1|tank_num), na.action=na.omit, data=summary_fragments)
-qqPlot(residuals(GP.R_model))
-```
-
-#residuals are normal move ahead
-
-Generate a Type III Anova of model.    
-
-```{r}
-anova(GP.R_model, type="II")
-summary(GP.R_mode)
-```
-
- 
-Type II Analysis of Variance Table with Satterthwaite's method
-                     Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
-timepoint           1.97312 0.49328     4 94.339  6.5534 0.0001068 ***
-Treatment           0.37191 0.37191     1 42.678  4.9409 0.0315780 *  
-timepoint:Treatment 0.17285 0.05762     3 88.459  0.7655 0.5163939    
 
 
 

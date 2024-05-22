@@ -1,0 +1,4 @@
+"0","#Our random factor is `(1|PLUG.ID)` because fragments were repeatedly measured"
+"0","Color_sqrt <- lmer(((Bleaching.Score+500)^(1/2)) ~ treatment*Photo_date + (1|ColonyID), na.action=na.omit, data=data) "
+"0","par(mfrow = c(2, 2))"
+"0","hist(residuals(Color_sqrt)) #view distribution"
