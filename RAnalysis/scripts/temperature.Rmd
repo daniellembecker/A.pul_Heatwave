@@ -38,6 +38,106 @@ library(scales)
 #library(ggiraphExtra)
 ```
 
+##Processing temperature data for from HOBO temperature loggers out at Mahana from January to November
+
+#load temp data
+
+```{r}
+mahana.temp.hobo.06 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_6.csv")
+mahana.temp.hobo.09 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_9.csv")
+mahana.temp.hobo.07 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_7.csv")
+mahana.temp.hobo.10 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_10.csv")
+mahana.temp.hobo.11 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_11.csv")
+mahana.temp.hobo.12 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_12.csv")
+mahana.temp.hobo.13 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_13.csv")
+mahana.temp.hobo.08 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_8.csv")
+mahana.temp.hobo.05 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_5.csv")
+mahana.temp.hobo.04 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_4.csv")
+mahana.temp.hobo.03 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_3.csv")
+mahana.temp.hobo.02 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_2.csv")
+```
+
+
+#bind all data sets together into one data frame
+
+```{r}
+temp.data <- rbind(mahana.temp.hobo.02, mahana.temp.hobo.03, mahana.temp.hobo.04, mahana.temp.hobo.05, mahana.temp.hobo.06, mahana.temp.hobo.07, mahana.temp.hobo.08, mahana.temp.hobo.09, mahana.temp.hobo.10, mahana.temp.hobo.11, mahana.temp.hobo.12, mahana.temp.hobo.13)
+```
+
+
+#remove any NA's from the data frame
+```{r}
+temp.data <- na.omit(temp.data)
+
+view(temp.data)
+```
+
+#modify the date and time structure
+
+```{r}
+temp.data$date.time <- mdy_hm(temp.data$date.time, quiet=FALSE, tz="UTC", truncated=0) #format date and time
+```
+ 
+
+#make logger number a factor
+```{r}
+temp.data$logger.number = as.factor(temp.data$logger.number)
+```
+
+
+#subset temp data for until end of october
+```{r}
+
+# Convert the date column to Date type using lubridate
+temp.data$date <- ymd_hms(temp.data$date.time)
+
+# filter temp data to show after october spawning
+filtered_data <- temp.data %>%
+  filter(date < ymd_hms("2022-10-30 00:00:00"))
+
+```
+
+
+# plot temeprature mean sea surface temp per month with variation around
+```{r}
+
+# Calculate mean sea surface temperature per month
+filtered_data$month <- factor(month(filtered_data$date.time), levels = 1:12, labels = month.abb)  # Extract month from date as factor
+
+# Define the date ranges for shading
+shading_ranges <- data.frame(
+  start = ymd_hms(c("2022-03-13 00:00:00", "2022-04-19 00:00:00", "2022-10-14 00:00:00")),
+  end = ymd_hms(c("2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-29 00:00:00")),
+  fill = c("yellow3", "orange", "purple") # Colors for the shaded regions
+)
+
+# Plot mean sea surface temperature per month with variation around the mean
+temp.plot <- filtered_data %>%
+  ggplot(aes(x = date.time, y = temp)) + 
+  # Add shaded regions for the specified periods
+  geom_rect(data = shading_ranges, inherit.aes = FALSE,
+            aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = fill),
+            alpha = 0.3, show.legend = FALSE) +
+  geom_point(colour = "gray", size = 0.5, alpha = 0.05) + 
+  geom_smooth(se = FALSE, method = "gam", colour = "black") + 
+  ylab("Temperature °C") + 
+  xlab("Date") +
+  scale_x_datetime(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_classic() + 
+  theme(
+    text = element_text(size = 20, colour = "black"), 
+    axis.title = element_text(size = 24, colour = "black", face = "bold"), 
+    axis.text.x = element_text(size = 20, colour = "black", angle = 45, hjust = 1, vjust = 1),
+    legend.title = element_text(size = 24, colour = "black", face = "bold")) +
+  ylim(25, 30);temp.plot
+
+# save mean temp per month plot
+ggsave("output/temp.plot.jpg", temp.plot , width = 10, height = 6)
+ggsave("output/temp.plot.pdf", temp.plot , width = 10, height = 6)
+
+
+```
+
 
 ## Read data files 
  

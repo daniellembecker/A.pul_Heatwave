@@ -355,8 +355,8 @@ ggsave(filename="figures/larvalsurv_1022_1023.pdf", plot=figure_surv, dpi=500, w
 
 ```
 
+##################################################################################################################################
 
-#try combining two data frames and running model
 
 # Larval survivorship cohort 1023 and 1022
 
@@ -425,7 +425,8 @@ car::Anova(model1d, type="II") #anova of model
 summary(effect("history", model1d))
 
 ```
-d
+
+
 Play around with effect plot  
 ```{r}
 library(effects)
@@ -519,7 +520,7 @@ figure_surv <- LarvalSurvPlot_1022 + labs(title = "",
                 subtitle = "Pooled Cohorts") 
 figure_surv
 
-ggsave(filename="figures/larval.survivorship/larvalsurv_1022_1023_pooled.pdf", plot=figure_surv, dpi=500, width=20
+ggsave(filename="figures/larval.survivorship/larvalsurv_three_panel.pdf", plot=figure_surv, dpi=500, width=20
        , height=14, units="in")
 
 
