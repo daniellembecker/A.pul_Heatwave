@@ -1,0 +1,1 @@
+"0","ggsave(""output/HOBO_temp_light_tanks/All_Tank_HoboTemp.png"", dpi=300, plot = temps, width = 30, height = 15, units=""in"")"

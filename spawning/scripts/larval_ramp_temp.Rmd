@@ -58,7 +58,6 @@ data.subset.mean.temp
 #use scale_x_datetime code to implement hours from 1-52 on x axis
 temps <- data.subset.mean.temp %>%
   ggplot(aes(x = Date.Time, y = mean, color = Tank)) +
-  #geom_line() + 
   geom_point() +
   scale_x_datetime(breaks = seq(from = min(data.subset.mean.temp$Date.Time), 
                                  to = max(data.subset.mean.temp$Date.Time), 
@@ -66,27 +65,26 @@ temps <- data.subset.mean.temp %>%
                    labels = function(dt) {
                      rel_hour <- as.numeric(difftime(dt, as.POSIXct("2022-10-25 09:00:00"), units = "hours"))
                      rel_hour <- ifelse(is.na(rel_hour), 
-                                        data.subset.mean.temp$relative_hours[!is.na(data.subset.mean.temp$relative_hours)][1], 
+                    data.subset.mean.temp$relative_hours[!is.na(data.subset.mean.temp$relative_hours)][1], 
                                         rel_hour)
                      rel_hour <- ceiling(rel_hour) + 5
-                     return(paste("", rel_hour))
-                   }) +
+                     return(paste("", rel_hour))}) +
   scale_color_manual(breaks = c("control", "ramp"),
                      values = c("blue", "red"), 
-                     labels = function(x) str_to_title(x)) + #add to capitalize                       first letter in legend
+                     labels = function(x) str_to_title(x)) + #add to capitalize first letter in legend
   theme_classic() +
   theme(axis.text.x = element_text(angle = 0)) +  # Rotate text vertically
   ylab("Temperature (°C)") +
   xlab("Hour") +  # Change x-axis label
-  theme(axis.title = element_text(face = "bold", size = 26),
-        axis.text = element_text(size = 26, color = "black"),
-        legend.title = element_text(size = 26, face = "bold"),
-        legend.text = element_text(size = 24)) + 
-  guides(color = guide_legend(override.aes = list(size = 6))); temps
+  theme(legend.position = "top", axis.title = element_text(face = "bold", size = 60),
+        axis.text = element_text(size = 60, color = "black"),
+        legend.title = element_text(size = 40, face = "bold"),
+        legend.text = element_text(size = 40)) + 
+  guides(color = guide_legend(override.aes = list(size = 10))); temps
 
 
-ggsave("output/larval.exposure.temps.png", plot = temps, width = 20, height = 12)
-ggsave("output/larval.exposure.temps.pdf", plot = temps, width = 20, height = 12)
+ggsave("output/larval.exposure.temps.png", plot = temps, width = 25, height = 12)
+ggsave("output/larval.exposure.temps.pdf", plot = temps, width = 25, height = 12)
 
 ```
 

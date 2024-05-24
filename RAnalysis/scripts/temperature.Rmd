@@ -93,7 +93,7 @@ temp.data$date <- ymd_hms(temp.data$date.time)
 
 # filter temp data to show after october spawning
 filtered_data <- temp.data %>%
-  filter(date < ymd_hms("2022-10-30 00:00:00"))
+  filter(date < ymd_hms("2022-11-01 18:00:00"))
 
 ```
 
@@ -106,17 +106,16 @@ filtered_data$month <- factor(month(filtered_data$date.time), levels = 1:12, lab
 
 # Define the date ranges for shading
 shading_ranges <- data.frame(
-  start = ymd_hms(c("2022-03-13 00:00:00", "2022-04-19 00:00:00", "2022-10-14 00:00:00")),
-  end = ymd_hms(c("2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-29 00:00:00")),
-  fill = c("yellow3", "orange", "purple") # Colors for the shaded regions
+  start = ymd_hms(c("2022-03-13 00:00:00", "2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-30 00:00:00")),
+  end = ymd_hms(c("2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-30 00:00:00", "2022-11-01 18:00:00")),
+  fill = c("#E69F00", "#56B4E9", "#00796B","#9467BD") # Colors for the shaded regions
 )
 
 # Plot mean sea surface temperature per month with variation around the mean
-temp.plot <- filtered_data %>%
-  ggplot(aes(x = date.time, y = temp)) + 
+temp.plot <- ggplot(filtered_data, aes(x = date.time, y = temp)) + 
   # Add shaded regions for the specified periods
   geom_rect(data = shading_ranges, inherit.aes = FALSE,
-            aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = fill),
+            aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = I(fill)),
             alpha = 0.3, show.legend = FALSE) +
   geom_point(colour = "gray", size = 0.5, alpha = 0.05) + 
   geom_smooth(se = FALSE, method = "gam", colour = "black") + 

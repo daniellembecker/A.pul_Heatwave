@@ -1,0 +1,741 @@
+---
+title: "Temperature data at Mahana"
+author: "Ariana S Huffmyer"
+date: "01/13/2022"
+output:
+  pdf_document: default
+  html_document: default
+edited by: Danielle M. Becker-Polinski
+editor_options:
+  chunk_output_type: console
+---
+
+# Set Up    
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+ 
+```{r}
+# load packages
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(lme4)
+library(lmerTest)
+library(car)
+library(effects)
+library(ggfortify)
+library(cowplot)
+library(vegan)
+library(corrr)
+library(ggcorrplot)
+library(GGally)
+library(lubridate)
+library(broom)
+library(cowplot)
+library(scales)
+#library(ggradar)
+#library(ggiraphExtra)
+```
+
+##Processing temperature data for from HOBO temperature loggers out at Mahana from January to November
+
+#load temp data
+
+```{r}
+mahana.temp.hobo.06 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_6.csv")
+mahana.temp.hobo.09 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_9.csv")
+mahana.temp.hobo.07 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20220415_Mahana_7.csv")
+mahana.temp.hobo.10 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_10.csv")
+mahana.temp.hobo.11 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_11.csv")
+mahana.temp.hobo.12 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_12.csv")
+mahana.temp.hobo.13 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_13.csv")
+mahana.temp.hobo.08 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_8.csv")
+mahana.temp.hobo.05 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_5.csv")
+mahana.temp.hobo.04 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_4.csv")
+mahana.temp.hobo.03 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_3.csv")
+mahana.temp.hobo.02 <- read.csv("../A.pul_Gametogenesis/RAnalysis/data/environmental/HOBO_temperature/20221114_Mahana_2.csv")
+```
+
+
+#bind all data sets together into one data frame
+
+```{r}
+temp.data <- rbind(mahana.temp.hobo.02, mahana.temp.hobo.03, mahana.temp.hobo.04, mahana.temp.hobo.05, mahana.temp.hobo.06, mahana.temp.hobo.07, mahana.temp.hobo.08, mahana.temp.hobo.09, mahana.temp.hobo.10, mahana.temp.hobo.11, mahana.temp.hobo.12, mahana.temp.hobo.13)
+```
+
+
+#remove any NA's from the data frame
+```{r}
+temp.data <- na.omit(temp.data)
+
+view(temp.data)
+```
+
+#modify the date and time structure
+
+```{r}
+temp.data$date.time <- mdy_hm(temp.data$date.time, quiet=FALSE, tz="UTC", truncated=0) #format date and time
+```
+ 
+
+#make logger number a factor
+```{r}
+temp.data$logger.number = as.factor(temp.data$logger.number)
+```
+
+
+#subset temp data for until end of october
+```{r}
+
+# Convert the date column to Date type using lubridate
+temp.data$date <- ymd_hms(temp.data$date.time)
+
+# filter temp data to show after october spawning
+filtered_data <- temp.data %>%
+  filter(date < ymd_hms("2022-11-01 18:00:00"))
+
+```
+
+
+# plot temeprature mean sea surface temp per month with variation around
+```{r}
+
+# Calculate mean sea surface temperature per month
+filtered_data$month <- factor(month(filtered_data$date.time), levels = 1:12, labels = month.abb)  # Extract month from date as factor
+
+# Define the date ranges for shading
+shading_ranges <- data.frame(
+  start = ymd_hms(c("2022-03-13 00:00:00", "2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-30 00:00:00")),
+  end = ymd_hms(c("2022-04-19 00:00:00", "2022-10-14 00:00:00", "2022-10-30 00:00:00", "2022-11-01 18:00:00")),
+  fill = c("#E69F00", "#56B4E9", "#00796B","#9467BD") # Colors for the shaded regions
+)
+
+# Plot mean sea surface temperature per month with variation around the mean
+temp.plot <- ggplot(filtered_data, aes(x = date.time, y = temp)) + 
+  # Add shaded regions for the specified periods
+  geom_rect(data = shading_ranges, inherit.aes = FALSE,
+            aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf, fill = I(fill)),
+            alpha = 0.3, show.legend = FALSE) +
+  geom_point(colour = "gray", size = 0.5, alpha = 0.05) + 
+  geom_smooth(se = FALSE, method = "gam", colour = "black") + 
+  ylab("Temperature °C") + 
+  xlab("Date") +
+  scale_x_datetime(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_classic() + 
+  theme(
+    text = element_text(size = 20, colour = "black"), 
+    axis.title = element_text(size = 24, colour = "black", face = "bold"), 
+    axis.text.x = element_text(size = 20, colour = "black", angle = 45, hjust = 1, vjust = 1),
+    legend.title = element_text(size = 24, colour = "black", face = "bold")) +
+  ylim(25, 30);temp.plot
+
+# save mean temp per month plot
+ggsave("output/temp.plot.jpg", temp.plot , width = 10, height = 6)
+ggsave("output/temp.plot.pdf", temp.plot , width = 10, height = 6)
+
+
+```
+
+
+## Read data files 
+ 
+Load all data frames.  
+
+```{r}
+#read in clean environmental data from E5 timeseries 
+master_qc <- read.csv("RAnalysis/data/temperature/environmental_timeseries.csv")
+
+#filter for just site 2 data for Mahana site
+master_qc_site2 <- filter(master_qc, site == "site2")
+
+```
+
+
+#Visualize E5 Mahana temperature data for warmest months
+
+#Format dataframes for date time.    
+
+```{r}
+
+#split date and time column to be able to group by day
+
+master_qc_site2 <- separate(data = master_qc_site2, col = Date.Time, into = c('Date', 'Time'), sep = 'T')
+
+#format date using lubridate package
+master_qc_site2$Date <- ymd(master_qc_site2$Date) 
+
+```
+
+# QC and plotting clean data  
+
+
+```{r}
+#filter dates from February 15th until May 15th 
+
+master_qc_filter <- master_qc_site2[master_qc_site2$Date >= "2020-02-10" & master_qc_site2$Date <= "2020-05-10", ]
+
+
+```
+
+
+#plot temperature data from HOBO loggers
+
+```{r}
+
+#temp data across date summarized, remove NAs from temp
+
+#rename site2 
+
+master_qc_filter$site[master_qc_filter$site == 'site2'] <- 'E5_site2'
+
+
+#add a year column to output
+
+master_qc_filter$year <- format(as.Date(master_qc_filter$Date), "%Y")
+
+
+#temp data across date summarized, remove NAs from temp
+data.E5.HOBO <-master_qc_filter %>%
+  group_by(Date, site,year) %>% #tells to group by treatment
+  summarise(mean=mean(Hobo, na.rm=TRUE), se=sd(Hobo, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+data.E5.HOBO
+
+#remove mean data from March 01 to March 06 due to logger read out and no data
+
+data.E5.HOBO <- data.E5.HOBO[!is.na(data.E5.HOBO$mean), ]
+
+#plot mean temp per day by date
+hobo_plotQC<-data.E5.HOBO%>%
+  ggplot(aes(x=Date, y=mean))+
+  geom_line()+
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") +
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C) HOBO")+
+  xlab("Date");hobo_plotQC
+
+ggsave(filename="RAnalysis/data/temperature/e5_Mahana_temp_data.pdf", plot=hobo_plotQC, dpi=300, width=10, height=8, units="in")
+
+```
+
+
+#load and edit data from Mahana 2015 and 2016
+
+```{r}
+
+#read in data from Mahana 2015 and 2016 CRIOBE Cami
+CRIOBE_mahana <- read.csv("RAnalysis/data/temperature/Temperature_mahana_Cami.csv")
+
+#format date and time, lubridate package format
+CRIOBE_mahana$Date <- mdy(CRIOBE_mahana$Date)
+
+```
+
+#plot temperature data from HOBO loggers
+
+```{r}
+
+
+#temp data across date summarized, remove NAs from temp
+CRIOBE_mahana <-CRIOBE_mahana %>%
+  group_by(Date) %>% #tells to group by treatment
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+CRIOBE_mahana
+
+
+#subset temp data for March through April for 2015 and 2016
+
+CRIOBE_mahana_subset <- CRIOBE_mahana %>%
+  filter(lubridate::month(Date) %in% c(3:4)) 
+
+
+#add a year column to output
+
+CRIOBE_mahana_subset$year <- format(as.Date(CRIOBE_mahana_subset$Date), "%Y")
+
+#add in reef type and site column
+
+CRIOBE_mahana_subset <- CRIOBE_mahana_subset %>%
+  mutate(reef.type = "backreef")
+
+CRIOBE_mahana_subset <- CRIOBE_mahana_subset %>%
+  mutate(site = "Mahana")
+
+#plot mean temp per day by date
+CRIOBE_plotQC<-CRIOBE_mahana_subset %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C) CRIOBE Mahana")+
+  xlab("Date");CRIOBE_plotQC
+
+
+ggsave(filename="RAnalysis/output/temperature/CRIOBE_MAHANA_TEMP_PLOT.pdf", plot=CRIOBE_plotQC, width=10, height=10, units="in")
+
+```
+
+
+
+#Visualize MCR LTER temperature data site LTER01 manava from 2005 to 2018
+
+# Load all data frames.  
+
+```{r}
+
+#read in long term MCR LTER temperature data from 2005 to 20219 at LTER 01 and LTER 02
+LTER1_temp <- read.csv("RAnalysis/data/temperature/MCR_LTER01_BottomMountThermistors_20200306.csv")
+LTER2_temp <- read.csv("RAnalysis/data/temperature/MCR_LTER02_BottomMountThermistors_20200306.csv")
+LTER1_temp_2018 <- read.csv("RAnalysis/data/temperature/LTER01_BottomMountThermistors_20210820.csv")
+LTER1_temp_2021 <- read.csv("RAnalysis/data/temperature/LTER01_BottomMountThermistors_20211207.csv")
+LTER2_temp_2018 <- read.csv("RAnalysis/data/temperature/LTER02_BottomMountThermistors_20210820.csv")
+LTER2_temp_2021 <- read.csv("RAnalysis/data/temperature/LTER02_BottomMountThermistors_20211207.csv")
+
+
+#split date and time column to be able to group by day
+
+LTER1_temp <- separate(data = LTER1_temp, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+LTER2_temp <- separate(data = LTER2_temp, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+LTER1_temp_2018 <- separate(data = LTER1_temp_2018, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+LTER1_temp_2021 <- separate(data = LTER1_temp_2021, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+LTER2_temp_2018 <- separate(data = LTER2_temp_2018, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+LTER2_temp_2021 <- separate(data = LTER2_temp_2021, col = time_utc, into = c('Date', 'Time'), sep = ' ')
+
+```
+
+#Format dataframes for date time.    
+
+```{r}
+#combine data frames
+LTER_1_2_temp <- rbind(LTER1_temp, LTER2_temp, LTER1_temp_2018, LTER1_temp_2021, LTER2_temp_2018, LTER2_temp_2021)
+  
+#format date and time, lubridate package format
+LTER_1_2_temp$Date <- mdy(LTER_1_2_temp$Date) 
+
+```
+
+
+#plot temperature data from HOBO loggers
+
+```{r}
+
+#temp data across date summarized, remove NAs from temp
+LTER_temp <-LTER_1_2_temp %>%
+  group_by(Date, reef.type, site) %>% #tells to group by treatment
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+LTER_temp
+
+#subset temp data for March through April for 2020
+
+lter.dat.subset <- LTER_temp %>%
+  filter(lubridate::month(Date) %in% c(3:4)) 
+
+lter.dat.subset <- lter.dat.subset %>%
+  filter(lubridate::year(Date) %in% c(2016:2021)) 
+
+
+#add a year column to output
+
+lter.dat.subset$year <- format(as.Date(lter.dat.subset$Date), "%Y")
+
+#plot mean temp per day by date
+lter_plotQC<-lter.dat.subset %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C) LTER")+
+  xlab("Date");lter_plotQC
+
+
+ggsave(filename="RAnalysis/output/temperature/LTER_temp_data.pdf", plot=lter_plotQC, width=10, height=10, units="in")
+
+
+```
+
+
+#Visualize MCR LTER temperature data site LTER01 manava from 2005 to 2018, E5 dta from 2020 and CRIOBE data from Mahana 2015 to 2016
+
+```{r}
+
+#E5, CRIOBE, and LTER data
+
+data.E5.HOBO
+CRIOBE_mahana_subset
+lter.dat.subset
+
+#add reef type column to E5 data
+
+data.E5.HOBO_add <- data.E5.HOBO %>%
+  mutate(reef.type = "backreef")
+
+#combine E5 and lter data
+
+lter_e5 <- full_join(data.E5.HOBO_add, lter.dat.subset)
+
+#combine all data (E5, CRIOBE, and LTER)
+
+lter_e5_CRIOBE <- full_join(lter_e5, CRIOBE_mahana_subset)
+
+#plot mean temp per day by date
+lter_e5_criobeQC<-lter_e5_CRIOBE %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C) LTER")+
+  xlab("Date");lter_e5_criobeQC
+
+
+ggsave(filename="RAnalysis/output/temperature/E5_LTER_CRIOBE_temp_plot.pdf", plot=lter_e5_criobeQC, width=30, height=20, units="in")
+
+
+```
+
+
+#plot temperature data from LTER and E5 2020 March April data
+
+```{r}
+
+
+#subset temp data for March through April for 2020
+
+lter.dat.subset_2020 <- LTER_temp %>%
+  filter(lubridate::month(Date) %in% c(3:4)) 
+
+lter.dat.subset_2020 <- lter.dat.subset_2020 %>%
+  filter(lubridate::year(Date) %in% c(2020)) 
+
+
+#add a year column to output
+
+lter.dat.subset_2020$year <- format(as.Date(lter.dat.subset_2020$Date), "%Y")
+
+#make e5 mahana site clearer
+
+data.E5.HOBO_mahana <- data.E5.HOBO %>%
+  mutate(reef.type = "Mahana")
+
+lter_e5_2020 <- full_join(data.E5.HOBO_mahana, lter.dat.subset_2020)
+
+
+#plot mean temp per day by date
+lter_E5_2020_plot <-lter_e5_2020 %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C)")+
+  xlab("Date");lter_E5_2020_plot
+
+
+ggsave(filename="RAnalysis/output/temperature/LTER_E5_2020_temp_data.pdf", plot=lter_E5_2020_plot, width=10, height=10, units="in")
+
+
+```
+
+
+
+#plot temperature data from LTER 2019 March April data
+
+```{r}
+
+
+#subset temp data for March through April for 2020
+
+lter_2019 <- LTER_temp %>%
+  filter(lubridate::month(Date) %in% c(3:4)) 
+
+lter_2019 <- lter_2019 %>%
+  filter(lubridate::year(Date) %in% c(2019)) 
+
+
+#add a year column to output
+
+lter_2019$year <- format(as.Date(lter_2019$Date), "%Y")
+
+
+#plot mean temp per day by date
+lter_2019_plot <-lter_2019 %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C)")+
+  xlab("Date");lter_2019_plot
+
+
+ggsave(filename="RAnalysis/output/temperature/LTER_2019_temp_data.pdf", plot=lter_2019_plot, width=10, height=10, units="in")
+
+
+```
+
+
+#organize data for LTER 01 and 02 to have separate backreef and fringe dataframes
+
+```{r}
+
+#COMBINE LTER 2 DATA FRAMES 
+LTER_2_temp <- rbind(LTER2_temp, LTER2_temp_2018, LTER2_temp_2021)
+
+#format date and time, lubridate package format
+LTER_2_temp$Date <- mdy(LTER_2_temp$Date) 
+
+#filter for just 2020 data in LTER2 for march and april
+
+lter_2_2020 <- LTER_2_temp %>%
+  filter(lubridate::year(Date) %in% c(2020)) %>% filter(lubridate::month(Date) %in% c(3:4)) 
+
+#temp data across date summarized, remove NAs from temp
+lter_2_2020.sum <- lter_2_2020 %>%
+  group_by(Date, reef.type, site) %>% #tells to group by treatment
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+lter_2_2020.sum
+
+#filter for just backreef data from LTER 2 2020
+LTER_2_BACKREEF <-  lter_2_2020.sum %>% 
+    filter(reef.type %in% "backreef")
+
+#filter for just fringe data from LTER 2 2020
+LTER_2_FRINGE <-  lter_2_2020.sum %>% 
+    filter(reef.type %in% "fringe")
+
+
+#COMBINE LTER 1 DATA FRAMES 
+LTER_1_temp <- rbind(LTER1_temp, LTER1_temp_2018, LTER1_temp_2021)
+
+#format date and time, lubridate package format
+LTER_1_temp$Date <- mdy(LTER_1_temp$Date) 
+
+#filter for just 2020 data in LTER2
+
+lter_1_2020 <- LTER_1_temp %>%
+   filter(lubridate::year(Date) %in% c(2020)) %>% filter(lubridate::month(Date) %in% c(3:4)) 
+
+#temp data across date summarized, remove NAs from temp
+lter_1_2020.sum <- lter_1_2020 %>%
+  group_by(Date, reef.type, site) %>% #tells to group by treatment
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+lter_1_2020.sum
+
+#filter for just backreef data from LTER 1 2020
+LTER_1_BACKREEF <-  lter_1_2020.sum %>% 
+    filter(reef.type %in% "backreef")
+
+#filter for just fringe data from LTER 1 2020
+LTER_1_FRINGE <-  lter_1_2020.sum %>% 
+    filter(reef.type %in% "fringe")
+
+```
+
+
+#coorelation analysis between E5 2020 data and LTER 1 and LTER 2 backrreef and fringe data frames
+
+```{r}
+
+#e5 temp 2020 data
+data.E5.HOBO
+
+#filter e5 data for march april
+E5.compare <- data.E5.HOBO %>%
+    filter(lubridate::month(Date) %in% c(3:4)) 
+
+#for all comparisons you need to specify the number of the column it needs to compare between data frames
+
+#remove data from March 1-7th for lter datasets to be able to use correlation analysis between e5 and lter data sets
+
+LTER_1_FRINGE.FILTER <- LTER_1_FRINGE %>% 
+  filter(Date >= "2020-03-07")
+
+LTER_1_BACKREEF.FILTER <- LTER_1_BACKREEF %>% 
+  filter(Date >= "2020-03-07")
+
+LTER_2_FRINGE.FILTER <- LTER_2_FRINGE %>% 
+  filter(Date >= "2020-03-07")
+
+LTER_2_BACKREEF.FILTER <- LTER_2_BACKREEF %>% 
+  filter(Date >= "2020-03-07")
+
+
+#correlation analysis between E5 and LTER 1 fringe
+
+cor.test(E5.compare$mean, LTER_1_FRINGE.FILTER$mean, method = "pearson", use = "complete.obs")
+#0.8706942
+
+#correlation analysis between E5 and LTER 1 backreef
+
+cor.test(E5.compare$mean, LTER_1_BACKREEF.FILTER$mean, method = "pearson", use = "complete.obs")
+#0.8641403
+
+#correlation analysis between E5 and LTER 2 fringe
+
+cor.test(E5.compare$mean, LTER_2_FRINGE.FILTER$mean, method = "pearson", use = "complete.obs")
+#0.8417853
+
+#correlation analysis between E5 and LTER 2 backreef
+
+cor.test(E5.compare$mean, LTER_2_BACKREEF.FILTER$mean, method = "pearson", use = "complete.obs")
+#0.8801176
+#2.2 e-16
+
+##LTER02 IS highly correlated with mahana e5 2020 data
+
+```
+
+
+#make data frame from all LTER 02 backreef data from 2003 to be used for marine heatwave scenario
+
+```{r}
+#filter for just backreef data from full timeseries and save
+
+LTER_2_temp_backreef <-  LTER_2_temp %>% 
+    filter(reef.type %in% "backreef")
+
+write.csv(LTER_2_temp_backreef, "RAnalysis/output/temperature/LTER_2_temp_backreef.csv")
+
+```
+
+
+#plot temperature data from LTER backreef and E5 2020 March April data
+
+```{r}
+
+
+#add a year column to backreef lter2 data output
+
+LTER_2_BACKREEF$year <- format(as.Date(LTER_2_BACKREEF$Date), "%Y")
+
+#join E5 data set for 2020 and lter 2020 backreef 
+
+LTER_backreef_E5_2020 <- full_join(data.E5.HOBO_mahana, LTER_2_BACKREEF)
+
+
+#plot mean temp per day by date
+final_2020_compare_plot <-LTER_backreef_E5_2020 %>%
+  ggplot(aes(x=Date, y=mean, group = reef.type, color = reef.type, shape = site))+
+  geom_line() + 
+  geom_point() +
+  facet_wrap(.~year, scales = "free_x") + 
+  scale_x_date(date_breaks = "2 days", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C)")+
+  xlab("Date");final_2020_compare_plot
+
+
+ggsave(filename="RAnalysis/output/temperature/final_2020_compare_plot.pdf", plot=final_2020_compare_plot, width=10, height=10, units="in")
+
+
+```
+
+#calculate mean temperature in March and April from LTER02 backreef data
+
+```{r}
+
+#subset temp data for March through April for 2020
+
+LTER_2_BACKREEF_meantemp <- LTER_2_temp_backreef %>%
+  filter(lubridate::month(Date) %in% c(3:4)) 
+
+
+#temp data across date summarized, remove NAs from temp
+LTER_2_BACKREEF_meantemp.dat <- LTER_2_BACKREEF_meantemp %>%
+  summarise(mean=mean(temp, na.rm=TRUE), se=sd(temp, na.rm=TRUE)/sqrt(n())) #calculates mean and se
+LTER_2_BACKREEF_meantemp.dat
+
+#28.96 degrees C in March April from 2006 - 2021
+
+
+```
+
+
+## testing known ramp from apex and data from march/april 2019 to convince us ramp is the same
+```{r}
+
+#use raw data from march and april 2019 to see temps per day
+ramp.test <- LTER_1_2_temp %>%
+  filter(lubridate::month(Date) %in% c(3:4)) %>%
+  filter(reef.type == "backreef")
+
+ramp.test <- ramp.test %>%
+  filter(lubridate::year(Date) %in% c(2019)) 
+
+write.csv(ramp.test, "RAnalysis/output/temperature/ramp.scenario.data.lter.csv")
+
+#read in ramp test data file
+ramp.test <- read.csv("RAnalysis/output/temperature/ramp.scenario.data.lter.subset.csv", row.names = 1)
+
+#format date using lubridate package
+ramp.test$Date <- mdy(ramp.test$Date) 
+
+#read in example tank test data file
+tank.test <- read.csv("RAnalysis/data/temperature/tank_data_example.csv")
+
+#format date using lubridate package
+tank.test$Date <- mdy(tank.test$Date) 
+
+#full join data sets
+
+test <- full_join(tank.test, ramp.test)
+
+#plot mean temp per day by date
+ramp.plot <- test %>%
+  ggplot(aes(x=Date, y=temp, color = reef.type))+
+  geom_line() + 
+  geom_point() +
+  scale_x_date(date_breaks = "1 day", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C)")+
+  xlab("Date");ramp.plot
+
+ggsave(filename="RAnalysis/output/temperature/ramp.plot.pdf", plot=ramp.plot, width=10, height=10, units="in")
+
+```
+
+```{r}
+#read in example tank test data file with correct date overlay
+tank.overlay <- read.csv("RAnalysis/data/temperature/tank_data_example_date_overlay.csv")
+
+#format date using lubridate package
+tank.overlay$Date <- mdy(tank.overlay$Date) 
+
+#full join data sets
+
+test.overlay <- full_join(tank.overlay, ramp.test)
+
+#plot mean temp per day by date
+ramp.plot.overlay <- test.overlay %>%
+  ggplot(aes(x=Date, y=temp, color = reef.type))+
+  geom_line() + 
+  geom_point() +
+  scale_x_date(date_breaks = "1 day", date_labels = "%m-%d") +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Temperature (°C)")+
+  xlab("Date");ramp.plot.overlay
+
+ggsave(filename="RAnalysis/output/temperature/ramp.plot.overlay.pdf", plot=ramp.plot.overlay, width=10, height=10, units="in")
+
+```
+
+
+

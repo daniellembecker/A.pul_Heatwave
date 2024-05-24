@@ -1,0 +1,35 @@
+"0","#plot mean temp per day by date
+temps <-data.subset.mean.temp %>%
+  ggplot(aes(x=Date.Time, y=mean.adj, color = Treatment))+
+  geom_line() + 
+  geom_point() +
+  scale_x_datetime(date_labels = ""%m/%d"", breaks = dates_vline) +
+  scale_color_manual(values = c(""blue"", ""red"")) +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 0)) +
+  scale_y_continuous(limits=c(28, 30.5)) +
+  ylab(""Temperature (°C)"")+
+  xlab(""Date"")+
+  theme(legend.position = ""top"", axis.title=element_text(face=""bold"", size=60),
+      axis.text=element_text(size=60, color=""black""), 
+      legend.title=element_text(size=60, face = ""bold""), 
+    legend.text=element_text(size=60)) + guides(color= guide_legend(override.aes = list(size = 10)));temps
+#plot mean temp per day by date
+temps <-data.subset.mean.temp %>%
+  ggplot(aes(x=Date.Time, y=mean.adj, color = Treatment))+
+  geom_line() + 
+  geom_point() +
+  scale_x_datetime(date_labels = ""%m/%d"", breaks = dates_vline) +
+  scale_color_manual(values = c(""blue"", ""red"")) +
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 0)) +
+  scale_y_continuous(limits=c(28, 30.5)) +
+  ylab(""Temperature (°C)"")+
+  xlab(""Date"")+
+  theme(legend.position = ""top"", axis.title=element_text(face=""bold"", size=60),
+      axis.text=element_text(size=60, color=""black""), 
+      legend.title=element_text(size=60, face = ""bold""), 
+    legend.text=element_text(size=60)) + guides(color= guide_legend(override.aes = list(size = 10)));temps
+"
+"0","temps <- temps + geom_vline(xintercept = as.numeric(dates_vline),"
+"0","             col = ""black""); temps"
