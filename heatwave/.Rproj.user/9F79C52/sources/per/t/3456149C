@@ -3,27 +3,27 @@
     "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave/scripts/HOBO_temp_light_data/HOBO_temp_light_tank.Rmd",
     "project_path": "scripts/HOBO_temp_light_data/HOBO_temp_light_tank.Rmd",
     "type": "r_markdown",
-    "hash": "53245130",
+    "hash": "628659681",
     "contents": "",
     "dirty": false,
     "created": 1716569206136.0,
     "source_on_save": false,
     "relative_order": 5,
     "properties": {
-        "chunk_output_type": "inline",
+        "chunk_output_type": "console",
         "source_window_id": "",
         "Source": "Source",
         "working_dir": "project",
         "last_setup_crc32": "",
-        "cursorPosition": "184,21",
-        "scrollLine": "0"
+        "cursorPosition": "140,0",
+        "scrollLine": "136"
     },
     "folds": "",
-    "lastKnownWriteTime": 1716574644,
+    "lastKnownWriteTime": 1717093501,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1716574644018,
+    "last_content_update": 1717093501396,
     "read_only": false,
     "read_only_alternatives": []
 }

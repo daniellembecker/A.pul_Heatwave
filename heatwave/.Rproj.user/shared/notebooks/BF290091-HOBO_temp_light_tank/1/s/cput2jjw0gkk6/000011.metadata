@@ -1,0 +1,1 @@
+{"height":405.43881334981458,"width":656.0,"size_behavior":0,"conditions":[[1,"Warning: \u001B[38;5;232mRemoved 198 rows containing non-finite outside the scale range (`stat_boxplot()`).\u001B[39m"],[1,"Warning: \u001B[38;5;232mRemoved 198 rows containing missing values or values outside the scale range\n(`geom_point()`).\u001B[39m"]]}

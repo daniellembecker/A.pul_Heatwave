@@ -213,6 +213,8 @@ Blch.meanse <- data %>% group_by(treatment, Photo_date) %>% #group data by facto
 
 pdf("RAnalysis/output/color_score/colorscore_without_outliers_colonies.pdf")
 png("RAnalysis/output/color_score/colorscore_without_outliers_colonies.png")
+
+
 Blch_plot2 <- ggplot(Blch.meanse, aes(x=Photo_date, y = mean, group = treatment, color = treatment)) +
   geom_line() + geom_point() + #plot points and lines
   #facet_grid(~Species, scales = "free", labeller = species_labeller) + #facet by Species
