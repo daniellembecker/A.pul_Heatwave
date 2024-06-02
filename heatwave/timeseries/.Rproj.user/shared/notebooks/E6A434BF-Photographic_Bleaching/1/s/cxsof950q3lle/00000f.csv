@@ -1,0 +1,4 @@
+"0","Data <- read.csv(""RAnalysis/data/color_score/color_score_colonies.csv"", header=T, sep="","", na.string=""NA"") #read in data file"
+"2","Warning: cannot open file 'RAnalysis/data/color_score/color_score_colonies.csv': No such file or directory"
+"2","Error in file(file, ""rt"") : cannot open the connection
+"

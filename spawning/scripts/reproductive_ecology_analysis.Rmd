@@ -72,23 +72,16 @@ size <- read_csv("data/reproductive_ecology/egg_volume.csv")
 
 # select columns
 size <- size %>%
-  dplyr::select(tube.ID, treatment, replicate, type, `width (mm)`, `length (mm)`)%>%
+  dplyr::select(tube.ID, treatment, replicate, type, `width (mm)`, `length (mm)`) %>%
   rename(width=`width (mm)`, length = `length (mm)`)%>%
   drop_na() #remove na's that could not be measured
 
+#make factors
 size$replicate<-as.factor(size$replicate)
 size$tube.ID<-as.factor(size$tube.ID)
 size$treatment<-as.factor(size$treatment)
 size$type<-as.factor(size$type)
 
-```
-
-Remove na's from data frame.  
-```{r}
-# Calculate mean counts for each sample
-size <- size %>%
-  dplyr::select(tube.ID, treatment, replicate, type, width, length)%>%
-  drop_na()
 ```
 
 
@@ -164,15 +157,15 @@ size_plot<-size %>%
     ylab(expression(bold(paste("Egg Size (mm"^3, ")"))))+
   xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("Kruskal-Wallis, p = 0.0001") +
-      annotate("text", x = 1.45, y = 0.220, label = "*", size = 12) +
+    ggtitle("Kruskal-Wallis, p < 0.0001") +
+      annotate("text", x = 1.45, y = 0.220, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
-      axis.title=element_text(face="bold", size=16, color="black"),
-      axis.text=element_text(size=14, color="black"), 
-      legend.title=element_text(face="bold", size=14), 
-      legend.text=element_text(size=14)); size_plot
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20)); size_plot
 
 ggsave(plot=size_plot, "figures/reproductive_ecology/egg_size.png",height=8, width=8)
 ggsave(plot=size_plot, "figures/reproductive_ecology/egg_size.pdf",height=8, width=8)
@@ -197,14 +190,14 @@ size_plot_mean<-size %>%
     ylab(expression(bold(paste("Volume (mm"^3, ")"))))+
    xlab(expression(bold(paste("Treatment"))))+
     theme_classic() + 
-    annotate("text", x = 1.45, y = 0.110, label = "*", size = 12) +
+    annotate("text", x = 1.45, y = 0.110, label = "*", size = 20) +
     ylim(0,0.12)+
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
-      axis.title=element_text(face="bold", size=16, color="black"),
-      axis.text=element_text(size=14, color="black"), 
-      legend.title=element_text(face="bold", size=14), 
-      legend.text=element_text(size=14), 
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20), 
       axis.text.x=element_text(angle=45, hjust=1, color="black")
       ); size_plot_mean
 
@@ -247,15 +240,6 @@ Load in data.
 ```{r}
 # fertilization success data
 fert <- read_csv("data/reproductive_ecology/fertilization_success.csv")
-
-#make all columns factors
-# fert$tube.ID<-as.factor(fert$tube.ID)
-# fert$num.eggs<-as.factor(fert$num.eggs)
-# fert$egg<-as.factor(fert$egg)
-# fert$two.cells<-as.factor(fert$two.cells)
-# fert$four.cells<-as.factor(fert$four.cells)
-# fert$more.cells<-as.factor(fert$more.cells)
-# fert$deformed.embryos<-as.factor(fert$deformed.embryos)
 
 ```
 
@@ -324,15 +308,15 @@ total_fert_success_plot <- calculate_fert_success %>%
     ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("Kruskal-Wallis, p = 0.020") +
-      annotate("text", x = 1.45, y = 85, label = "*", size = 12) +
+    ggtitle("Kruskal-Wallis, p = 0.04") +
+      annotate("text", x = 1.45, y = 18, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
-      axis.title=element_text(face="bold", size=16, color="black"),
-      axis.text=element_text(size=14, color="black"), 
-      legend.title=element_text(face="bold", size=14), 
-      legend.text=element_text(size=14)); total_fert_success_plot
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20)); total_fert_success_plot
 
 
 ggsave(plot=total_fert_success_plot, "figures/reproductive_ecology/total_fertilization_success.png",height=8, width=8)
@@ -373,7 +357,7 @@ ggsave(plot=total_fert_plot, "figures/reproductive_ecology/total_fertilization_s
 
 ## Statistical analysis  
 
-Run ANOVA test on larval size. 
+Run ANOVA test on fert success. 
 ```{r}
 tot_fert_model<-aov(tot.fert.success~treatment, data=calculate_fert_success)
 summary(tot_fert_model)
@@ -577,6 +561,37 @@ bundle %>%
   theme_classic()
 ```
 
+# Calculate the means of eggs per bundle
+
+```{r}
+#Select only the columns we need for eggs per bundle 
+calculate_bundle <- bundle %>% 
+  dplyr::select(colony, treatment, eggs.bundle)%>%
+  drop_na() #remove na's that could not be measured
+```
+
+Present means and standard error of each group and save summary table.  
+
+```{r}
+calculate_bundle%>%
+  group_by(treatment)%>%
+  summarise(n=length(eggs.bundle),
+            Mean=format(round(mean(eggs.bundle), 3), 3), 
+            SE=format(round(sd(eggs.bundle)/sqrt(length(eggs.bundle)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  kbl(caption="Descriptive statistics of eggs per bundle between treatments")%>%
+  kable_classic(full_width=FALSE, html_font="Arial")%>%
+  row_spec(0, bold = TRUE) 
+
+#need to output to csv 
+calculate_bundle%>%
+  group_by(treatment)%>%
+  summarise(n=length(eggs.bundle),
+            Mean=format(round(mean(eggs.bundle), 3), 3), 
+            SE=format(round(sd(eggs.bundle)/sqrt(length(eggs.bundle)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  write_csv(., "output/reproductive_ecology/eggs.bundle.csv")
+```
 
 Plot data as a box plot.     
 
@@ -593,14 +608,14 @@ bundle_plot <- bundle %>%
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
    scale_y_continuous(expand = c(0, 0), limits = c(0, 20)) +
         ggtitle("one-way anova, p = 0.045") +
-      annotate("text", x = 1.45, y = 18, label = "*", size = 12) +
+      annotate("text", x = 1.45, y = 18, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
-      axis.title=element_text(face="bold", size=16, color="black"),
-      axis.text=element_text(size=14, color="black"), 
-      legend.title=element_text(face="bold", size=14), 
-      legend.text=element_text(size=14));bundle_plot
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20));bundle_plot
 
 ggsave(plot=bundle_plot, "figures/reproductive_ecology/bundle.png",height=8, width=8)
 ggsave(plot=bundle_plot, "figures/reproductive_ecology/bundle.pdf",height=8, width=8)
@@ -663,12 +678,14 @@ Residuals   1027   7809   7.604
 
 repro_plot <- bundle_plot | size_plot | total_fert_success_plot
 
-repro_plot <- repro_plot + plot_annotation(tag_levels = 'A')
+repro_plot <- repro_plot + plot_annotation(tag_levels = 'A')  &
+  theme(plot.tag = element_text(face = "bold", size = 20)) # Customize tag appearance
+ 
 
 repro_plot
 
-ggsave("output/reproductive_ecology/all_repro.png", plot = repro_plot, width = 18, height = 10)
-ggsave("output/reproductive_ecology/all_repro.pdf", plot = temps, width = 20, height = 12)
+ggsave("output/reproductive_ecology/all_repro.png", plot = repro_plot, width = 15, height = 8)
+ggsave("output/reproductive_ecology/all_repro.pdf", plot = repro_plot, width = 20, height = 12)
 
 
 ```

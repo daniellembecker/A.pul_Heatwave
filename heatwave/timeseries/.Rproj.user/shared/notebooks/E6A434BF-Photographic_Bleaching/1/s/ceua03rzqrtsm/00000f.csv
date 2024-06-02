@@ -1,0 +1,33 @@
+"0","library(""vegan"")"
+"0","library(""tidyverse"")"
+"0","library(""lme4"")"
+"0","library(""plotrix"")"
+"0","if (""EnvStats"" %in% rownames(installed.packages()) == 'FALSE') install.packages('EnvStats') "
+"0","library(""EnvStats"")"
+"2","
+Attaching package: ‘EnvStats’
+
+"
+"2","The following object is masked from ‘package:vegan’:
+
+    calibrate
+
+"
+"2","The following object is masked from ‘package:car’:
+
+    qqPlot
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    predict, predict.lm
+
+"
+"0","library(""car"")"
+"0","library(""MuMIn"")"
+"0","if (""ggstatsplot"" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggstatsplot') "
+"0","library(""ggstatsplot"")"
+"2","You can cite this package as:
+     Patil, I. (2021). Visualizations with statistical details: The 'ggstatsplot' approach.
+     Journal of Open Source Software, 6(61), 3167, doi:10.21105/joss.03167
+"

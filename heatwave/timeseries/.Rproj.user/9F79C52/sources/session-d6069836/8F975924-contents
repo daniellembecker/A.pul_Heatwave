@@ -31,11 +31,13 @@ if (!require("GGally")) install.packages("GGally")
 if (!require("broom")) install.packages("broom")
 if (!require("cowplot")) install.packages("cowplot")
 if (!require("emmeans")) install.packages("emmeans")
+if (!require("multcompView")) install.packages("multcompView")
 
 # load packages
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
+library(multcompView)
 library(lme4)
 library(lmerTest)
 library(car)
@@ -351,7 +353,7 @@ symbplot_cm2<-master.sym %>%
   ggplot(., aes(x = timepoint, y = cells.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     scale_y_continuous(labels = scales::label_scientific())+ # Use scientific notation on y-axis
@@ -389,7 +391,7 @@ host_prot_cm2<-master.host.prot %>%
   ggplot(., aes(x = timepoint, y = host_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
@@ -422,7 +424,7 @@ holobiont_prot_cm2<-master.holo.prot %>%
   ggplot(., aes(x = timepoint, y = holobiont_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
@@ -455,7 +457,7 @@ chla_cm2<-master.chl %>%
   ggplot(., aes(x = timepoint, y = chla.ug.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
@@ -494,7 +496,7 @@ chlc_prot_cm2<-filtered_master %>%
   ggplot(., aes(x = timepoint, y = chlc2.ug.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
@@ -537,7 +539,7 @@ tot_chl <- filtered_master.tot.chl %>%
   ggplot(., aes(x = timepoint, y = Total_Chl_cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("blue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
@@ -554,10 +556,17 @@ tot_chl <- filtered_master.tot.chl %>%
 ```
 
 
+Read in png from photographic bleaching script to add to phys plot
+```{r}
+# Run photographic bleaching script to put Blch_plot2 in with other phys data
+source("../../RAnalysis/scripts/Photographic_Bleaching.Rmd")
+```
+
+
 Join all plots for each normalization together.  
 
 ```{r}
-phys_figure<-plot_grid(symbplot_cm2, chla_cm2, chlc_prot_cm2, tot_chl, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E', 'F'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
+phys_figure<-plot_grid(color.score, symbplot_cm2, tot_chl, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
 
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=25, units="in")
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=25, units="in")
