@@ -64,6 +64,17 @@ master<-read.csv("timeseries_analysis/Output/master_timeseries.csv")
 #remove notes column to remove NAs
 master <- master[, -29]  # Remove the 28th column
 
+# Mapping of timepoints to corresponding dates
+master <- master %>%
+  mutate(formatted_date = case_when(
+    timepoint == "TP1" ~ "03/19",
+    timepoint == "TP2" ~ "03/26",
+    timepoint == "TP3" ~ "03/31",
+    timepoint == "TP4" ~ "04/10",
+    timepoint == "TP5" ~ "04/18",
+    TRUE ~ as.character(timepoint)  # Keep original date for other cases if needed
+  ))
+
 ```
 
 ### Univariate Analysis  
@@ -75,6 +86,7 @@ Build a mixed model for univariate analysis and examine data distribution.
 ```{r}
 master <- master %>%
   filter(!is.na(treatment) & treatment != "initial") 
+
 
 ```
 
@@ -350,9 +362,9 @@ master.sym <- master.sym %>%
 symbplot_cm2<-master.sym %>%
   filter(!is.na(cells.cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, cells.cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, cells.cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = cells.cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = cells.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
@@ -388,9 +400,9 @@ master.host.prot <- master.host.prot %>%
 host_prot_cm2<-master.host.prot %>%
   filter(!is.na(host_prot_mg.cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, host_prot_mg.cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, host_prot_mg.cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = host_prot_mg.cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = host_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
@@ -421,9 +433,9 @@ master.holo.prot <- master %>%
 holobiont_prot_cm2<-master.holo.prot %>%
   filter(!is.na(holobiont_prot_mg.cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, holobiont_prot_mg.cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, holobiont_prot_mg.cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = holobiont_prot_mg.cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = holobiont_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
@@ -454,9 +466,9 @@ master.chl <- master %>%
 chla_cm2<-master.chl %>%
   filter(!is.na(chla.ug.cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, chla.ug.cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, chla.ug.cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = chla.ug.cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = chla.ug.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
@@ -493,9 +505,9 @@ filtered_master <- master %>%
 chlc_prot_cm2<-filtered_master %>%
   filter(!is.na(chlc2.ug.cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, chlc2.ug.cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, chlc2.ug.cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = chlc2.ug.cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = chlc2.ug.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
@@ -536,9 +548,9 @@ filtered_master.tot.chl <- filtered_master.tot.chl %>%
 tot_chl <- filtered_master.tot.chl %>%
   filter(!is.na(Total_Chl_cm2)) %>%
   filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, treatment, Total_Chl_cm2)%>%
+  select(fragment_ID, timepoint, formatted_date, treatment, Total_Chl_cm2)%>%
   
-  ggplot(., aes(x = timepoint, y = Total_Chl_cm2, fill = treatment)) +
+  ggplot(., aes(x = formatted_date, y = Total_Chl_cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
