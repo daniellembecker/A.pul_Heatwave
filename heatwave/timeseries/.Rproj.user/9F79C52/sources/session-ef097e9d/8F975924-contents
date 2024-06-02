@@ -32,11 +32,13 @@ if (!require("broom")) install.packages("broom")
 if (!require("cowplot")) install.packages("cowplot")
 if (!require("emmeans")) install.packages("emmeans")
 if (!require("multcompView")) install.packages("multcompView")
+if (!require("rmarkdown")) install.packages("rmarkdown")
 
 # load packages
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
+library(rmarkdown)
 library(multcompView)
 library(lme4)
 library(lmerTest)
@@ -556,17 +558,20 @@ tot_chl <- filtered_master.tot.chl %>%
 ```
 
 
-Read in png from photographic bleaching script to add to phys plot
+Read in photographic bleaching color score script to extract Blch_plot2 plot and add to final phys plot
 ```{r}
 # Run photographic bleaching script to put Blch_plot2 in with other phys data
-source("../../RAnalysis/scripts/Photographic_Bleaching.Rmd")
+render("../../RAnalysis/scripts/Photographic_Bleaching.Rmd")
+
+# Blch_plot2 is now in our environment and can be used in figure
+Blch_plot2
 ```
 
 
 Join all plots for each normalization together.  
 
 ```{r}
-phys_figure<-plot_grid(color.score, symbplot_cm2, tot_chl, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
+phys_figure<-plot_grid(Blch_plot2, symbplot_cm2, tot_chl, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=2, labels = c('A', 'B', 'C', 'D', 'E'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
 
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=25, units="in")
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=25, units="in")
