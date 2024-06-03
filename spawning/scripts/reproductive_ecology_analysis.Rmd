@@ -131,7 +131,7 @@ size%>%
             Mean=format(round(mean(volume), 3), 3), 
             SE=format(round(sd(volume)/sqrt(length(volume)),3),3))%>%
   dplyr::rename(Treatment=treatment)%>%
-  kbl(caption="Descriptive statistics of larval volume across ontogeny")%>%
+  kbl(caption="Descriptive statistics egg size")%>%
   kable_classic(full_width=FALSE, html_font="Arial")%>%
   row_spec(0, bold = TRUE) 
 
@@ -147,18 +147,28 @@ size%>%
 
 Plot data as a box plot.     
 ```{r}
-size_plot<-size %>%
-    ggplot(., aes(x = treatment, y = volume, colour=type)) +
+
+# Calculate the mean egg size per colony per treatment
+mean_egg_size <- size %>%
+  group_by(tube.ID, treatment) %>%
+  summarise(
+    mean_width = mean(width),
+    mean_length = mean(length),
+    mean_volume = mean(volume),
+    .groups = 'drop')
+
+size_plot<- mean_egg_size %>%
+    ggplot(., aes(x = treatment, y = mean_volume)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
     xlab("") + 
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Egg Size (mm"^3, ")"))))+
-  xlab(expression(bold(paste("Treatment"))))+
+   xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("Kruskal-Wallis, p < 0.0001") +
-      annotate("text", x = 1.45, y = 0.220, label = "*", size = 20) +
+    ggtitle("one-way anova, p < 0.001") +
+      annotate("text", x = 1.45, y = 0.16, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
@@ -185,8 +195,8 @@ size_plot_mean<-size %>%
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=8, alpha=1) + 
     geom_errorbar(aes(ymin=mean-se, ymax=mean+se, group=treatment), width=0, linetype="solid", position=position_dodge(0.4), size=0.8, color="black")+
     xlab("") + 
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Volume (mm"^3, ")"))))+
    xlab(expression(bold(paste("Treatment"))))+
     theme_classic() + 
@@ -209,24 +219,17 @@ ggsave(plot=size_plot_mean, "figures/reproductive_ecology/egg_size_mean.pdf",hei
 
 Run ANOVA test on egg size. 
 ```{r}
-size_model<-aov(volume~treatment, data=size)
+size_model<-aov(mean_volume~treatment, data=mean_egg_size)
 summary(size_model)
 qqPlot(residuals(size_model))
-leveneTest(residuals(size_model)~treatment, data=size)
+leveneTest(residuals(size_model)~treatment, data=mean_egg_size)
 ```
 
-There appears to be a violation in variance assumptions but not normality. Conduct non-parametric test (Kruskal Wallis).  
+Passes normality and homogeneity of variance tests, anova is good, egg size higher in hot treatment compared to ambient
 
-```{r}
-kruskal.test(volume~treatment, data=size)
-``` 
-
-There is a significant difference in egg size between groups with higher from hot treatment.
-
-Kruskal-Wallis rank sum test
-
-data:  volume by treatment
-Kruskal-Wallis chi-squared = 50.381, df = 1, p-value = 1.266e-12
+            Df   Sum Sq  Mean Sq F value   Pr(>F)    
+treatment    1 0.007012 0.007012   15.48 0.000889 ***
+Residuals   19 0.008605 0.000453                     
 
 
 
@@ -303,8 +306,8 @@ total_fert_success_plot <- calculate_fert_success %>%
     geom_boxplot(aes(colour=treatment), lwd=1) +
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
     xlab("") + 
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
@@ -336,8 +339,8 @@ total_fert_plot <- calculate_fert_success %>%
    ggplot(., aes(x = treatment, y = mean, colour = treatment, fill = treatment)) +
      geom_bar(position="dodge", stat="identity") +
     geom_errorbar(aes(ymin=mean-se, ymax=mean+se, group = treatment), colour = "black", width=.2,position=position_dodge(.9))+
-    scale_colour_manual(name="Treatment", values=c("blue", "red")) +
-    scale_fill_manual(name="Treatment", values=c("blue", "red")) +
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red")) +
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red")) +
     ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
     xlab(expression(bold(paste("Treatment"))))+
     scale_y_continuous(expand = c(0, 0), limits = c(0, 80)) +
@@ -458,8 +461,8 @@ cleav_plot_mean <- cleav_long %>%
     ggplot(., aes(x = stage, y = mean, fill = treatment)) +
      geom_bar(position="dodge", stat="identity") +
     geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,position=position_dodge(.9))+
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
     xlab(expression(bold(paste("Stage"))))+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 30)) +
@@ -596,13 +599,20 @@ calculate_bundle%>%
 Plot data as a box plot.     
 
 ```{r}
-bundle_plot <- bundle %>%
-    ggplot(., aes(x = treatment, y = eggs.bundle, colour=treatment)) +
+
+# Calculate the mean egg size per colony per treatment
+mean_bundle <- bundle %>%
+  group_by(colony, treatment) %>%
+  summarise(mean_bundle = mean(eggs.bundle),
+    .groups = 'drop')
+
+bundle_plot <- mean_bundle %>%
+    ggplot(., aes(x = treatment, y = mean_bundle, colour=treatment)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
     xlab("") + 
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Eggs per Bundle"))))+
   xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
@@ -635,8 +645,8 @@ bundle_plot_mean <- bundle %>%
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=8, alpha=1) + 
     geom_errorbar(aes(ymin=mean-se, ymax=mean+se, group=treatment), width=0, linetype="solid", position=position_dodge(0.4), size=0.8, color="black")+
     xlab("") + 
-    scale_colour_manual(name="Treatment", values=c("blue", "red"))+
-    scale_fill_manual(name="Treatment", values=c("blue", "red"))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Eggs per Bundle"))))+
    xlab(expression(bold(paste("Treatment"))))+
       ggtitle("one-way anova, p = 0.045") +
@@ -658,13 +668,13 @@ ggsave(plot=bundle_plot_mean, "figures/reproductive_ecology/bundle_size_mean.pdf
 
 Run ANOVA test on eggs per bundle.
 ```{r}
-bundle_model<-aov(eggs.bundle~treatment, data=bundle)
+bundle_model <-aov(mean_bundle~treatment, data=mean_bundle)
 summary(bundle_model)
 qqPlot(residuals(bundle_model))
-leveneTest(residuals(bundle_model)~treatment, data=bundle)
+leveneTest(residuals(bundle_model)~treatment, data=mean_bundle)
 ```
 
-Meets assumptions for normality and homogeneity of variance :) eggs per bundle are significantly higher in the heated parental history treatment.
+Meets assumptions for normality and homogeneity of variance but eggs per bundle are significantly higher in the heated parental history treatment.
 
               Df Sum Sq Mean Sq F value Pr(>F)  
 treatment      1     31  30.507   4.012 0.0454 *
