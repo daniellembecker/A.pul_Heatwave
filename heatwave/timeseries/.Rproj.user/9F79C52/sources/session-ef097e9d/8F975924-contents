@@ -5,7 +5,7 @@ edited by: "DM Becker-Polinski"
 date: "20220830"
 output: github_document
 editor_options: 
-  chunk_output_type: consoles
+  chunk_output_type: inline
 --- 
 
 # Set Up    
@@ -59,7 +59,7 @@ library(cowplot)
 
 Load in master dataframe generated from 1_assemble_physiological_data.Rmd  
 ```{r}
-master<-read.csv("timeseries_analysis/Output/master_timeseries.csv")
+master <-read.csv("timeseries_analysis/Output/master_timeseries.csv")
 
 #remove notes column to remove NAs
 master <- master[, -29]  # Remove the 28th column
@@ -81,31 +81,30 @@ master <- master %>%
 
 Build a mixed model for univariate analysis and examine data distribution.
 
-# Remove initial timepoint from analysis because we want to see differences in treatments across timepoints
+# Remove initial timepoint from analysis because we want to see differences in treatments that start at timepoint 2 across experimental timepoints 
 
 ```{r}
-master <- master %>%
+master.filtered <- master %>%
   filter(!is.na(treatment) & treatment != "initial") 
-
 
 ```
 
 
 # For symbiont densities 
 
-`sym_model<-lmer(cells.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master)` 
+`sym_model<-lmer(cells.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-sym_model<-lmer(cells.cm2~timepoint*treatment + (1|colony_ID), na.action=na.omit, data=master)
+sym_model<-lmer(cells.cm2~timepoint*treatment + (1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(sym_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`sym_model<-lmer(log(cells.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master)` 
+`sym_model<-lmer(log(cells.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-sym_model<-lmer(log(cells.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+sym_model<-lmer(log(cells.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(sym_model))
 ```
 
@@ -115,8 +114,12 @@ Generate a Type III Anova of model.
 anova(sym_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(sym_model, ~ timepoint)
-pairs(emm)
+emm.sym <-emmeans(sym_model, ~ timepoint)
+pairs(emm.sym)
+
+# Generate letter-based groupings
+cld_result_sym <- multcomp::cld(emm.sym, Letters = letters)
+letters_data_sym <- as.data.frame(cld_result_sym)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- master %>%
@@ -137,19 +140,19 @@ timepoint:treatment 0.7863 0.26209     3    66  2.0574 0.1143453
 
 # For chla
 
-`chla_model<-lmer(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)` 
+`chla_model<-lmer(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-chla_model<-lmer(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+chla_model<-lmer(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(chla_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`chla_model<-lmer(log(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master))` 
+`chla_model<-lmer(log(chla.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered))` 
 
 ```{r}
-chla_model<-lmer(log(chla.ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+chla_model<-lmer(log(chla.ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(chla_model))
 ```
 
@@ -163,7 +166,7 @@ emm<-emmeans(chla_model, ~ timepoint)
 pairs(emm)
 
 # Calculate means per treatment to calculate percent change
-means_per_treatment <- master %>%
+means_per_treatment <- master.filtered %>%
   group_by(treatment) %>%
   summarise(mean_chl = mean(chla.ug.cm2))
 
@@ -181,19 +184,19 @@ timepoint:treatment 0.0512 0.01705     3    88  0.1978 0.8976064
 
 # For chlc
 
-`chlc_model<-lmer(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)` 
+`chlc_model<-lmer(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-chlc_model<-lmer(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+chlc_model<-lmer(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(chlc_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`chlc_model<-lmer(log(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master))` 
+`chlc_model<-lmer(log(chlc2.ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered))` 
 
 ```{r}
-chlc_model<-lmer(log(chlc2.ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+chlc_model<-lmer(log(chlc2.ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(chlc_model))
 ```
 
@@ -207,7 +210,7 @@ emm<-emmeans(chlc_model, ~ timepoint)
 pairs(emm)
 
 # Calculate means per treatment to calculate percent change
-means_per_treatment <- master %>%
+means_per_treatment <- master.filtered %>%
   group_by(treatment) %>%
   summarise(mean_chlc = mean(chlc2.ug.cm2))
 
@@ -225,19 +228,19 @@ timepoint:treatment  0.162  0.0541     3    88   0.4841  0.694189
 
 # For tot chl
 
-`tot_chl_model <- lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)` 
+`tot_chl_model <- lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-tot_chl_model<-lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+tot_chl_model<-lmer(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(tot_chl_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`tot_chl_model<-lmer(log(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master))` 
+`tot_chl_model<-lmer(log(Total_Chl_cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered))` 
 
 ```{r}
-tot_chl_model<-lmer(log(Total_Chl_cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+tot_chl_model<-lmer(log(Total_Chl_cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(tot_chl_model))
 ```
 
@@ -247,11 +250,11 @@ Generate a Type III Anova of model.
 anova(tot_chl_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(tot_chl_model, ~ timepoint)
-pairs(emm)
+emm.chl<-emmeans(tot_chl_model, ~ timepoint)
+pairs(emm.chl)
 
 # Calculate means per treatment to calculate percent change
-means_per_treatment <- master %>%
+means_per_treatment <- master.filtered %>%
   group_by(treatment) %>%
   summarise(mean_chlt = mean(Total_Chl_cm2))
 
@@ -268,19 +271,19 @@ timepoint:treatment  0.0115  0.0038     3    88  0.0455  0.987017
 
 # For host protein
 
-`host_prot_model<-lmer(host_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master)` 
+`host_prot_model<-lmer(host_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-host_prot_model<-lmer(host_prot_ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+host_prot_model<-lmer(host_prot_ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(host_prot_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`host_prot_model<-lmer(log(host_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master))` 
+`host_prot_model<-lmer(log(host_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered))` 
 
 ```{r}
-host_prot_model<-lmer(log(host_prot_ug.cm2)~timepoint*treatment+(1|colony_ID), data=master)
+host_prot_model<-lmer(log(host_prot_ug.cm2)~timepoint*treatment+(1|colony_ID), data=master.filtered)
 qqPlot(residuals(host_prot_model))
 ```
 
@@ -300,19 +303,19 @@ timepoint:treatment 0.07545 0.025150     3    66  0.3275 0.8054
 
 # For holo protein
 
-`holo_prot_model<-lmer(holobiont_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master)` 
+`holo_prot_model<-lmer(holobiont_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered)` 
 
 ```{r}
-holo_prot_model<-lmer(holobiont_prot_ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+holo_prot_model<-lmer(holobiont_prot_ug.cm2~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(holo_prot_model))
 ```
 
 Residuals are not normally distributed. Attempt with log transformation.      
 
-`holo_prot_model<-lmer(log(holobiont_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master))` 
+`holo_prot_model<-lmer(log(holobiont_prot_ug.cm2~timepoint+(1|colony_ID), na.action=na.omit, data=master.filtered))` 
 
 ```{r}
-holo_prot_model<-lmer(log(holobiont_prot_ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master)
+holo_prot_model<-lmer(log(holobiont_prot_ug.cm2)~timepoint*treatment+(1|colony_ID), na.action=na.omit, data=master.filtered)
 qqPlot(residuals(holo_prot_model))
 ```
 
@@ -322,8 +325,8 @@ Generate a Type III Anova of model.
 anova(holo_prot_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(holo_prot_model, ~ timepoint)
-pairs(emm)
+emm.holo.prot<-emmeans(holo_prot_model, ~ timepoint)
+pairs(emm.holo.prot)
 
 ```
 
@@ -337,15 +340,28 @@ timepoint:treatment 0.03478 0.01159     3    66  0.1544    0.9265
 
 # Univariate Responses  
 
-Plot univariate response plots and then generate panel of all plots at the end of this section. Individual plots will not be displayed.  
+Plot univariate response plots and then generate panel of all plots at the end of this section. Individual plots will not be displayed. 
 
 ### Plot: Symbiont Densities
  
 View by treatment and timepoint.
 ```{r}
 
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_sym <- letters_data_sym %>%
+  select(timepoint, .group)
+
+# Prepare your plotting data
+plot_data_sym <- master %>%
+  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(timepoint)) %>%
+  select(fragment_ID, timepoint, formatted_date, treatment, cells.cm2)
+
+# Merge the plotting data with the letters
+plot_data_sym <- merge(plot_data_sym, letters_data_sym, by = "timepoint")
+
 #remove outlier cells.cm for plot from TP3
-master.sym <- master %>%
+plot_data_sym <- plot_data_sym %>%
   filter(cells.cm2 < 3000000)
 
 # Define the specific timepoint
@@ -355,33 +371,35 @@ specific_timepoint <- "TP5"
 threshold <- 1.5e+06
 
 # Filter the data to remove the outlier point at timepoint 5
-master.sym <- master.sym %>%
+plot_data_sym <- plot_data_sym %>%
   filter(!(timepoint == specific_timepoint & cells.cm2 > threshold))
 
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_sym <- plot_data_sym %>%
+  group_by(timepoint, formatted_date) %>%
+  summarise(.group = first(.group), max_y = max(cells.cm2))
+
 #create plot
-symbplot_cm2<-master.sym %>%
-  filter(!is.na(cells.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, cells.cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = cells.cm2, fill = treatment)) +
-    geom_boxplot(outlier.size = 0) +
-    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
-    labs(fill = "Treatment") +
-    #facet_wrap(~timepoint) +
-    scale_y_continuous(labels = scales::label_scientific())+ # Use scientific notation on y-axis
-    xlab("Timepoint") + 
-    ylab(expression(bold(paste("Symbiont Cells cm"^-2))))+
-    theme_classic() + 
-    theme(legend.position = c(.95, .90),
+symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fill = treatment)) +
+  geom_boxplot(outlier.size = 0) +
+  geom_point(pch = 21, size = 2, position = position_jitterdodge(0.2)) + 
+  geom_text(data = cld_summary_sym, aes(x = formatted_date, y = max_y + 0.1 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
+  scale_fill_manual(values = c("darkblue", "red", "gray"), labels = c("ambient", "hot", "initial")) +
+  labs(fill = "Treatment") +
+  scale_y_continuous(labels = scales::label_scientific()) + # Use scientific notation on y-axis
+  xlab("Timepoint") + 
+  ylab(expression(bold(paste("Symbiont Cells cm"^-2)))) +
+  theme_classic() + 
+  theme(
+    legend.position = c(.95, .90),
     legend.justification = c("right", "top"),
-      legend.title=element_text(face="bold", size=30),
-      legend.text=element_text(size=28),
-      axis.title=element_text(face="bold", size=30),
-      axis.text=element_text(size=30, color="black"), 
-      strip.text.x=element_text(face="italic", size=20)
-      ); symbplot_cm2
+    legend.title = element_text(face = "bold", size = 30),
+    legend.text = element_text(size = 28),
+    axis.title = element_text(face = "bold", size = 30),
+    axis.text = element_text(size = 30, color = "black"), 
+    strip.text.x = element_text(face = "italic", size = 20)
+  ); symbplot_cm2
+
 ```
 
 ### Plot: Host Protein   

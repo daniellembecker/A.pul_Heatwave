@@ -80,7 +80,7 @@ Blch.meanse <- Blch %>% group_by(treatment, Photo_date) %>% #group data by facto
 #species_labeller <- function(variable,value){
 #  return(species.names[value])}
 
-cols <- c("darkblue", "red3") #set colors
+cols <- c( "darkblue", "red3") #set colors
 
 pdf("../../RAnalysis/output/color_score/colorscore_with_outliers_colonies.pdf")
 Blch_plot1 <- ggplot(Blch.meanse, aes(x=Photo_date, y = mean, group = treatment, color = treatment)) +
