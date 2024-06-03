@@ -312,7 +312,7 @@ total_fert_success_plot <- calculate_fert_success %>%
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
     ggtitle("Kruskal-Wallis, p = 0.04") +
-      annotate("text", x = 1.45, y = 18, label = "*", size = 20) +
+      annotate("text", x = 1.45, y = 100, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",
@@ -617,7 +617,7 @@ bundle_plot <- mean_bundle %>%
   xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
    scale_y_continuous(expand = c(0, 0), limits = c(0, 10)) +
-        ggtitle("one-way anova, p = 0.045") +
+        ggtitle("one-way anova, ns") +
       annotate("text", x = 1.45, y = 9.5, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
@@ -674,11 +674,11 @@ qqPlot(residuals(bundle_model))
 leveneTest(residuals(bundle_model)~treatment, data=mean_bundle)
 ```
 
-Meets assumptions for normality and homogeneity of variance but eggs per bundle are significantly higher in the heated parental history treatment.
+Meets assumptions for normality and homogeneity of variance but eggs per bundle are not significantly higher in the heated parental history treatment.
 
-              Df Sum Sq Mean Sq F value Pr(>F)  
-treatment      1     31  30.507   4.012 0.0454 *
-Residuals   1027   7809   7.604   
+           Df Sum Sq Mean Sq F value Pr(>F)
+treatment    1  1.359  1.3590   1.923  0.181
+Residuals   20 14.138  0.7069      
 
 
 #combine eggs per bundle, egg size, and fertilization success
