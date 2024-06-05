@@ -308,7 +308,7 @@ total_fert_success_plot <- calculate_fert_success %>%
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
-    ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
+    ylab(expression(bold(paste("Fertilization Success (%)"))))+
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
     ggtitle("Kruskal-Wallis, p = 0.04") +
@@ -617,8 +617,8 @@ bundle_plot <- mean_bundle %>%
   xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
    scale_y_continuous(expand = c(0, 0), limits = c(0, 10)) +
-        ggtitle("one-way anova, p = 0.045") +
-      annotate("text", x = 1.45, y = 9.5, label = "*", size = 20) +
+        ggtitle("one-way anova, ns") +
+      annotate("text", x = 1.45, y = 9.5, label = "", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
       legend.position="none",

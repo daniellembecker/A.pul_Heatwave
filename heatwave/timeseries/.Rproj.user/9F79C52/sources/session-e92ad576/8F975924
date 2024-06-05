@@ -1,0 +1,29 @@
+{
+    "id": "8F975924",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave/timeseries/timeseries_analysis/Scripts/2_univariate_analyses.Rmd",
+    "project_path": "timeseries_analysis/Scripts/2_univariate_analyses.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1713906798116.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "working_dir": "project",
+        "cursorPosition": "756,49",
+        "scrollLine": "745",
+        "last_setup_crc32": "e92ad576d3636abd"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1717626222,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1717626222430,
+    "read_only": false,
+    "read_only_alternatives": []
+}

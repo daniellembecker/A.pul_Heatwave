@@ -1,0 +1,121 @@
+---
+title: "biomass.Rmd"
+author: "HM Putnam, AS Huffmyer"
+date: "10/26/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+## install packages if you dont already have them
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("plotrix")) install.packages("plotrix")
+
+# load packages
+library(tidyverse)
+library(plotrix)
+
+```
+
+```{r }
+#Read in biomass data
+Data <- read.csv("timepoint4/4_data/4_biomass/4_biomass.csv")
+Data <- na.omit(Data)
+
+# calculated mass per ml
+#different volumes for sym (5ml) and host (4ml)
+sym <- 5
+host <- 4
+
+#Load tissue homogenate volume
+homog_vol <- read.csv("timepoint4/4_data/4_homogenate_vols/4_homogenate_vols.csv", header=TRUE)
+
+# Load Surface area data
+sa <- read.csv("timepoint4/4_output/4_surface.area.calc.csv")
+
+# Coral sample metadata
+metadata <- read_csv("timepoint4/4_metadata.csv")
+
+# Join homogenate volumes and surface area with sample metadata
+metadata <- full_join(metadata, homog_vol) %>%
+  full_join(sa)
+
+#Standardize for volume input
+Data <- Data %>%
+  mutate(dry.pan.mass.g.ml = case_when(partner=="Sym" ~ dry.pan.mass.g/sym, partner=="Host" ~dry.pan.mass.g/host),
+         burnt.pan.mass.g.ml = case_when(partner=="Sym" ~ burnt.pan.mass.g/sym, partner=="Host" ~burnt.pan.mass.g/host))
+
+# Standardize for the total homogenate volume
+Data <- left_join(Data, homog_vol)  %>%
+  mutate(dry.pan.mass.g.vol.corr = dry.pan.mass.g.ml*homogenate_vol_ml, 
+         burnt.pan.mass.g.vol.corr = burnt.pan.mass.g.ml*homogenate_vol_ml)
+
+
+# Calculate Dry Biomass
+dw <- left_join(Data, metadata) %>%
+  mutate(dry.bioimass.g = (dry.pan.mass.g.vol.corr - initial.mass.g),
+         DW.mg.cm2 = ((dry.bioimass.g)*1000) / surface.area.cm2)
+
+
+# Calculate AFDW
+afdw <- left_join(Data, metadata) %>%
+  mutate(dry.bioimass.g = (dry.pan.mass.g.vol.corr - burnt.pan.mass.g.vol.corr),
+         AFDW.mg.cm2 = ((dry.bioimass.g)*1000) / surface.area.cm2)
+
+
+```
+
+Output biomass data to .csv.  
+
+```{r}
+afdw <- afdw %>%
+  group_by(fragment_ID, partner)%>%
+  summarise(AFDW.mg.cm2=mean(AFDW.mg.cm2))%>%
+  left_join(.,metadata)%>% #add metadata back into file
+  select(fragment_ID, partner, treatment, AFDW.mg.cm2) %>%
+  mutate(timepoint="TP4"); afdw
+
+dw<-dw %>% 
+  group_by(fragment_ID, partner)%>%
+  summarise(DW.mg.cm2=mean(DW.mg.cm2))%>%
+  left_join(.,metadata)%>% #add metadata back into file
+  select(fragment_ID, partner, treatment, DW.mg.cm2) %>%
+  mutate(timepoint="TP4"); dw
+  
+output<-left_join(afdw,dw)%>%
+  write_csv(path = "timepoint4/4_output/4_biomass.csv")
+```
+
+```{r}
+#summarize Dry Biomass mean and sem by treatment and timepoint
+  
+dw %>% 
+  group_by(treatment, timepoint, partner)%>%
+  summarise(mean.value = mean(DW.mg.cm2), se = std.error(DW.mg.cm2)) %>%
+  ggplot(aes(x = treatment, y = mean.value, group = treatment, color = partner)) +
+  ylab("DW mg cm-2")+
+  geom_point(size = 3)+
+  geom_errorbar(aes(x = treatment, ymin = mean.value-se, ymax = mean.value+se), width = 0.5)
+
+
+```
+
+```{r}
+#summarize AFDW mean and sem by treatment and timepoint
+
+afdw %>% 
+  group_by(treatment, timepoint, partner)%>%
+  summarise(mean.value = mean(AFDW.mg.cm2), se = std.error(AFDW.mg.cm2)) %>%
+  ggplot(aes(x = treatment, y = mean.value, group = treatment, color = partner)) +
+  ylab("AFDW mg cm-2")+
+  geom_point(size = 3)+
+  geom_errorbar(aes(x = treatment, ymin = mean.value-se, ymax = mean.value+se), width = 0.5)
+
+
+```
+
+
+ 

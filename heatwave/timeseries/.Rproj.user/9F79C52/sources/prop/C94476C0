@@ -1,9 +1,9 @@
 {
-    "chunk_output_type": "inline",
+    "chunk_output_type": "console",
     "source_window_id": "",
     "Source": "Source",
     "working_dir": "project",
-    "cursorPosition": "381,12",
-    "scrollLine": "378",
-    "last_setup_crc32": "ef097e9dd3636abd"
+    "cursorPosition": "756,49",
+    "scrollLine": "745",
+    "last_setup_crc32": "e92ad576d3636abd"
 }

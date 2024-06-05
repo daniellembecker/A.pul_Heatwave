@@ -1,0 +1,7 @@
+"0","# Extract relevant columns from the compact letter display for post hoc data
+letters_data_sym <- letters_data_sym %>%
+  select(timepoint, .group)
+"
+"2","Error in letters_data_sym %>% select(timepoint, .group) : 
+  could not find function ""%>%""
+"
