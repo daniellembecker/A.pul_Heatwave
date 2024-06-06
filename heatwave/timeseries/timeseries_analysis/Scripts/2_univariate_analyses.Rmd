@@ -697,7 +697,7 @@ sym.bio <- master.sym.bio %>%
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
-    ylab(expression(bold(paste("Symbiont Tissue Biomass (mg cm"^-2, ")"))))+
+    ylab(expression(bold(paste("Symbiont Tissue Biomass (mg cm"^-2, ") "))))+
     theme_classic() + 
     theme(
       legend.title=element_text(face="bold", size=20),
@@ -757,9 +757,9 @@ Blch_plot2
 Join all plots for each normalization together.  
 
 ```{r}
-phys_figure<-plot_grid(Blch_plot2, symbplot_cm2, tot_chl, sym.bio, host.bio, host_prot_cm2, holobiont_prot_cm2, ncol=4, nrow=2, labels = c('A', 'B', 'C', 'D', 'E', 'F', 'G'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
+phys_figure<-plot_grid(Blch_plot2, symbplot_cm2, tot_chl, sym.bio, host.bio, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=3, labels = c('A', 'B', 'C', 'D', 'E', 'F', 'G'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
 
-ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=40, height=25, units="in")
-ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=40, height=25, units="in")
+ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=30, units="in")
+ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=35, units="in")
 ```
 
