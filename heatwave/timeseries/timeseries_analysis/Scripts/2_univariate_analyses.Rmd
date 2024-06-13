@@ -119,7 +119,7 @@ pairs(emm.sym)
 
 # Generate letter-based groupings
 cld_result_sym <- multcomp::cld(emm.sym, Letters = letters)
-letters_data_sym <- as.data.frame(cld_result_sym)
+letters_data_sym_og <- as.data.frame(cld_result_sym)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- master %>%
@@ -162,8 +162,12 @@ Generate a Type III Anova of model.
 anova(chla_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(chla_model, ~ timepoint)
-pairs(emm)
+emm.chla<-emmeans(chla_model, ~ timepoint)
+pairs(emm.chla)
+
+# Generate letter-based groupings
+cld_result_sym <- multcomp::cld(emm.sym, Letters = letters)
+letters_data_chla_og <- as.data.frame(cld_result_chla)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- master.filtered %>%
@@ -206,8 +210,12 @@ Generate a Type III Anova of model.
 anova(chlc_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(chlc_model, ~ timepoint)
-pairs(emm)
+emm.chlc<-emmeans(chlc_model, ~ timepoint)
+pairs(emm.chlc)
+
+# Generate letter-based groupings
+cld_result_chlc <- multcomp::cld(emm.chlc, Letters = letters)
+letters_data_chlc_og <- as.data.frame(cld_result_chlc)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- master.filtered %>%
@@ -252,6 +260,10 @@ anova(tot_chl_model, type="III")
 # run post hoc on timepoints
 emm.chl<-emmeans(tot_chl_model, ~ timepoint)
 pairs(emm.chl)
+
+# Generate letter-based groupings
+cld_result_chl <- multcomp::cld(emm.chl, Letters = letters)
+letters_data_chl_og <- as.data.frame(cld_result_chl)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- master.filtered %>%
@@ -423,19 +435,25 @@ Plot univariate response plots and then generate panel of all plots at the end o
  
 View by treatment and timepoint.
 ```{r}
-
 # Extract relevant columns from the compact letter display for post hoc data
-letters_data_sym <- letters_data_sym %>%
+letters_data_sym <- letters_data_sym_og %>%
   select(timepoint, .group)
 
-# Prepare your plotting data
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_sym <- rbind(letters_data_sym, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
 plot_data_sym <- master %>%
   filter(!is.na(cells.cm2)) %>%
   filter(!is.na(timepoint)) %>%
-  select(fragment_ID, timepoint, formatted_date, treatment, cells.cm2)
-
-# Merge the plotting data with the letters
-plot_data_sym <- merge(plot_data_sym, letters_data_sym, by = "timepoint")
+  select(fragment_ID, timepoint, formatted_date, treatment, cells.cm2) %>%
+  left_join(letters_data_sym, by = "timepoint")
 
 #remove outlier cells.cm for plot from TP3
 plot_data_sym <- plot_data_sym %>%
@@ -453,14 +471,18 @@ plot_data_sym <- plot_data_sym %>%
 
 # Summarize the CLD data to get one letter per timepoint
 cld_summary_sym <- plot_data_sym %>%
-  group_by(timepoint, formatted_date) %>%
-  summarise(.group = first(.group), max_y = max(cells.cm2))
+  group_by(timepoint, formatted_date, treatment) %>%
+  summarise(.group = first(.group), max_y = max(cells.cm2)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_sym <- as.data.frame(cld_summary_sym)
 
 #create plot
 symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fill = treatment)) +
   geom_boxplot(outlier.size = 0) +
   geom_point(pch = 21, size = 2, position = position_jitterdodge(0.2)) + 
-#  geom_text(data = cld_summary_sym, aes(x = formatted_date, y = max_y + 0.1 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
+  geom_text(data = cld_summary_sym, aes(x = formatted_date, y = max_y - 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
   scale_fill_manual(values = c("darkblue", "red", "gray"), labels = c("ambient", "hot", "initial")) +
   labs(fill = "Treatment") +
   scale_y_continuous(labels = scales::label_scientific()) + # Use scientific notation on y-axis
@@ -483,6 +505,7 @@ symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fil
 
 View by treatment and timepoint.    
 ```{r}
+
 
 #remove outlier host prot mg.cm2 for plot from TP3, TP5, and TP1
 master.host.prot <- master %>%
@@ -625,6 +648,27 @@ chlc_prot_cm2<-filtered_master %>%
 
 View by treatment and timepoint.   
 ```{r}
+
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_chl <- letters_data_chl_og %>%
+  select(timepoint, .group)
+
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_chl <- rbind(letters_data_chl, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_chl <- master %>%
+  filter(!is.na(Total_Chl_cm2)) %>%
+  filter(!is.na(timepoint)) %>%
+  select(fragment_ID, timepoint, formatted_date, treatment, Total_Chl_cm2) %>%
+  left_join(letters_data_chl, by = "timepoint")
+
 # Define the specific timepoint
 specific_timepoint <- "TP5" 
 
@@ -632,22 +676,27 @@ specific_timepoint <- "TP5"
 threshold <- 5
 
 # Filter the data to remove the outlier point at timepoint 5
-filtered_master.tot.chl <- master %>%
+plot_data_chl <- plot_data_chl %>%
   filter(!(timepoint == specific_timepoint & Total_Chl_cm2 > threshold))
 
 # filter outlier for tp3
-filtered_master.tot.chl <- filtered_master.tot.chl %>%
+plot_data_chl <- plot_data_chl %>%
   filter(Total_Chl_cm2 < 10)
 
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_chl <- plot_data_chl %>%
+  group_by(timepoint, formatted_date, treatment) %>%
+  summarise(.group = first(.group), max_y = max(Total_Chl_cm2)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_chl <- as.data.frame(cld_summary_chl)
+
 #create plot
-tot_chl <- filtered_master.tot.chl %>%
-  filter(!is.na(Total_Chl_cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, Total_Chl_cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = Total_Chl_cm2, fill = treatment)) +
+tot_chl <- ggplot(plot_data_chl, aes(x = formatted_date, y = Total_Chl_cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    geom_text(data = cld_summary_chl, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
