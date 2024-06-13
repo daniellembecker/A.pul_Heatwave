@@ -1,5 +1,5 @@
 ---
-title: "Integrating Heatwave time series biological data"
+title: "Integrating heatwave time series respirometry data"
 author: "Ariana S Huffmyer, E5 RoL Team"
 edited by: "DM Becker-Polinski"
 date: "20220830"
@@ -48,6 +48,7 @@ library(cowplot)
 library(vegan)
 library(corrr)
 library(ggcorrplot)
+library(multcompView)
 library(GGally)
 library(broom)
 library(patchwork)
@@ -208,6 +209,14 @@ Generate a Type III Anova of model.
 anova(P_model, type="III")
 summary(P_model)
 
+# run post hoc on timepoints and treatment
+emm_P <-emmeans(P_model, ~ timepoint:Treatment)
+pairs(emm_P)
+
+# Generate letter-based groupings
+cld_result_P <- multcomp::cld(emm_P, Letters = letters)
+letters_data_P_og <- as.data.frame(cld_result_P)
+
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- summary_fragments.filtered  %>%
   group_by(treatment) %>%
@@ -249,9 +258,13 @@ Generate a Type III Anova of model.
 ```{r}
 anova(rd_model, type="III")
 
-# run post hoc on timepoints
-emm<-emmeans(rd_model, ~ timepoint)
-pairs(emm)
+# run post hoc on timepoints and treatment
+emm_rd <-emmeans(rd_model, ~ timepoint:Treatment)
+pairs(emm_rd)
+
+# Generate letter-based groupings
+cld_result_rd <- multcomp::cld(emm_rd, Letters = letters)
+letters_data_rd_og <- as.data.frame(cld_result_rd)
 
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- summary_fragments.filtered %>%
@@ -298,6 +311,14 @@ Generate a Type III Anova of model.
 anova(GP_model, type="III")
 summary(GP_model)
 
+# run post hoc on timepoints and treatment
+emm_GP <-emmeans(GP_model, ~ timepoint:Treatment)
+pairs(emm_GP)
+
+# Generate letter-based groupings
+cld_result_GP <- multcomp::cld(emm_GP, Letters = letters)
+letters_data_GP_og <- as.data.frame(cld_result_GP)
+
 # Calculate means per treatment to calculate percent change
 means_per_treatment <- summary_fragments.filtered %>%
   group_by(treatment) %>%
@@ -333,8 +354,12 @@ Generate a Type III Anova of model.
 anova(GP.R_model, type="III")
 
 # run post hoc on timepoints
-emm<-emmeans(GP.R_model, ~ timepoint)
-pairs(emm)
+emm_GPR<-emmeans(GP.R_model, ~ timepoint)
+pairs(emm_GPR)
+
+# Generate letter-based groupings
+cld_result_GPR <- multcomp::cld(emm_GPR, Letters = letters)
+letters_data_GPR_og <- as.data.frame(cld_result_GPR)
 
 ```
 

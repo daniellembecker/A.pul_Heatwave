@@ -166,7 +166,7 @@ emm.chla<-emmeans(chla_model, ~ timepoint)
 pairs(emm.chla)
 
 # Generate letter-based groupings
-cld_result_sym <- multcomp::cld(emm.sym, Letters = letters)
+cld_result_chla <- multcomp::cld(emm.chla, Letters = letters)
 letters_data_chla_og <- as.data.frame(cld_result_chla)
 
 # Calculate means per treatment to calculate percent change
@@ -379,7 +379,7 @@ Generate a Type III Anova of model.
 anova(sym_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint)
+emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint:Treatment)
 pairs(emm.sym.bio)
 
 # Generate letter-based groupings
@@ -421,7 +421,7 @@ Generate a Type III Anova of model.
 anova(host_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.host.bio<-emmeans(host_bio_model, ~ timepoint)
+emm.host.bio<-emmeans(host_bio_model, ~ timepoint:Treatment)
 pairs(emm.host.bio)
 
 # Generate letter-based groupings
@@ -494,7 +494,7 @@ cld_summary_sym <- as.data.frame(cld_summary_sym)
 symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fill = treatment)) +
   geom_boxplot(outlier.size = 0) +
   geom_point(pch = 21, size = 2, position = position_jitterdodge(0.2)) + 
-  geom_text(data = cld_summary_sym, aes(x = formatted_date, y = max_y - 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
+  geom_text(data = cld_summary_sym, aes(x = formatted_date, y = max_y - 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
   scale_fill_manual(values = c("darkblue", "red", "gray"), labels = c("ambient", "hot", "initial")) +
   labs(fill = "Treatment") +
   scale_y_continuous(labels = scales::label_scientific()) + # Use scientific notation on y-axis
@@ -502,7 +502,7 @@ symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fil
   ylab(expression(bold(paste("Symbiont Cells cm"^-2)))) +
   theme_classic() + 
   theme(
-    legend.position = c(.95, .90),
+    legend.position = c(.99, .95),
     legend.justification = c("right", "top"),
     legend.title = element_text(face = "bold", size = 30),
     legend.text = element_text(size = 28),
@@ -590,7 +590,7 @@ cld_summary_holo_prot <- as.data.frame(cld_summary_holo_prot)
 holobiont_prot_cm2 <- ggplot(plot_data_holo_prot, aes(x = formatted_date, y = holobiont_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) +
-    geom_text(data = cld_summary_holo_prot, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
+    geom_text(data = cld_summary_holo_prot, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5, fontface = "bold") + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
@@ -730,7 +730,7 @@ cld_summary_chl <- as.data.frame(cld_summary_chl)
 tot_chl <- ggplot(plot_data_chl, aes(x = formatted_date, y = Total_Chl_cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    geom_text(data = cld_summary_chl, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
+    geom_text(data = cld_summary_chl, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
@@ -785,10 +785,20 @@ threshold <- 1.3
 plot_data_sym_bio <- plot_data_sym_bio %>%
   filter(!(timepoint == specific_timepoint & Sym_AFDW.mg.cm2 > threshold))
 
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_sym_bio <- plot_data_sym_bio %>%
+  group_by(timepoint, formatted_date, treatment) %>%
+  summarise(.group = first(.group), max_y = max(Sym_AFDW.mg.cm2)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_sym_bio <- as.data.frame(cld_summary_sym_bio)
+
 #create plot
 sym.bio <- ggplot(plot_data_sym_bio, aes(x = formatted_date, y = Sym_AFDW.mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    geom_text(data = cld_summary_sym_bio, aes(x = formatted_date, y = max_y + 0.08 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     xlab("Timepoint") + 
@@ -806,25 +816,48 @@ sym.bio <- ggplot(plot_data_sym_bio, aes(x = formatted_date, y = Sym_AFDW.mg.cm2
 
 
 ### Plot: host biomass
-
 View by treatment and timepoint.   
 ```{r}
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_host_bio <- letters_data_host_bio_og %>%
+  select(timepoint, .group)
+
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_host_bio <- rbind(letters_data_host_bio, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_host_bio <- master %>%
+  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(timepoint)) %>%
+  select(fragment_ID, timepoint, formatted_date, treatment, Host_AFDW.mg.cm2) %>%
+  left_join(letters_data_host_bio, by = "timepoint")
 
 #remove outlier chla.ug cm2 for plot from TP3, TP5
-master.host.bio <- master %>%
+plot_data_host_bio <- plot_data_host_bio %>%
   filter(Host_AFDW.mg.cm2 < 3.4)
 
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_host_bio <- plot_data_host_bio %>%
+  group_by(timepoint, formatted_date, treatment) %>%
+  summarise(.group = first(.group), max_y = max(Host_AFDW.mg.cm2)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_host_bio <- as.data.frame(cld_summary_host_bio)
+
 #create plot
-host.bio <- master.host.bio %>%
-  filter(!is.na(Host_AFDW.mg.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, Host_AFDW.mg.cm2)%>%
-  ggplot(., aes(x = formatted_date, y = Host_AFDW.mg.cm2, fill = treatment)) +
+host.bio <- ggplot(plot_data_host_bio, aes(x = formatted_date, y = Host_AFDW.mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
-    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) +
+     geom_text(data = cld_summary_host_bio, aes(x = formatted_date, y = max_y + 0.01 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
-    #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
     ylab(expression(bold(paste("Host Tissue Biomass (mg cm"^-2, ")"))))+
     theme_classic() + 
@@ -854,7 +887,7 @@ Join all plots for each normalization together.
 ```{r}
 phys_figure<-plot_grid(Blch_plot2, symbplot_cm2, tot_chl, sym.bio, host.bio, host_prot_cm2, holobiont_prot_cm2, ncol=3, nrow=3, labels = c('A', 'B', 'C', 'D', 'E', 'F', 'G'), rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 50)
 
+ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=30, units="in")
 ggsave(filename="timeseries_analysis/Figures/Phys_Figure.pdf", plot=phys_figure, dpi=300, width=30, height=30, units="in")
-ggsave(filename="timeseries_analysis/Figures/Phys_Figure.png", plot=phys_figure, dpi=300, width=30, height=35, units="in")
 ```
 
