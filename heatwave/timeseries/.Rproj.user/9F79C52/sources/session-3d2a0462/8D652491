@@ -1,24 +1,24 @@
 {
-    "id": "3464E96D",
+    "id": "8D652491",
     "path": null,
     "project_path": null,
     "type": "r_dataframe",
     "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1718290928419.0,
+    "created": 1718292689019.0,
     "source_on_save": false,
-    "relative_order": 3,
+    "relative_order": 5,
     "properties": {
         "expression": "plot_data_chl",
         "caption": "plot_data_chl",
         "totalObservations": 120,
         "displayedObservations": 120,
         "variables": 6,
-        "cacheKey": "5241C3A1",
+        "cacheKey": "80A0E3DD",
         "object": "plot_data_chl",
         "environment": "",
-        "contentUrl": "grid_resource/gridviewer.html?env=&obj=plot_data_chl&cache_key=5241C3A1&max_display_columns=50",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=plot_data_chl&cache_key=80A0E3DD&max_display_columns=50",
         "preview": 0,
         "source_window_id": "",
         "Source": "Source"
@@ -28,7 +28,7 @@
     "encoding": "",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1718290928419,
+    "last_content_update": 1718292689019,
     "read_only": false,
     "read_only_alternatives": []
 }

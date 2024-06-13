@@ -340,6 +340,10 @@ anova(holo_prot_model, type="III")
 emm.holo.prot<-emmeans(holo_prot_model, ~ timepoint)
 pairs(emm.holo.prot)
 
+# Generate letter-based groupings
+cld_result_holo_prot <- multcomp::cld(emm.holo.prot, Letters = letters)
+letters_data_holo_prot_og <- as.data.frame(cld_result_holo_prot)
+
 ```
 
 Main effects of timepoint are significant but treatmment and timepoint:treatment are not.
@@ -378,6 +382,10 @@ anova(sym_bio_model, type="III")
 emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint)
 pairs(emm.sym.bio)
 
+# Generate letter-based groupings
+cld_result_sym_bio <- multcomp::cld(emm.sym.bio, Letters = letters)
+letters_data_sym_bio_og <- as.data.frame(cld_result_sym_bio)
+
 ```
 
 Main effects of timepoint and treatment are significant.
@@ -415,6 +423,10 @@ anova(host_bio_model, type="III")
 # run post hoc on timepoints
 emm.host.bio<-emmeans(host_bio_model, ~ timepoint)
 pairs(emm.host.bio)
+
+# Generate letter-based groupings
+cld_result_host_bio <- multcomp::cld(emm.host.bio, Letters = letters)
+letters_data_host_bio_og <- as.data.frame(cld_result_host_bio)
 
 ```
 
@@ -505,8 +517,6 @@ symbplot_cm2 <- ggplot(plot_data_sym, aes(x = formatted_date, y = cells.cm2, fil
 
 View by treatment and timepoint.    
 ```{r}
-
-
 #remove outlier host prot mg.cm2 for plot from TP3, TP5, and TP1
 master.host.prot <- master %>%
   filter(host_prot_mg.cm2 < 1.00)
@@ -543,19 +553,44 @@ host_prot_cm2<-master.host.prot %>%
 
 View by treatment and timepoint.   
 ```{r}
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_holo_prot <- letters_data_holo_prot_og %>%
+  select(timepoint, .group)
+
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_holo_prot <- rbind(letters_data_holo_prot, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_holo_prot <- master %>%
+  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(timepoint)) %>%
+  select(fragment_ID, timepoint, formatted_date, treatment, holobiont_prot_mg.cm2) %>%
+  left_join(letters_data_holo_prot, by = "timepoint")
+
 #remove outlier holo prot mg.cm2 for plot from TP3, TP5
-master.holo.prot <- master %>%
+plot_data_holo_prot <- plot_data_holo_prot %>%
   filter(holobiont_prot_mg.cm2 < 1.25)
 
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_holo_prot <- plot_data_holo_prot %>%
+  group_by(timepoint, formatted_date, treatment) %>%
+  summarise(.group = first(.group), max_y = max(holobiont_prot_mg.cm2)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_holo_prot <- as.data.frame(cld_summary_holo_prot)
+
 #create plot
-holobiont_prot_cm2<-master.holo.prot %>%
-  filter(!is.na(holobiont_prot_mg.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, holobiont_prot_mg.cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = holobiont_prot_mg.cm2, fill = treatment)) +
+holobiont_prot_cm2 <- ggplot(plot_data_holo_prot, aes(x = formatted_date, y = holobiont_prot_mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
-    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) +
+    geom_text(data = cld_summary_holo_prot, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 6, vjust = -0.5) + # Add letters
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
     #facet_wrap(~timepoint) +
@@ -573,75 +608,74 @@ holobiont_prot_cm2<-master.holo.prot %>%
 ```
 
 ### Plot: CHL-a
-
 View by treatment and timepoint.   
 ```{r}
 #remove outlier chla.ug cm2 for plot from TP3, TP5
-master.chl <- master %>%
-  filter(chla.ug.cm2 < 5.50)
-
-#create plot
-chla_cm2<-master.chl %>%
-  filter(!is.na(chla.ug.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, chla.ug.cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = chla.ug.cm2, fill = treatment)) +
-    geom_boxplot(outlier.size = 0) +
-    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
-    labs(fill = "Treatment") +
-    #facet_wrap(~timepoint) +
-    xlab("Timepoint") + 
-    ylab(expression(bold(paste("Chlorophyll a (", mu, "g cm"^-2, ")"))))+
-    theme_classic() + 
-    theme(
-      legend.title=element_text(face="bold", size=20),
-      legend.text=element_text(size=20),
-      legend.position = "none",
-      axis.title=element_text(face="bold", size=30),
-      axis.text=element_text(size=30, color="black"), 
-      strip.text.x=element_text(face="italic", size=20)
-      ); chla_cm2
+# master.chl <- master %>%
+#   filter(chla.ug.cm2 < 5.50)
+# 
+# #create plot
+# chla_cm2<-master.chl %>%
+#   filter(!is.na(chla.ug.cm2)) %>%
+#   filter(!is.na(timepoint))%>%
+#   select(fragment_ID, timepoint, formatted_date, treatment, chla.ug.cm2)%>%
+#   
+#   ggplot(., aes(x = formatted_date, y = chla.ug.cm2, fill = treatment)) +
+#     geom_boxplot(outlier.size = 0) +
+#     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+#     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+#     labs(fill = "Treatment") +
+#     #facet_wrap(~timepoint) +
+#     xlab("Timepoint") + 
+#     ylab(expression(bold(paste("Chlorophyll a (", mu, "g cm"^-2, ")"))))+
+#     theme_classic() + 
+#     theme(
+#       legend.title=element_text(face="bold", size=20),
+#       legend.text=element_text(size=20),
+#       legend.position = "none",
+#       axis.title=element_text(face="bold", size=30),
+#       axis.text=element_text(size=30, color="black"), 
+#       strip.text.x=element_text(face="italic", size=20)
+#       ); chla_cm2
 ```
 
 ### Plot: CHL-c
 
 View by treatment and timepoint.   
 ```{r}
-# Define the specific timepoint
-specific_timepoint <- "TP5"
-
-# Define the chlc2.ug.cm2 threshold for outlier detection
-threshold <- 1.88
-
-# Filter the data to remove the outlier point at timepoint 5
-filtered_master <- master %>%
-  filter(!(timepoint == specific_timepoint & chlc2.ug.cm2 > threshold))
-
-#create plot
-chlc_prot_cm2<-filtered_master %>%
-  filter(!is.na(chlc2.ug.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, chlc2.ug.cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = chlc2.ug.cm2, fill = treatment)) +
-    geom_boxplot(outlier.size = 0) +
-    geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
-    scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
-    labs(fill = "Treatment") +
-    #facet_wrap(~timepoint) +
-    xlab("Timepoint") + 
-    ylab(expression(bold(paste("Chlorophyll c2 (", mu, "g cm"^-2, ")"))))+
-    theme_classic() + 
-    theme(
-      legend.title=element_text(face="bold", size=20),
-      legend.text=element_text(size=20),
-      legend.position = "none",
-      axis.title=element_text(face="bold", size=30),
-      axis.text=element_text(size=30, color="black"), 
-      strip.text.x=element_text(face="italic", size=20)
-      ); chlc_prot_cm2
+# # Define the specific timepoint
+# specific_timepoint <- "TP5"
+# 
+# # Define the chlc2.ug.cm2 threshold for outlier detection
+# threshold <- 1.88
+# 
+# # Filter the data to remove the outlier point at timepoint 5
+# filtered_master <- master %>%
+#   filter(!(timepoint == specific_timepoint & chlc2.ug.cm2 > threshold))
+# 
+# #create plot
+# chlc_prot_cm2<-filtered_master %>%
+#   filter(!is.na(chlc2.ug.cm2)) %>%
+#   filter(!is.na(timepoint))%>%
+#   select(fragment_ID, timepoint, formatted_date, treatment, chlc2.ug.cm2)%>%
+#   
+#   ggplot(., aes(x = formatted_date, y = chlc2.ug.cm2, fill = treatment)) +
+#     geom_boxplot(outlier.size = 0) +
+#     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
+#     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
+#     labs(fill = "Treatment") +
+#     #facet_wrap(~timepoint) +
+#     xlab("Timepoint") + 
+#     ylab(expression(bold(paste("Chlorophyll c2 (", mu, "g cm"^-2, ")"))))+
+#     theme_classic() + 
+#     theme(
+#       legend.title=element_text(face="bold", size=20),
+#       legend.text=element_text(size=20),
+#       legend.position = "none",
+#       axis.title=element_text(face="bold", size=30),
+#       axis.text=element_text(size=30, color="black"), 
+#       strip.text.x=element_text(face="italic", size=20)
+#       ); chlc_prot_cm2
 ```
 
 ### Plot: total CHL
@@ -715,12 +749,30 @@ tot_chl <- ggplot(plot_data_chl, aes(x = formatted_date, y = Total_Chl_cm2, fill
 
 
 ### Plot: sym biomass
-
 View by treatment and timepoint.   
 ```{r}
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_sym_bio <- letters_data_sym_bio_og %>%
+  select(timepoint, .group)
+
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_sym_bio <- rbind(letters_data_sym_bio, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_sym_bio <- master %>%
+  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(timepoint)) %>%
+  select(fragment_ID, timepoint, formatted_date, treatment, Sym_AFDW.mg.cm2) %>%
+  left_join(letters_data_sym_bio, by = "timepoint")
 
 #remove outlier chla.ug cm2 for plot from TP3, TP5
-master.sym.bio <- master %>%
+plot_data_sym_bio <- plot_data_sym_bio %>%
   filter(Sym_AFDW.mg.cm2 < 1.6)
 
 # Define the specific timepoint
@@ -730,21 +782,15 @@ specific_timepoint <- "TP5"
 threshold <- 1.3
 
 # Filter the data to remove the outlier point at timepoint 5
-master.sym.bio <- master.sym.bio %>%
+plot_data_sym_bio <- plot_data_sym_bio %>%
   filter(!(timepoint == specific_timepoint & Sym_AFDW.mg.cm2 > threshold))
 
 #create plot
-sym.bio <- master.sym.bio %>%
-  filter(!is.na(Sym_AFDW.mg.cm2)) %>%
-  filter(!is.na(timepoint))%>%
-  select(fragment_ID, timepoint, formatted_date, treatment, Sym_AFDW.mg.cm2)%>%
-  
-  ggplot(., aes(x = formatted_date, y = Sym_AFDW.mg.cm2, fill = treatment)) +
+sym.bio <- ggplot(plot_data_sym_bio, aes(x = formatted_date, y = Sym_AFDW.mg.cm2, fill = treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     scale_fill_manual(values = c("darkblue", "red", "gray"), labels=c("ambient", "hot", "initial"))+
     labs(fill = "Treatment") +
-    #facet_wrap(~timepoint) +
     xlab("Timepoint") + 
     ylab(expression(bold(paste("Symbiont Tissue Biomass (mg cm"^-2, ") "))))+
     theme_classic() + 
