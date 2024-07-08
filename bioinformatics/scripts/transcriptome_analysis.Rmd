@@ -13,20 +13,20 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-Read in raw read length information and calculate length information (run this code after converting Hifi read file to fasta). I am keeping the raw read length file on my local computer because it is too large to push to github; it will be stored on OSF.
+Read in raw read length information and calculate length information for stranded reference (run this code after converting trinity fasta to read text file). I am keeping the raw read length file on my local computer because it is too large to push to github; it will be stored on OSF.
 ```{r, echo=F}
-read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/rr_read_lengths.txt", 
+read.table(file = "../../../../../Downloads/transcript_lengths_stranded.txt", 
            header = F) %>% 
-  dplyr::rename("hifi_read_name" = 1, 
-         "length" = 2) -> hifi_read_length
-nrow(hifi_read_length) # 5,898,386 total reads
-mean(hifi_read_length$length) # mean length of reads is 13,424.64
-sum(hifi_read_length$length) #length sum 79,183,709,778. Will need this for the NCBI submission
+  dplyr::rename("nonstrand_trans_read_name" = 1, 
+         "length" = 2) -> strand_trans_read_length
+nrow(strand_trans_read_length) # 982,351 total reads
+mean(strand_trans_read_length$length) # mean length of reads is 681.0514
+sum(strand_trans_read_length$length) #length sum 669,031,487. Will need this for the NCBI submission
 ```
 
-Reading in and viewing eukaryotic contamination read hits 
+Reading in and viewing eukaryotic contamination read hits for stranded
 ```{r reading in and viewing the euk hits that pass the threshold, echo = F}
-read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminants_pass_filter_euks_rr.txt", 
+read.table(file = "../../../../../Downloads/contaminants_pass_filter_euks_rr_stranded.txt", 
            header = F) %>% 
   dplyr::rename("read_ID" = 1, 
          "subject_ID" = 2, 
@@ -39,19 +39,16 @@ read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminants_pass_filter_
          "subject_start" = 9, 
          "subject_end" = 10, 
          "e_value" = 11, 
-         "bit_Score" = 12) -> contam_euk_pass_filt
+         "bit_Score" = 12) -> contam_euk_pass_filt_stranded
 # View(contam_euk_pass_filt) 
-unique(contam_euk_pass_filt$read_ID) # 2 unique reads that pass contaminants? 
+unique(contam_euk_pass_filt_stranded$read_ID) # 154 unique reads that pass contaminants? 
 
-contam_euk_pass_filt %>% 
-  summarise(read_ID = unique(read_ID)) -> euk_hit_for_removal
 # View(euk_hit_for_removal)
+contam_euk_pass_filt_stranded %>% 
+  summarise(read_ID = unique(read_ID)) -> euk_hit_for_removal_stranded
 
-# View(hifi_read_length)
-print(hifi_read_length %>% 
-        dplyr::filter(hifi_read_name %in% c("m84100_240128_024355_s2/48759857/ccs", "m84100_240128_024355_s2/234751852/ccs")))
-
-ggplot(contam_euk_pass_filt %>% 
+# View(stranded_read_length)
+ggplot(contam_euk_pass_filt_stranded %>% 
          mutate(subject_ID = as.factor(subject_ID))) + 
   geom_rect(aes(xmin=as.numeric(subject_ID) - 0.2, 
                 xmax=as.numeric(subject_ID) + 0.2, 
@@ -64,22 +61,21 @@ ggplot(contam_euk_pass_filt %>%
                    yend=subject_ID), size=2, color="blue") +
   scale_y_discrete(expand = c(0.2, 0.2), 
                    guide = guide_axis(n.dodge = 3)) +
-  scale_x_continuous(limits = c(4200, 5900), 
+  scale_x_continuous(limits = c(0, 23842), 
                      expand = c(0, 0), 
                      labels = scales::number_format()) + 
   theme_bw() +
   theme(text = element_text(size = 5))
 
-contam_euk_pass_filt <- contam_euk_pass_filt %>% 
+contam_euk_pass_filt_stranded <- contam_euk_pass_filt_stranded %>% 
   mutate(query_diff = query_end - query_start) %>%
   mutate(subject_diff = subject_end - subject_start)
 ```
 
-Not a pretty plot, but provides good information. It appears the the eukaryotic contamination is only from a short portion of the m84100_240128_024355_s2/48759857/ccs and m84100_240128_024355_s2/234751852/ccs reads. I will likely purge this section prior to assembly. 
 
-Read in and review the sym hits that passed the threshold 
+Read in and review the sym hits that passed the threshold for stranded reference
 ```{r}
-read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminant_hits_sym_passfilter_rr.txt", 
+read.table(file = "../../../../../Downloads/contaminant_hits_sym_passfilter_rr_stranded.txt", 
            header = F) %>% 
   dplyr::rename("read_ID" = 1, 
          "subject_ID" = 2, 
@@ -94,12 +90,12 @@ read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminant_hits_sym_pass
          "e_value" = 11, 
          "bit_Score" = 12) %>%
     group_by(read_ID) %>%
-  summarise(count = n()) -> sym_hit_for_removal
+  summarise(count = n()) -> sym_hit_for_removal_stranded
 ```
 
-Read in prok and viral hits that pass the threshold 
+Read in prok and viral hits that pass the threshold for stranded reference 
 ```{r}
-read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminant_hits_pv_passfilter_rr.txt", 
+read.table(file = "../../../../../Downloads/contaminant_hits_pv_passfilter_rr_stranded.txt", 
            header = F) %>% 
   dplyr::rename("read_ID" = 1, 
          "subject_ID" = 2, 
@@ -114,22 +110,22 @@ read.table(file = "~/Desktop/PutnamLab/Apulchra_genome/contaminant_hits_pv_passf
          "e_value" = 11, 
           "bit_Score" = 12) %>% 
    inner_join(hifi_read_length, 
-              by = c("read_ID" = "hifi_read_name")) -> pv_hits
+              by = c("read_ID" = "nonstrand_trans_read_name")) -> pv_hits_stranded
 
 ## making the percentage of each hits align length to the contigs
 ##so obviously if there is a blast result with 100% it means that whole contig is probably a contaminant
-pv_hits %>% 
-  mutate(percent_alignment = (align_length/length)*100) -> pv_hits
+pv_hits_stranded %>% 
+  mutate(percent_alignment = (align_length/length)*100) -> pv_hits_stranded
 
-pv_hits %>%
+pv_hits_stranded %>%
   group_by(read_ID) %>% 
-  summarise(count = n()) -> pv_hit_for_removal
-length(unique(pv_hit_for_removal))
+  summarise(count = n()) -> pv_hit_for_removal_stranded
+length(unique(pv_hit_for_removal_stranded))
 ```
 
 Make a histogram of percent alignment for the blast results to the contigs 
 ```{r}
-ggplot(data = pv_hits, 
+ggplot(data = pv_hits_stranded, 
        aes(x = percent_alignment)) +
   geom_histogram(binwidth = 10) + 
   labs(x = "% Alignment", y = "Count", title = "Histogram of % alignment for PV contaminants") + 
@@ -141,7 +137,7 @@ Most of the percentage alignments are on the lower side and we do not have that 
 
 This histogram is showing the alignment of all blast hits along the raw read
 ```{r, echo = F}
-ggplot(data = pv_hits %>% 
+ggplot(data = pv_hits_stranded %>% 
   group_by(read_ID) %>% 
    mutate(start = min(query_start), 
           stop = max(query_end), 
@@ -159,7 +155,7 @@ I'm not totally sure what this histogram is telling us...
 
 Look at pv contaminants with <40% covered
 ```{r}
-pv_hits %>% 
+pv_hits_stranded %>% 
   group_by(read_ID) %>% 
    summarise(start = min(query_start), 
           stop = max(query_end), 
@@ -173,10 +169,10 @@ pv_hits %>%
 length(unique(summarised_alignments_raw_reads$read_ID))
 ```
 
-There are 494 unique contigs (raw reads) that have some pv contamination. Look at the placement of the contam on a contig 
+There are 10,792 unique contigs (raw reads) that have some pv contamination. Look at the placement of the contam on a contig 
 ```{r}
-ggplot(pv_hits %>% 
-         dplyr::filter(read_ID %in% "m84100_240128_024355_s2/140182293/ccs") %>% 
+ggplot(pv_hits_stranded %>% 
+         #dplyr::filter(read_ID ) %>% 
          mutate(subject_ID = as.factor(subject_ID))) + 
   geom_rect(aes(xmin=query_start, 
                 xmax=query_end, 
@@ -189,74 +185,331 @@ ggplot(pv_hits %>%
                    yend=subject_ID), size=2, color="blue") +
   scale_y_discrete(expand = c(0.2, 0.2), 
                    guide = guide_axis(n.dodge = 3)) +
-  scale_x_continuous(limits = c(0, 33399), 
+  scale_x_continuous(limits = c(0, 100127), 
                      expand = c(0, 0), 
                      labels = scales::number_format()) + 
   theme_bw() +
   theme(text = element_text(size = 5))
 ```
 
-Using these results, I will remove the contaminants and then use the cleaned reads for assembly with hifiasm. 
+Using these results, I will remove the contaminants and then use the cleaned reads for reference transcriptome.
 
 - summarised_alignments_raw_reads -> bit scores >1000 for viral and prokaryotic
-- euk_hit_for_removal -> the two euk hits from the contam file 
-- sym_hit_for_removal -> 
+- euk_hit_for_removal -> the 156 euk hits from the contam file 
+- sym_hit_for_removal -> 8,449
 
 Look at length of all these dfs
 ```{r}
-nrow(hifi_read_length)
+nrow(strand_trans_read_length)
 nrow(summarised_alignments_raw_reads)
-nrow(euk_hit_for_removal)
-nrow(sym_hit_for_removal)
+nrow(euk_hit_for_removal_stranded) #156
+nrow(sym_hit_for_removal_stranded) #8449
 ```
 
 Sum of contamination and proportion of contamination to raw reads 
 ```{r}
-(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal) + nrow(mito_hit_for_removal) + nrow(sym_hit_for_removal))
-(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal) + nrow(mito_hit_for_removal) + nrow(sym_hit_for_removal))/nrow(hifi_read_length) * 100
+# Sum of contamination
+(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal_stranded) + nrow(sym_hit_for_removal_stranded)) # 19397
+
+# Proportion of contamination
+(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal_stranded) + nrow(sym_hit_for_removal_stranded))/nrow(strand_trans_read_length) * 100 #1.97%
 ```
 
-Sum of all contamination = 1922
-This is only 0.03258519% of the raw reads, which is pretty amazing! 
+Sum of all contamination = 19397
+Strand trans read length = 982351
+This is only 1.97% of the raw reads!
 
 Summarize the contam information 
 ```{r}
-summarised_alignments_raw_reads %>% 
-  dplyr::select(read_ID) %>% 
-  rbind(mito_hit_for_removal %>% 
-          dplyr::select(read_ID)) %>% 
-  rbind(sym_hit_for_removal %>% 
-          dplyr::select(read_ID)) %>% 
-  rbind(euk_hit_for_removal %>% 
-          dplyr::select(read_ID)) -> all_contam_removal
+# Step 1: Combine all contaminated read IDs
+all_contam_removal_strand <- summarised_alignments_raw_reads %>%
+  dplyr::select(read_ID) %>%
+  rbind(sym_hit_for_removal_stranded %>% dplyr::select(read_ID)) %>%
+  rbind(euk_hit_for_removal_stranded %>% dplyr::select(read_ID))
 
-hifi_read_length %>% 
-  dplyr::filter(!hifi_read_name %in% all_contam_removal$read_ID) -> all_contam_rem_good_hifi_read_list
+# Step 2: Filter out the contaminated reads
+all_contam_rem_good_strand_read_list <- strand_trans_read_length %>%
+  dplyr::filter(!nonstrand_trans_read_name %in% all_contam_removal_strand$read_ID)
+
+
+# Check for duplicates in contaminated read IDs
+duplicate_contam_ids <- all_contam_removal_strand %>%
+  dplyr::filter(duplicated(read_ID))
+
+# Count duplicates
+num_duplicate_contam_ids <- nrow(duplicate_contam_ids)
+print(num_duplicate_contam_ids)
+# 41 duplicates in the contam IDS so that is why all_contam_rem_good_strand_read_list has 962,995 transcripts
+
 ```
 
-`all_contam_rem_good_hifi_read_list` is the df of all contigs that passed contamination filtering. 
+`all_contam_rem_good_strand_read_list` is the df of all contigs that passed contamination filtering. 
 
 Mean and sum calculation for cleaned raw reads 
 ```{r}
-mean(all_contam_rem_good_hifi_read_list$length)
-sum(all_contam_rem_good_hifi_read_list$length)
+mean(all_contam_rem_good_strand_read_list$length) #648.94
+sum(all_contam_rem_good_strand_read_list$length) # 624,926,810
 
-sum(hifi_read_length$length)
+sum(strand_trans_read_length$length) # 669,031,487
 ```
 
-Calculating rough sequencing depth for genome
-```{r}
-hifi_read_length %>% 
-  dplyr::filter(hifi_read_name %in% all_contam_rem_good_hifi_read_list$hifi_read_name) -> filt_raw_Reads
-(sum(filt_raw_Reads$length)/79183709778)*((79168047656/sum(filt_raw_Reads$length))*100)
-```
-
-I'm not sure if I am calculating depth correctly. I'll need to figure that out, but it appears we have roughly 100x coverage! This is similar to Ben's results as well. 
 
 Write a table for filtering reads on Andromeda
 ```{r}
-write.table(all_contam_rem_good_hifi_read_list,
-            file = "~/Desktop/PutnamLab/Apulchra_genome/all_contam_rem_good_hifi_read_list.txt",
+write.table(all_contam_rem_good_strand_read_list,
+            file = "../../../../../Downloads/all_contam_rem_good_strand_read_list.txt",
+            row.names = F,
+            col.names = F,
+            quote = F)
+```
+
+
+##############################################################################################################################
+
+Read in raw read length information and calculate length information for nonstranded reference (run this code after converting trinity fasta to read text file). I am keeping the raw read length file on my local computer because it is too large to push to github; it will be stored on OSF.
+```{r, echo=F}
+read.table(file = "../../../../../Downloads/transcript_lengths_nonstranded.txt", 
+           header = F) %>% 
+  dplyr::rename("nonstrand_trans_read_name" = 1, 
+         "length" = 2) -> nonstrand_trans_read_length
+nrow(nonstrand_trans_read_length) # 574,858 total reads
+mean(nonstrand_trans_read_length$length) # mean length of reads is 771.09
+sum(nonstrand_trans_read_length$length) #length sum 443,268,594. Will need this for the NCBI submission
+```
+
+Reading in and viewing eukaryotic contamination read hits for nonstranded
+```{r reading in and viewing the euk hits that pass the threshold, echo = F}
+read.table(file = "../../../../../Downloads/contaminants_pass_filter_euks_rr_nonstranded.txt", 
+           header = F) %>% 
+  dplyr::rename("read_ID" = 1, 
+         "subject_ID" = 2, 
+         "percent_identity" = 3, 
+         "align_length" = 4, 
+         "mismatches" = 5, 
+         "gap_open" = 6, 
+         "query_start" = 7, 
+         "query_end" = 8, 
+         "subject_start" = 9, 
+         "subject_end" = 10, 
+         "e_value" = 11, 
+         "bit_Score" = 12) -> contam_euk_pass_filt_nonstranded
+# View(contam_euk_pass_filt) 
+unique(contam_euk_pass_filt_nonstranded$read_ID) # 73 unique reads that pass contaminants? 
+
+# View(euk_hit_for_removal)
+contam_euk_pass_filt_nonstranded %>% 
+  summarise(read_ID = unique(read_ID)) -> euk_hit_for_removal_nonstranded
+
+# View(nonstranded_read_length)
+ggplot(contam_euk_pass_filt_nonstranded %>% 
+         mutate(subject_ID = as.factor(subject_ID))) + 
+  geom_rect(aes(xmin=as.numeric(subject_ID) - 0.2, 
+                xmax=as.numeric(subject_ID) + 0.2, 
+                ymin=query_start - 0.4, 
+                ymax=query_end + 0.4), 
+            fill="gray60") + 
+  geom_segment(aes(x=query_start, 
+                   y=subject_ID, 
+                   xend=query_end, 
+                   yend=subject_ID), size=2, color="blue") +
+  scale_y_discrete(expand = c(0.2, 0.2), 
+                   guide = guide_axis(n.dodge = 3)) +
+  scale_x_continuous(limits = c(0, 2026), 
+                     expand = c(0, 0), 
+                     labels = scales::number_format()) + 
+  theme_bw() +
+  theme(text = element_text(size = 5))
+
+contam_euk_pass_filt_nonstranded <- contam_euk_pass_filt_nonstranded %>% 
+  mutate(query_diff = query_end - query_start) %>%
+  mutate(subject_diff = subject_end - subject_start)
+```
+
+
+Read in and review the sym hits that passed the threshold for nonstranded reference
+```{r}
+read.table(file = "../../../../../Downloads/contaminant_hits_sym_passfilter_rr_nonstranded.txt", 
+           header = F) %>% 
+  dplyr::rename("read_ID" = 1, 
+         "subject_ID" = 2, 
+         "percent_identity" = 3, 
+         "align_length" = 4, 
+         "mismatches" = 5, 
+         "gap_open" = 6, 
+         "query_start" = 7, 
+         "query_end" = 8, 
+         "subject_start" = 9, 
+         "subject_end" = 10, 
+         "e_value" = 11, 
+         "bit_Score" = 12) %>%
+    group_by(read_ID) %>%
+  summarise(count = n()) -> sym_hit_for_removal_nonstranded
+```
+
+Read in prok and viral hits that pass the threshold for nonstranded reference 
+```{r}
+read.table(file = "../../../../../Downloads/contaminant_hits_pv_passfilter_rr_nonstranded.txt", 
+           header = F) %>% 
+  dplyr::rename("read_ID" = 1, 
+         "subject_ID" = 2, 
+         "percent_identity" = 3, 
+         "align_length" = 4, 
+         "mismatches" = 5, 
+         "gap_open" = 6, 
+         "query_start" = 7, 
+         "query_end" = 8, 
+         "subject_start" = 9, 
+         "subject_end" = 10, 
+         "e_value" = 11, 
+          "bit_Score" = 12) %>% 
+   inner_join(nonstrand_trans_read_length, 
+              by = c("read_ID" = "nonstrand_trans_read_name")) -> pv_hits_nonstranded
+
+## making the percentage of each hits align length to the contigs
+##so obviously if there is a blast result with 100% it means that whole contig is probably a contaminant
+pv_hits_nonstranded %>% 
+  mutate(percent_alignment = (align_length/length)*100) -> pv_hits_nonstranded
+
+pv_hits_nonstranded %>%
+  group_by(read_ID) %>% 
+  summarise(count = n()) -> pv_hit_for_removal_nonstranded
+length(unique(pv_hit_for_removal_nonstranded))
+```
+
+Make a histogram of percent alignment for the blast results to the contigs 
+```{r}
+ggplot(data = pv_hits_nonstranded, 
+       aes(x = percent_alignment)) +
+  geom_histogram(binwidth = 10) + 
+  labs(x = "% Alignment", y = "Count", title = "Histogram of % alignment for PV contaminants") + 
+  scale_fill_manual(values = c("blue")) + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```
+
+
+This histogram is showing the alignment of all blast hits along the raw read
+```{r, echo = F}
+ggplot(data = pv_hits_nonstranded %>% 
+  group_by(read_ID) %>% 
+   mutate(start = min(query_start), 
+          stop = max(query_end), 
+          align_length = stop - start, 
+          length = unique(length), 
+          percent_alignment = (align_length/length)*100), 
+       aes(x = percent_alignment)) +
+  geom_histogram(binwidth = 10) + 
+  labs(x = "Raw Read Length", y = "Count", title = "Histogram of Percentage Alignment over the whole raw read") + 
+  scale_fill_manual(values = c("blue")) + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```
+
+I'm not totally sure what this histogram is telling us...
+
+Look at pv contaminants with <40% covered
+```{r}
+pv_hits_nonstranded %>% 
+  group_by(read_ID) %>% 
+   summarise(start = min(query_start), 
+          stop = max(query_end), 
+          align_length = stop - start, 
+          length = unique(length), 
+          percent_alignment = (align_length/length)*100) %>%
+  arrange(desc(length), percent_alignment) -> summarised_alignments_raw_reads
+#  dplyr::filter(percent_alignment < 50) 
+# View(summarised_alignments_raw_reads)
+
+length(unique(summarised_alignments_raw_reads$read_ID))
+```
+
+There are 52 unique contigs (raw reads) that have some pv contamination. Look at the placement of the contam on a contig 
+```{r}
+ggplot(pv_hits_nonstranded %>% 
+         #dplyr::filter(read_ID ) %>% 
+         mutate(subject_ID = as.factor(subject_ID))) + 
+  geom_rect(aes(xmin=query_start, 
+                xmax=query_end, 
+                ymin=as.numeric(subject_ID)-0.4, 
+                ymax=as.numeric(subject_ID)+0.4), 
+            fill="gray60") + 
+  geom_segment(aes(x=query_start, 
+                   y=subject_ID, 
+                   xend=query_end, 
+                   yend=subject_ID), size=2, color="blue") +
+  scale_y_discrete(expand = c(0.2, 0.2), 
+                   guide = guide_axis(n.dodge = 3)) +
+  scale_x_continuous(limits = c(0, 1871), 
+                     expand = c(0, 0), 
+                     labels = scales::number_format()) + 
+  theme_bw() +
+  theme(text = element_text(size = 5))
+```
+
+Using these results, I will remove the contaminants and then use the cleaned reads for reference transcriptome.
+
+- summarised_alignments_raw_reads -> bit scores >1000 for viral and prokaryotic
+- euk_hit_for_removal -> the 74 euk hits from the contam file 
+- sym_hit_for_removal -> 7,815
+
+Look at length of all these dfs
+```{r}
+nrow(nonstrand_trans_read_length) #574,858
+nrow(summarised_alignments_raw_reads) #52
+nrow(euk_hit_for_removal_nonstranded) #74
+nrow(sym_hit_for_removal_nonstranded) #7,815
+```
+
+Sum of contamination and proportion of contamination to raw reads 
+```{r}
+# Sum of contamination
+(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal_nonstranded) + nrow(sym_hit_for_removal_nonstranded)) # 7,941
+
+# Proportion of contamination
+(nrow(summarised_alignments_raw_reads) + nrow(euk_hit_for_removal_nonstranded) + nrow(sym_hit_for_removal_nonstranded))/nrow(nonstrand_trans_read_length) * 100 #1.38%
+```
+
+Sum of all contamination = 7,941
+Strand trans read length = 574858
+This is only 1.38% of the raw reads!
+
+Summarize the contam information 
+```{r}
+# Step 1: Combine all contaminated read IDs
+all_contam_removal_nonstrand <- summarised_alignments_raw_reads %>%
+  dplyr::select(read_ID) %>%
+  rbind(sym_hit_for_removal_nonstranded %>% dplyr::select(read_ID)) %>%
+  rbind(euk_hit_for_removal_nonstranded %>% dplyr::select(read_ID))
+
+# Step 2: Filter out the contaminated reads
+all_contam_rem_good_nonstrand_read_list <- nonstrand_trans_read_length %>%
+  dplyr::filter(!nonstrand_trans_read_name %in% all_contam_removal_nonstrand$read_ID)
+
+
+# Check for duplicates in contaminated read IDs
+duplicate_contam_ids <- all_contam_removal_nonstrand %>%
+  dplyr::filter(duplicated(read_ID))
+
+# Count duplicates
+num_duplicate_contam_ids <- nrow(duplicate_contam_ids)
+print(num_duplicate_contam_ids)
+# 12 duplicates in the contam IDS so that is why all_contam_rem_good_strand_read_list has 566,929 transcripts
+
+```
+
+`all_contam_rem_good_nonstrand_read_list` is the df of all contigs that passed contamination filtering. 
+
+Mean and sum calculation for cleaned raw reads 
+```{r}
+mean(all_contam_rem_good_nonstrand_read_list$length) #761.99
+sum(all_contam_rem_good_nonstrand_read_list$length) # 431,994,179
+
+sum(nonstrand_trans_read_length$length) # 443,268,594
+```
+
+
+Write a table for filtering reads on Andromeda
+```{r}
+write.table(all_contam_rem_good_nonstrand_read_list,
+            file = "../../../../../Downloads/all_contam_rem_good_nonstrand_read_list.txt",
             row.names = F,
             col.names = F,
             quote = F)
