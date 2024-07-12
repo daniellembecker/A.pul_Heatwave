@@ -173,7 +173,7 @@ holobiont_protein_dataset<-holobiont_protein_dataset%>%
 
 #change holobiont prot_ug.cm2 name to be spcific to holobiont
 holobiont_protein_dataset <- holobiont_protein_dataset %>%
-  rename(holobiont_prot_ug.cm2 = prot_ug.cm2)
+  rename(holobiont_prot_ug.cm2 = holobiont_prot_ug.cm2)
   
 #symbiont densitites
 symb_densities_dataset<-symb_densities_dataset%>%
@@ -185,12 +185,12 @@ Join all data frames together.
 
 ```{r}
 #can also use "join_all"
-master <- full_join(full_join(full_join(full_join(full_join(
+master <- full_join(full_join(full_join(full_join(
   chlorophyll_dataset,
   host_protein_dataset, by=c("fragment_ID", "timepoint")),
   holobiont_protein_dataset, by=c("fragment_ID", "timepoint")),
   surface_area_dataset, by=c("fragment_ID", "timepoint")), 
-  biomass_dataset, by=c("fragment_ID", "timepoint")),
+ # biomass_dataset, by=c("fragment_ID", "timepoint")),
   symb_densities_dataset, by=c("fragment_ID", "timepoint"))
 
 head(master)
