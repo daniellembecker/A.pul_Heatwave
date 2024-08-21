@@ -379,7 +379,7 @@ Generate a Type III Anova of model.
 anova(sym_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint:Treatment)
+emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint:treatment)
 pairs(emm.sym.bio)
 
 # Generate letter-based groupings
@@ -421,7 +421,7 @@ Generate a Type III Anova of model.
 anova(host_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.host.bio<-emmeans(host_bio_model, ~ timepoint:Treatment)
+emm.host.bio<-emmeans(host_bio_model, ~ timepoint:treatment)
 pairs(emm.host.bio)
 
 # Generate letter-based groupings
@@ -568,7 +568,7 @@ letters_data_holo_prot <- rbind(letters_data_holo_prot, new_row)
 
 # Prepare your plotting data by filtering and merging with the letters_data_sym
 plot_data_holo_prot <- master %>%
-  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(holobiont_prot_mg.cm2)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, formatted_date, treatment, holobiont_prot_mg.cm2) %>%
   left_join(letters_data_holo_prot, by = "timepoint")
@@ -766,7 +766,7 @@ letters_data_sym_bio <- rbind(letters_data_sym_bio, new_row)
 
 # Prepare your plotting data by filtering and merging with the letters_data_sym
 plot_data_sym_bio <- master %>%
-  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(Sym_AFDW.mg.cm2)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, formatted_date, treatment, Sym_AFDW.mg.cm2) %>%
   left_join(letters_data_sym_bio, by = "timepoint")
@@ -833,7 +833,7 @@ letters_data_host_bio <- rbind(letters_data_host_bio, new_row)
 
 # Prepare your plotting data by filtering and merging with the letters_data_sym
 plot_data_host_bio <- master %>%
-  filter(!is.na(cells.cm2)) %>%
+  filter(!is.na(Host_AFDW.mg.cm2)) %>%
   filter(!is.na(timepoint)) %>%
   select(fragment_ID, timepoint, formatted_date, treatment, Host_AFDW.mg.cm2) %>%
   left_join(letters_data_host_bio, by = "timepoint")

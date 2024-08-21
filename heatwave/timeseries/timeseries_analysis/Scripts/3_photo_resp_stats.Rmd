@@ -162,6 +162,18 @@ summary_fragments$GP.R <- abs(summary_fragments$GP)/abs(summary_fragments$Rd)
 #calculate ratio with absolute values
 #remove outliers detected by values of P:R ratio data
 
+
+# Mapping of timepoints to corresponding dates
+summary_fragments <- summary_fragments %>%
+  mutate(formatted_date = case_when(
+    timepoint == "TP1" ~ "03/19",
+    timepoint == "TP2" ~ "03/26",
+    timepoint == "TP3" ~ "03/31",
+    timepoint == "TP4" ~ "04/10",
+    timepoint == "TP5" ~ "04/18",
+    TRUE ~ as.character(timepoint)  # Keep original date for other cases if needed
+  ))
+
 #summarize data for each timepoint
 complete_sum <-summary_fragments%>%
   group_by(Treatment, timepoint)%>%
@@ -180,6 +192,8 @@ complete_sum <- complete_sum[, -c(3, 10:13, 15)] %>%
 ```{r}
 summary_fragments.filtered <- summary_fragments %>%
   filter(!is.na(treatment) & treatment != "initial") 
+
+
 ```
 
 
@@ -210,7 +224,7 @@ anova(P_model, type="III")
 summary(P_model)
 
 # run post hoc on timepoints and treatment
-emm_P <-emmeans(P_model, ~ timepoint:Treatment)
+emm_P <-emmeans(P_model, ~ timepoint)
 pairs(emm_P)
 
 # Generate letter-based groupings
@@ -259,7 +273,7 @@ Generate a Type III Anova of model.
 anova(rd_model, type="III")
 
 # run post hoc on timepoints and treatment
-emm_rd <-emmeans(rd_model, ~ timepoint:Treatment)
+emm_rd <-emmeans(rd_model, ~ timepoint)
 pairs(emm_rd)
 
 # Generate letter-based groupings
@@ -312,7 +326,7 @@ anova(GP_model, type="III")
 summary(GP_model)
 
 # run post hoc on timepoints and treatment
-emm_GP <-emmeans(GP_model, ~ timepoint:Treatment)
+emm_GP <-emmeans(GP_model, ~ timepoint)
 pairs(emm_GP)
 
 # Generate letter-based groupings
@@ -375,24 +389,51 @@ timepoint:Treatment 0.17285 0.05762     3    66  0.8271   0.48364
 
 Make net photosynthesis plot
 ```{r}
-# check for and remove NP outliers
-NP_clean <- summary_fragments %>%
-  filter(P < 0.80)
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_NP <- letters_data_P_og %>%
+  select(timepoint, .group)
 
-#make NP plot
-NP_plot <- NP_clean %>%
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_NP <- rbind(letters_data_NP, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_NP <- summary_fragments %>%
   filter(!is.na(P)) %>%
   filter(!is.na(timepoint)) %>%
-  select(fragment_ID, timepoint, Treatment, P, Rd) %>%
-  ggplot(., aes(x = timepoint, y = P, fill = Treatment)) +
+  select(fragment_ID, timepoint, Treatment, P, formatted_date) %>%
+  left_join(letters_data_NP, by = "timepoint")
+
+# check for and remove NP outliers
+NP_clean <- plot_data_NP %>%
+  filter(P < 0.80) %>% filter(P > 0) 
+
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_NP <- NP_clean %>%
+  group_by(timepoint, formatted_date, Treatment) %>%
+  summarise(.group = first(.group), max_y = max(P)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_NP <- as.data.frame(cld_summary_NP)
+
+#make NP plot
+NP_plot <- ggplot(NP_clean, aes(x = formatted_date, y = P, fill = Treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     xlab("Timepoint") + 
+    geom_text(data = cld_summary_NP, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
+    ylim(0,1) +
 ylab(expression(bold(paste("Net P (" *mu*"mol ", O[2] ," " *cm^-2 *hr^-1*")"))))+
 scale_fill_manual(values = c("darkblue", "red", "gray")) + #change gradient color 
   theme_classic() + 
     theme(
-      legend.position = c(0.83, .90),
+      legend.position = c(0.9, 0.85),
       legend.title=element_text(face="bold", size=40),
       legend.text=element_text(size=40),
       axis.title=element_text(face="bold", size=40),
@@ -404,22 +445,46 @@ scale_fill_manual(values = c("darkblue", "red", "gray")) + #change gradient colo
 
 Make respiration plot
 ```{r}
-#check for and remove Rd outliers
-Rd_clean <- summary_fragments %>%
-  filter(Rd < 0.97)
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_RD <- letters_data_rd_og %>%
+  select(timepoint, .group)
 
-Rd_clean <- Rd_clean %>%
-  filter(Rd > 0.0)
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
 
-#make Rd plot
-Rd_plot <- Rd_clean %>%
+# Append the new row to the dataframe
+letters_data_RD <- rbind(letters_data_RD, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_RD <- summary_fragments %>%
   filter(!is.na(Rd)) %>%
   filter(!is.na(timepoint)) %>%
-  select(fragment_ID, timepoint, Treatment, P, Rd)%>%
-  ggplot(., aes(x = timepoint, y = Rd, fill = Treatment)) +
+  select(fragment_ID, timepoint, Treatment, Rd, formatted_date) %>%
+  left_join(letters_data_RD, by = "timepoint")
+
+#check for and remove Rd outliers
+Rd_clean <- plot_data_RD %>%
+  filter(Rd < 0.97) %>%
+  filter(Rd > 0.0)
+
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_RD <- Rd_clean %>%
+  group_by(timepoint, formatted_date, Treatment) %>%
+  summarise(.group = first(.group), max_y = max(Rd)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_RD <- as.data.frame(cld_summary_RD)
+
+#make Rd plot
+Rd_plot <- ggplot(Rd_clean, aes(x = formatted_date, y = Rd, fill = Treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     xlab("Timepoint") + 
+    geom_text(data = cld_summary_RD, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     ylab(expression(bold(paste("Respiration Rate (" *mu*"mol ", O[2] ," " *cm^-2 *h^-1*")"))))+
    scale_fill_manual(values = c("darkblue", "red", "gray")) + #change gradient color 
   theme_classic() + 
@@ -437,22 +502,46 @@ Rd_plot <- Rd_clean %>%
 
 Make gross photosynthesis plot
 ```{r}
-#check for and remove GP outliers
-GP_clean <- summary_fragments %>%
-  filter(GP < 2.0)
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_GP <- letters_data_GP_og %>%
+  select(timepoint, .group)
 
-GP_clean <- GP_clean %>%
-  filter(GP > 0.3)
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
 
-#make GP plot
-GP_plot <- GP_clean %>%
+# Append the new row to the dataframe
+letters_data_GP <- rbind(letters_data_GP, new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_GP <- summary_fragments %>%
   filter(!is.na(GP)) %>%
   filter(!is.na(timepoint)) %>%
-  select(fragment_ID, timepoint, Treatment, P, Rd, GP)%>%
-  ggplot(., aes(x = timepoint, y = GP, fill = Treatment)) +
+  select(fragment_ID, timepoint, Treatment, GP, formatted_date) %>%
+  left_join(letters_data_GP, by = "timepoint")
+
+#check for and remove GP outliers
+GP_clean <- plot_data_GP %>%
+  filter(GP < 2.0) %>%
+  filter(GP > 0.3)
+
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_GP <- GP_clean  %>%
+  group_by(timepoint, formatted_date, Treatment) %>%
+  summarise(.group = first(.group), max_y = max(GP)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_GP <- as.data.frame(cld_summary_GP)
+
+#make GP plot
+GP_plot <- ggplot(GP_clean, aes(x = formatted_date, y = GP, fill = Treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     xlab("Timepoint") + 
+    geom_text(data = cld_summary_GP, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     ylab(expression(bold(paste("Gross Photosynthetic Rate (" *mu*"mol ", O[2] ," " *cm^-2 *h^-1*")"))))+
    scale_fill_manual(values = c("darkblue", "red", "gray")) + #change gradient color 
   theme_classic() + 
@@ -469,15 +558,41 @@ GP_plot <- GP_clean %>%
 
 Make GP:R plot
 ```{r}
-#make GP:R plot
-GP_R_plot <- summary_fragments %>%
+# Extract relevant columns from the compact letter display for post hoc data
+letters_data_GP_R <- letters_data_GPR_og %>%
+  select(timepoint, .group)
+
+# Create a new row for TP1
+new_row <- data.frame(
+  timepoint = "TP1",
+  .group = "na"
+)
+
+# Append the new row to the dataframe
+letters_data_GPR <- rbind(letters_data_GP_R , new_row)
+
+# Prepare your plotting data by filtering and merging with the letters_data_sym
+plot_data_GPR <- summary_fragments %>%
   filter(!is.na(GP.R)) %>%
   filter(!is.na(timepoint)) %>%
-  select(fragment_ID, timepoint, Treatment, P, Rd, GP, GP.R)%>%
-  ggplot(., aes(x = timepoint, y = GP.R, fill = Treatment)) +
+  select(fragment_ID, timepoint, Treatment, GP.R, formatted_date) %>%
+  left_join(letters_data_GPR, by = "timepoint")
+
+# Summarize the CLD data to get one letter per timepoint
+cld_summary_GPR <- plot_data_GPR  %>%
+  group_by(timepoint, formatted_date, Treatment) %>%
+  summarise(.group = first(.group), max_y = max(GP.R)) %>%
+  distinct(timepoint, .keep_all = TRUE)  # Keep only one row per timepoint
+
+# Remove any additional attributes (if any) while keeping it a dataframe
+cld_summary_GPR <- as.data.frame(cld_summary_GPR)
+
+#make GP:R plot
+GP_R_plot <- ggplot(plot_data_GPR, aes(x = formatted_date, y = GP.R, fill = Treatment)) +
     geom_boxplot(outlier.size = 0) +
     geom_point(pch = 21, size=2, position = position_jitterdodge(0.2)) + 
     xlab("Timepoint") + 
+    geom_text(data = cld_summary_GPR, aes(x = formatted_date, y = max_y + 0.05 * max_y, label = .group), size = 8, vjust = -0.5,fontface = "bold") + # Add letters
     ylab(expression(bold(paste("GP:R (" *mu*"mol ", O[2] ," " *cm^-2 *h^-1*")"))))+
    scale_fill_manual(values = c("darkblue", "red", "gray")) + #change gradient color 
   theme_classic() + 
