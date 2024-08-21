@@ -379,7 +379,7 @@ Generate a Type III Anova of model.
 anova(sym_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint:treatment)
+emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint)
 pairs(emm.sym.bio)
 
 # Generate letter-based groupings
@@ -421,7 +421,7 @@ Generate a Type III Anova of model.
 anova(host_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.host.bio<-emmeans(host_bio_model, ~ timepoint:treatment)
+emm.host.bio<-emmeans(host_bio_model, ~ timepoint)
 pairs(emm.host.bio)
 
 # Generate letter-based groupings
