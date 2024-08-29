@@ -1,0 +1,25 @@
+﻿coral.ID,genotype,treatment,eggs.per.bundle,egg.size,fertilization.success,survivorship
+1,1,ambient,yes,yes ,yes,yes
+2,2,ambient,yes,yes ,yes,yes
+3,3,ambient,yes,yes ,yes,no
+4,4,ambient,yes,yes ,yes,yes
+5,5,ambient,yes,yes ,yes,yes
+6,6,ambient,yes,yes ,yes,no
+7,7,ambient,yes,yes ,yes,no
+8,8,ambient,yes,yes ,yes,yes
+9,9,ambient,yes,yes ,yes,yes
+10,10,ambient,yes,yes ,yes,yes
+11,11,ambient,yes,yes ,yes,no
+12,12,ambient,yes,yes ,yes,yes
+13,1,hot,yes,yes ,no,no
+14,2,hot,yes,yes ,yes,yes
+15,3,hot,yes,yes ,yes,yes
+16,4,hot,yes,yes ,yes,yes
+17,5,hot,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED
+18,6,hot,yes,yes ,yes,no
+19,7,hot,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED
+20,8,hot,yes,yes ,yes,yes
+21,9,hot,yes,no,no,no
+22,10,hot,yes,yes ,yes,no
+23,11,hot,yes,yes ,yes,no
+24,12,hot,yes,yes ,yes,yes

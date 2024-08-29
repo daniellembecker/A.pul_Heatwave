@@ -1,0 +1,442 @@
+---
+title: "RNAseq Differential Gene Expression Analysis"
+author: "Ariana S Huffmyer"
+edited: "Danielle M Becker"
+date: "05/20/2024"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+Analysis of RNAseq Differential Gene Expression (DEG).  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# The following setting is important, do not omit.
+options(stringsAsFactors = FALSE) #Set Strings to character
+```
+
+# Set up 
+Load required libraries.  
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if ("genefilter" %in% rownames(installed.packages()) == 'FALSE') install.packages('genefilter') 
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') install.packages('DESeq2') 
+if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer') 
+if ("WGCNA" %in% rownames(installed.packages()) == 'FALSE') install.packages('WGCNA') 
+if ("flashClust" %in% rownames(installed.packages()) == 'FALSE') install.packages('flashClust') 
+if ("gridExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('gridExtra') 
+if ("ComplexHeatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('ComplexHeatmap') 
+if ("goseq" %in% rownames(installed.packages()) == 'FALSE') install.packages('goseq') 
+if ("dplyr" %in% rownames(installed.packages()) == 'FALSE') install.packages('dplyr') 
+if ("clusterProfiler" %in% rownames(installed.packages()) == 'FALSE') install.packages('clusterProfiler') 
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap') 
+if ("magrittr" %in% rownames(installed.packages()) == 'FALSE') install.packages('magrittr') 
+if ("vegan" %in% rownames(installed.packages()) == 'FALSE') install.packages('vegan') 
+if ("EnhancedVolcano" %in% rownames(installed.packages()) == 'FALSE') install.packages('EnhancedVolcano') 
+
+#BiocManager::install('apeglm')
+BiocManager::install('EnhancedVolcano')
+BiocManager::install('PCAtools')
+
+library("tidyverse")
+library("genefilter")
+library("DESeq2")
+library("RColorBrewer")
+library("flashClust")
+library("gridExtra")
+library("goseq")
+library("vegan")
+library("factoextra")
+library("dplyr")
+library("clusterProfiler")
+library("pheatmap")
+library("magrittr")
+library("vegan")
+library("apeglm")
+library("EnhancedVolcano")
+library("cowplot")
+library("viridis")
+library("pheatmap")
+library("PCAtools")
+```
+
+# Data input and filtering  
+
+Import the data files.  
+
+```{r}
+#load metadata sheet with sample name and developmental stage information
+metadata <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",") %>% select(bioinf.ID, treatment, type, parent)
+metadata$code<-paste0(metadata$treatment, "_", metadata$parent)
+head(metadata)
+
+#load gene count matrix generated from cluster computation
+gcount <- as.data.frame(read.csv("bioinformatics/data/gene_count_apul_matrix.csv", row.names="gene_id"), colClasses = double)
+head(gcount)
+```
+
+Check that there are no genes with 0 counts across all samples. 
+
+```{r}
+dim(gcount) 
+
+gcount<-gcount %>%
+     mutate(Total = rowSums(.[, 1:12]))%>%
+    filter(!Total==0)%>%
+    select(!Total)
+
+dim(gcount)
+```
+
+We started with 160,088 genes, which is the total number in the annotation. About 89,849 genes that had 0's across all samples (not detected) with 70,239 remaining.
+
+Prepare sample names. Keep only sample ID number in the colnames of gcount_filt.  
+```{r}
+# Function to extract numbers after 'X' and remove everything after '_sorted'
+extract_sample_numbers <- function(col_names) {
+  gsub("^X(\\d+)_sorted.*$", "\\1", col_names)
+}
+
+# Apply the function to all column names
+new_col_names <- sapply(names(gcount), extract_sample_numbers)
+
+# Rename the columns
+names(gcount) <- new_col_names
+
+# Output the modified dataframe column names
+names(gcount)
+length(names(gcount))
+```
+
+Column names are now correct and there are 12 as expected.  
+
+Print the bioif.ID names in the metadata file. 
+```{r}
+metadata$bioinf.ID
+```
+
+In order for the DESeq2 algorithms to work, the SampleIDs on the metadata file and count matrices have to match exactly and in the same order. They are.  
+
+# Format metadata and count data columns  
+
+Convert treatment metadata categories to factors. 
+```{r}
+metadata$treatment<-as.factor(metadata$treatment)
+metadata$parent<-as.factor(metadata$parent)
+metadata$type<-as.factor(metadata$type)
+metadata$code<-as.factor(metadata$code)
+```
+
+Set levels of factors. 
+```{r}
+metadata$treatment<-factor(metadata$treatment, levels=c("ambient", "heatwave"))
+metadata$parent<-factor(metadata$parent, levels=c("ambient", "heatwave"))
+metadata$type<-factor(metadata$type, levels=c("larvae", "adult"))
+```
+
+Make sure the metadata and the columns in the gene count matrix are all the same. Will reorder below.
+```{r}
+metadata$bioinf.ID
+colnames(gcount)
+```
+
+# Construct DESeq2 data set first for adults between treatments
+
+Create a DESeqDataSet design from gene count matrix and labels. Here we set the design to look at treatments in adules to test for any differences in gene expression across heatwave treatment. 
+
+The model we will use will analyze the effect of heatwave treatment on gene expression in the adults. We do not have random or batch effects in this study to analyze.  
+
+Filter dataframes for just adults between heatwave treatments
+```{r}
+# Assuming your metadata dataframe is called 'metadata'
+adult_metadata <- metadata %>%
+  filter(type == "adult")  # Adjust 'type' to match your column name
+
+# Make sure the row names of the metadata match the column names of the count matrix
+rownames(adult_metadata) <- adult_metadata$bioinf.ID  # Adjust 'sample_id' to match your column name
+
+# Assuming your gene count matrix is called 'gcount_filt'
+adult_counts <- gcount[, rownames(adult_metadata)]
+
+adult_metadata$bioinf.ID
+colnames(adult_counts)
+```
+
+Conduct data filtering, this includes:  
+
+*pOverA*: Specifying the minimum count for a proportion of samples for each gene. Here, we are using a pOverA of 0.05. This is because we have 6 samples with a minimum of n=3 samples  per group. Therefore, we will accept genes that are present in 3/6 = 0.50 of the samples because we expect different expression by treatment group (parent x temperature). We are further setting the minimum count of genes to 10, such that 50% of the samples must have a gene count of >10 in order for the gene to remain in the data set.  
+
+Filter in the package "genefilter". Pre-filtering our dataset to reduce the memory size dataframe, increase the speed of the transformation and testing functions, and improve quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
+
+Filter adult dataframe for transcripts with counts >10 in 100% of the samples
+```{r}
+filt <- filterfun(pOverA(0.5,10))
+
+#create filter for the counts data
+gfilt <- genefilter(adult_counts, filt)
+
+#identify genes to keep by count filter
+gkeep <- adult_counts[gfilt,]
+
+#identify gene lists
+gn.keep <- rownames(gkeep)
+
+#gene count data filtered in PoverA, P percent of the samples have counts over A
+gcount_filt_adult <- as.data.frame(adult_counts[which(rownames(adult_counts) %in% gn.keep),])
+
+#How many rows do we have before and after filtering?
+nrow(adult_counts) #Before
+nrow(gcount_filt_adult) #After
+```
+
+Before filtering, we had approximately 70,239 genes. After filtering for pOverA, we have approximately 19,157 genes. This indicates that there were 19,157 genes present in 100% of samples at <10 counts per gene.  
+
+Conduct Adult Analysis
+```{r}
+#Set DESeq2 design
+gdds_adults <- DESeqDataSetFromMatrix(countData = gcount_filt_adult,
+                              colData = adult_metadata,
+                             design = ~treatment)
+```
+
+First we are going to log-transform the data using a variance stabilizing transforamtion (VST). This is only for visualization purposes. Essentially, this is roughly similar to putting the data on the log2 scale. It will deal with the sampling variability of low counts by calculating within-group variability (if blind=FALSE). Importantly, it does not use the design to remove variation in the data, and so can be used to examine if there may be any variability do to technical factors such as extraction batch effects.
+
+This function calculates a variance stabilizing transformation (VST) from the fitted dispersion-mean relation(s) and then transforms the count data (normalized by division by the size factors or normalization factors), yielding a matrix of values which are now approximately homoskedastic (having constant variance along the range of mean values).    
+
+To do this we first need to calculate the size factors of our samples. This is a rough estimate of how many reads each sample contains compared to the others. In order to use VST (the faster log2 transforming process) to log-transform our data, the size factors need to be less than 4.  
+
+To do this we first need to calculate the size factors of our samples. This is a rough estimate of how many reads each sample contains compared to the others. In order to use VST (the faster log2 transforming process) to log-transform our data, the size factors need to be less than 4.
+
+Chunk should return TRUE if <4.  
+```{r}
+SF.gdds_adults <- estimateSizeFactors(gdds_adults) #estimate size factors to determine if we can use vst  to transform our data. Size factors should be less than 4 for us to use vst
+print(sizeFactors(SF.gdds_adults)) #View size factors
+
+all(sizeFactors(SF.gdds_adults)) < 4
+```
+
+All size factors are less than 4, so we can use VST transformation.  
+
+```{r}
+gvst_adults <- vst(gdds_adults, blind=FALSE) #apply a variance stabilizing transforamtion to minimize effects of small counts and normalize wrt library size
+head(assay(gvst_adults), 3) #view transformed gene count data for the first three genes in the dataset. 
+
+dim(gvst_adults)
+```
+
+# Plot a heatmap of sample to sample distances and all genes and of heatmap between treatments
+
+```{r}
+gsampleDists_adults <- dist(t(assay(gvst_adults))) #calculate distance matix
+gsampleDistMatrix_adults <- as.matrix(gsampleDists_adults) #distance matrix
+rownames(gsampleDistMatrix_adults) <- colnames(gvst_adults) #assign row names
+colnames(gsampleDistMatrix_adults) <- NULL #assign col names
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255) #assign colors
+
+save_pheatmap_pdf <- function(x, filename, width=7, height=7) {
+   stopifnot(!missing(x))
+   stopifnot(!missing(filename))
+   pdf(filename, width=width, height=height)
+   grid::grid.newpage()
+   grid::grid.draw(x$gtable)
+   dev.off()
+}
+
+pht <- pheatmap(gsampleDistMatrix_adults, #plot matrix
+         clustering_distance_rows = gsampleDists_adults, #cluster rows
+         clustering_distance_cols = gsampleDists_adults, #cluster columns
+         col = colors) #set colors
+
+save_pheatmap_pdf(pht, "heatwave/output/sample_distances_adult.pdf")
+dev.off()
+
+
+```
+
+# Conduct PCA for all genes
+```{r}
+
+testPCA <- prcomp(t(gcount_filt_adult), center=TRUE, scale=TRUE)
+
+p <- pca(assay(gvst_adults))
+
+pairsplot(p)
+
+biplot(p, showLoadings = TRUE,
+    labSize = 1, pointSize = 2, sizeLoadingsNames = 1)
+
+plotloadings(p, labSize = 2)
+```
+## Examine PCA and sample distances of all genes  
+
+Plot a PCA of samples by treatment between adults for all genes.        
+```{r}
+gPCAdata_adults <- plotPCA(gvst_adults, intgroup = c("treatment"), returnData=TRUE)
+percentVar_adults <- round(100*attr(gPCAdata_adults, "percentVar")) #plot PCA of samples with all data
+
+adults_PCA <- ggplot(gPCAdata_adults, aes(PC1, PC2, color=treatment, shape=name)) + 
+  geom_point(size=3) + 
+  ggtitle(expression(bold("All genes")))+
+  xlab(paste0("PC1: ",percentVar_adults[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_adults[2],"% variance")) +  
+  scale_color_manual(name="Treatment", values=c("ambient"="blue", "heatwave"="brown4"))+
+  theme_classic() + 
+  theme(panel.border = element_blank(),
+        axis.line = element_line(colour = "black"),
+        plot.background=element_blank());adults_PCA
+
+ggsave("heatwave/output/adult_pca_allgenes.png", adults_PCA, width=8, height=4)
+```
+
+Add a plot with elipses.  
+
+```{r}
+#adults_PCA_ellipse <- adults_PCA + stat_ellipse(); adults_PCA_ellipse
+
+#ggsave("figures/rna_seq/pca_ellipse.pdf", allgenes_ellipse, width=9, height=5)
+#ggsave("figures/rna_seq/pca_ellipse.jpeg", allgenes_ellipse, width=9, height=5)
+```
+
+# Run DEG analysis of adult heatwave treatments
+
+Use the likelihood ratio approach based on guidance from DESeq2: "DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a full model with a certain number of terms and a reduced model, in which some of the terms of the full model are removed. The test determines if the increased likelihood of the data using the extra terms in the full model is more than expected if those extra terms are truly zero.
+
+The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model." 
+
+## 1. View DEG's by treatment
+
+Run Wald test.  
+```{r, message = FALSE}
+DEG_T_adults <- DESeq(gdds_adults, test="Wald")
+```
+
+View results by treatment effects. Create dataframe for each comparison and add a column for the specific contrast.  
+```{r}
+resultsNames(DEG_T_adults)
+#this shows the comparisons made (shown similar to lm output)
+
+adult_deg<-results(DEG_T_adults, contrast=c("treatment","heatwave","ambient"))
+adult_deg <- as.data.frame(subset(adult_deg))
+adult_deg <- as.data.frame(subset(adult_deg, padj<0.05))
+#adult_deg <- as.data.frame(subset(adult_deg, abs(log2FoldChange)>1.5))
+adult_deg$contrast <- c("adult treatment")
+adult_deg$gene <- rownames(adult_deg)
+rownames(adult_deg) <- NULL
+
+dim(adult_deg)
+
+# Count how many are upregulated or downregulated
+# Count upregulated genes (log2FoldChange > 0)
+upregulated_genes <- sum(adult_deg$log2FoldChange > 0)
+# Count downregulated genes (log2FoldChange < 0)
+downregulated_genes <- sum(adult_deg$log2FoldChange < 0)
+# Print the counts
+cat("Upregulated genes:", upregulated_genes, "\n") #35 
+cat("Downregulated genes:", downregulated_genes, "\n") #37
+
+# Add a new column 'direction' based on the log2FoldChange values
+adult_deg$direction <- ifelse(adult_deg$log2FoldChange > 0, "upregulated", "downregulated")
+
+```
+
+There are 72 genes differentially expressed genes between adult heatwave treatmments. In these contrasts, positive fold changes indicate higher expression in the first listed contrast.  
+
+```{r}
+dim(adult_deg)
+length(unique(adult_deg$gene))
+```
+There are 72 total genes and 72 unique genes.
+
+Get a VST normalized gene count matrix for these DEGs. 
+```{r}
+DEG_adult_vst <- gdds_adults[unique(adult_deg$gene)]
+dim(DEG_adult_vst)
+
+DEG_adult_vst <- varianceStabilizingTransformation(DEG_adult_vst) 
+```
+
+### Plot a volcano plot for adult heatwave comparison.   
+
+Adults between heatwave and ambient treatment
+```{r}
+res <- results(DEG_T_adults, contrast=c("treatment","heatwave","ambient"))
+
+volcano_plot_adults<-EnhancedVolcano(res,
+    lab = rownames(res),
+    x = 'log2FoldChange',
+    y = 'padj',
+    title = 'Adult Treatments',
+    pCutoff = 0.05,
+    FCcutoff = 1.5,
+    pointSize = 3.0,
+    labSize = 0.0, 
+    legendPosition = 'none');volcano_plot_adults
+```
+
+Save volcano plot. 
+
+```{r}
+ggsave("heatwave/output/volcano_adult_treatment.png", plot=volcano_plot_adults, width=6, height=6)
+```
+
+### Plot a heatmap for genes that are differentially expressed between treatments.
+
+Set themes and metadata.  
+```{r}
+# Make a matrix for computing similarity
+mat <- assay(DEG_adult_vst) # make an expression object
+mat <- mat - rowMeans(mat) #difference in expression compared to average across all samples
+dim(mat)
+ann_colors <- list(treatment= c(ambient="blue", heatwave="brown4"))
+df_DEGSeq2_adults <- as.data.frame(colData(DEG_adult_vst)[c("treatment")]) #make dataframe for column naming and associated treatment
+
+# Sort the columns of the matrix by treatment
+treatment_order <- order(df_DEGSeq2_adults$treatment)
+mat <- mat[, treatment_order]
+df_DEGSeq2_adults <- df_DEGSeq2_adults[treatment_order, , drop = FALSE]
+
+
+DEGSeq2_heatmap_adults <- pheatmap(mat, scale= "row", legend=TRUE, annotation_legend=TRUE, annotation_col=df_DEGSeq2_adults, annotation_colors = ann_colors,
+                            clustering_distance_rows="euclidean", clustering_method = "average",
+                            show_rownames =FALSE,
+                            show_colnames =TRUE,
+                            cluster_cols = FALSE)
+
+DEGSeq2_heatmap_adults
+```
+
+Save heatmap of adult DEGs plot. 
+
+```{r}
+ggsave("heatwave/output/DEG_heatmap_adults.png", plot=DEGSeq2_heatmap_adults, width=6, height=5)
+```
+
+
+### plot a PCA for treatment comparisons.  
+
+Plot a PCA of DEG's for temperature.        
+```{r}
+gPCAdata_DEG_adult <- plotPCA(DEG_adult_vst, intgroup = c("treatment"), returnData=TRUE)
+percentVar_DEG_temp <- round(100*attr(gPCAdata_DEG_adult, "percentVar")) #plot PCA of samples with all data
+
+DEG_PCA_adult <- ggplot(gPCAdata_DEG_adult, aes(PC1, PC2, color=treatment)) + 
+  geom_point(size=3) + 
+  ggtitle(expression(bold("DEGs: adult treatment")))+
+  xlab(paste0("PC1: ",percentVar_DEG_temp[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_DEG_temp[2],"% variance")) +
+  scale_color_manual(name="Treatment", values=c("ambient"="blue", "heatwave"="brown4"))+
+#  geom_text(x=0, y=-9.5, label="p[Temperature]=0.001", color="black")+
+  theme_classic() + #Set background color
+  theme(panel.border = element_blank(), # Set border
+                     #panel.grid.major = element_blank(), #Set major gridlines 
+                     #panel.grid.minor = element_blank(), #Set minor gridlines
+                     axis.line = element_line(colour = "black"), #Set axes color
+        plot.background=element_blank()); DEG_PCA_adult
+
+ggsave("heatwave/output/pca_DEG_adults.png", DEG_PCA_adult, width=5, height=4)
+```
+
+From this we can see very clear separation by treatment with high variance explained by PC1. The difference in parent exists in these DEG's, explained by PC2 with lower variance explained.
+
