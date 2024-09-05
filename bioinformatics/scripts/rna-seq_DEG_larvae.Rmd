@@ -421,7 +421,7 @@ percentVar_DEG_temp <- round(100*attr(gPCAdata_DEG_larvae, "percentVar")) #plot 
 
 DEG_PCA_larvae <- ggplot(gPCAdata_DEG_larvae, aes(PC1, PC2, color=parent)) + 
   geom_point(size=3) + 
-  ggtitle(expression(bold("DEGs: larval parental history")))+
+  ggtitle(expression(bold("DEGs: larval parental history"))) +
   xlab(paste0("PC1: ",percentVar_DEG_temp[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar_DEG_temp[2],"% variance")) +
   scale_color_manual(name="Parental History", values=c("ambient"="blue", "heatwave"="brown4"))+

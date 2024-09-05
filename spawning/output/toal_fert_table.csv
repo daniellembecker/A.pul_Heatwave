@@ -1,9 +1,9 @@
 Stage,Treatment,n,Mean,SE
 egg_prop,ambient,21,30.011,4.06
 egg_prop,hot,15,19.933,2.24
-two.cells_prop,ambient,21,23.441,1.843
+two.cells_prop,ambient,21,21.807,1.823
 two.cells_prop,hot,15,34.677,3.322
-four.cells_prop,ambient,21,19.809,2.176
+four.cells_prop,ambient,21,19.249,1.963
 four.cells_prop,hot,15,24.633,2.431
 more.cells_prop,ambient,21,17.503,2.892
 more.cells_prop,hot,15,18.152,2.686

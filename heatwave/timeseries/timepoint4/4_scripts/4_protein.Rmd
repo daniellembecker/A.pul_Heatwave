@@ -69,7 +69,12 @@ std_curve_host <- df_host %>%
   left_join(standards_host)
 
 ## Fit nonlinear model for standard curve
-mod_host <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_host)
+#mod_host <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_host)
+#fitted_host <- mod_host %>% broom::augment()
+#Error in nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0,  : step factor 0.000488281 reduced below 'minFactor' of 0.000976562, run linear model
+
+# Fit linear model
+mod_host <- lm(BSA_ug.mL ~ abs562, data = std_curve_host)
 fitted_host <- mod_host %>% broom::augment()
 
 # Plot standard curve
@@ -201,7 +206,12 @@ std_curve_holobiont <- df_holobiont %>%
   left_join(standards_holobiont)
 
 ## Fit nonlinear model for standard curve
-mod_holobiont <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_holobiont)
+#mod_holobiont <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_holobiont)
+#fitted_holobiont <- mod_holobiont %>% broom::augment()
+#Error in nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0,  : singular gradient, run linear model
+
+# Fit linear model
+mod_holobiont <- lm(BSA_ug.mL ~ abs562, data = std_curve_holobiont)
 fitted_holobiont <- mod_holobiont %>% broom::augment()
 
 # Plot standard curve

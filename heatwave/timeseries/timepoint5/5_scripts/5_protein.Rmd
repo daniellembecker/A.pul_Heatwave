@@ -23,7 +23,7 @@ library(broom)
 # Import data for host protein
 ```{r}
 # List protein data files 
-prot_path = "timepoint5/5_data/5_protein/5_host/"                                              # Path to prot data directory
+prot_path = "timepoint5/5_data/5_protein/5_host/"         # Path to prot data directory
 all_prot_files <- list.files(path = prot_path, pattern = "*.csv")          # List all files in directory
 prot_platemaps <- list.files(path = prot_path, pattern = "platemap")       # List platemap files
 prot_data_files <- setdiff(all_prot_files, prot_platemaps)                 # List data files
@@ -201,7 +201,12 @@ std_curve_holobiont <- df_holobiont %>%
   left_join(standards_holobiont)
 
 ## Fit nonlinear model for standard curve
-mod_holobiont <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_holobiont)
+#mod_holobiont <- nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0, a = 1, b = 1), data = std_curve_holobiont)
+#fitted_holobiont <- mod_holobiont %>% broom::augment()
+#Error in nls(formula = BSA_ug.mL ~ z + a * exp(b * abs562), start = list(z = 0,  : singular gradient, run linear model
+
+# Fit linear model
+mod_holobiont <- lm(BSA_ug.mL ~ abs562, data = std_curve_holobiont)
 fitted_holobiont <- mod_holobiont %>% broom::augment()
 
 # Plot standard curve

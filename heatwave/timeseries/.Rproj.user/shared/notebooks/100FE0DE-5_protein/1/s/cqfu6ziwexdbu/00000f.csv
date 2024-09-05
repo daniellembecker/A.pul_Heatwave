@@ -1,0 +1,6 @@
+"0","# Merge platemap and data for each plate
+df_holobiont <- df_holobiont %>%
+  mutate(merged = map2(platemap, prot_data, ~ right_join(.x, .y)))
+"
+"1","[38;5;232mJoining with `by = join_by(well)`[39m
+"

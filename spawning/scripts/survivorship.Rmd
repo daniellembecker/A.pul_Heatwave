@@ -61,7 +61,7 @@ library("patchwork") #combine plots
 Load datasets for larval survivorship for cohort 1022.   
 ```{r}
 #load and manipulate data sets
-larvae1022 <-read.csv("data/survivorship/cohort_survivorship/cohort1022_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
+larvae1022 <-read.csv("spawning/data/survivorship/cohort_survivorship/cohort1022_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
 
 ```
 
@@ -205,7 +205,7 @@ LarvalSurvPlot_1022<-ggplot(data=larvae1022_surv_table, aes(x=timepoint, y=mean,
 Load datasets for larval survivorship for cohort 1023.   
 ```{r}
 #load and manipulate data sets
-larvae1023 <-read.csv("data/survivorship/cohort_survivorship/cohort1023_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
+larvae1023 <-read.csv("spawning/data/survivorship/cohort_survivorship/cohort1023_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
 
 ```
 
