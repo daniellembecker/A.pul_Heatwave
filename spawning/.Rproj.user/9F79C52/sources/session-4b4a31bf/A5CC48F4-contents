@@ -147,7 +147,7 @@ mean_bundle <- bundle %>%
 bundle_plot <- mean_bundle %>%
     ggplot(., aes(x = treatment, y = mean_bundle, colour=treatment)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
-    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
@@ -289,7 +289,7 @@ mean_egg_size <- size %>%
 size_plot<- mean_egg_size %>%
     ggplot(., aes(x = treatment, y = mean_volume)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
-    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
@@ -399,14 +399,14 @@ Plot data as a box plot.
 total_fert_success_plot <- calculate_fert_success %>%
     ggplot(., aes(x = treatment, y = tot.fert.success, color = treatment)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
-    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Fertilization Success (%)"))))+
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("Kruskal-Wallis, p < 0.01") +
+    ggtitle("Kruskal-Wallis, p = 0.001") +
       annotate("text", x = 1.45, y = 100, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
@@ -443,8 +443,7 @@ There is a significant difference in fert success between groups with higher fro
 	Kruskal-Wallis rank sum test
 
 data:  tot.fert.success by treatment
-Kruskal-Wallis chi-squared = 8.9073, df = 1, p-value = 0.00284
-
+Kruskal-Wallis chi-squared = 10.715, df = 1, p-value = 0.001063
 
 
 # Calculate the means of proportions across clevage stages
@@ -599,8 +598,8 @@ repro_plot <- repro_plot + plot_annotation(tag_levels = 'A')  &
 
 repro_plot
 
-ggsave("figures/all_repro.png", plot = repro_plot, width = 15, height = 8)
-ggsave("figures/all_repro.pdf", plot = repro_plot, width = 20, height = 12)
+ggsave("figures/reproductive_ecology/all_repro.png", plot = repro_plot, width = 15, height = 8)
+ggsave("figures/reproductive_ecology/all_repro.pdf", plot = repro_plot, width = 20, height = 12)
 
 
 ```
@@ -614,7 +613,7 @@ filtered.EPB <- mean_bundle[!mean_bundle$colony %in% c("ACR-5", "ACR-7"), ]
 genotype_bundle_plot <- filtered.EPB %>%
     ggplot(., aes(x = treatment, y = mean_bundle, colour=treatment)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
-    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
@@ -660,14 +659,14 @@ filtered.size <- mean_egg_size[!mean_egg_size$tube.ID %in% c("ACR-5", "ACR-7", "
 geno_size_plot<- filtered.size %>%
     ggplot(., aes(x = treatment, y = mean_volume)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
-    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
     scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
     scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
     ylab(expression(bold(paste("Egg Size (mm"^3, ")"))))+
    xlab(expression(bold(paste("Treatment"))))+
     scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("one-way anova, p < 0.001") +
+    ggtitle("one-way anova, p = 0.002") +
       annotate("text", x = 1.45, y = 0.16, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
@@ -678,8 +677,6 @@ geno_size_plot<- filtered.size %>%
       legend.text=element_text(size=20)); geno_size_plot
 
 ggsave(plot=geno_size_plot, "figures/reproductive_ecology/genotype_egg_size.png",height=8, width=8)
-
-
 
 ```
 
@@ -708,13 +705,26 @@ geno.fert <- calculate_fert_success
 geno.fert$treatment <- factor(geno.fert$treatment)  # Ensure treatment is a factor
 geno.fert$date.photographed <- as.Date(as.character(geno.fert$date.photographed), format = "%Y%m%d")
 
-ggplot(geno.fert, aes(x = treatment, y = tot.fert.success, fill = treatment)) +
+geno_total_fert_success_plot <- ggplot(geno.fert, aes(x = factor(date.photographed), y = tot.fert.success, fill = treatment)) +
   geom_boxplot() +
-  labs(x = "Treatment", y = "Total Fertilization Success (%)", title = "Fertilization Success by Treatment per Day") +
-  scale_fill_manual(values = c("ambient" = "lightblue", "hot" = "red")) +  # Custom colors for treatments
+  labs(x = "Date Photographed", y = "Total Fertilization Success (%)", title = "Fertilization Success by Treatment") +
+  scale_fill_manual(values = c("ambient" = "darkblue", "hot" = "red")) +  # Custom colors for treatments
   theme_minimal() +
-  facet_wrap(~ date.photographed) +  # Facet by day
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for readability
+  scale_x_discrete(name = "Date Photographed");geno_total_fert_success_plot  # Make sure date is treated as a discrete value
+
+
+# run stats with date photographed (aka day of release) as random effect
+# Fit linear mixed-effects model with date.photographed as a random effect
+tot_fert_model_lme <- lmer(tot.fert.success ~ treatment + (1 | date.photographed), data = calculate_fert_success)
+# Summarize the model
+summary(tot_fert_model_lme)
+# ANOVA table for fixed effects
+anova(tot_fert_model_lme)
+# Check residuals for normality
+qqPlot(residuals(tot_fert_model_lme))
+# Check for homogeneity of variances
+leveneTest(residuals(tot_fert_model_lme) ~ treatment, data = calculate_fert_success)
 
 ```
 
@@ -731,8 +741,8 @@ geno_repro_plot <- geno_repro_plot + plot_annotation(tag_levels = 'A')  &
 
 geno_repro_plot
 
-ggsave("figures/genotype_all_repro.png", plot = repro_plot, width = 15, height = 8)
-ggsave("figures/genotype_all_repro.pdf", plot = repro_plot, width = 20, height = 12)
+ggsave("figures/reproductive_ecology/genotype_all_repro.png", plot = geno_repro_plot, width = 15, height = 8)
+
 
 
 ```
