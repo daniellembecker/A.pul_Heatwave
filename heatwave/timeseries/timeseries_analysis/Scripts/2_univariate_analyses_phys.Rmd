@@ -379,16 +379,24 @@ Generate a Type III Anova of model.
 anova(sym_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint)
+emm.sym.bio<-emmeans(sym_bio_model, ~ timepoint:treatment)
 pairs(emm.sym.bio)
 
 # Generate letter-based groupings
 cld_result_sym_bio <- multcomp::cld(emm.sym.bio, Letters = letters)
 letters_data_sym_bio_og <- as.data.frame(cld_result_sym_bio)
 
+
+# Calculate means per treatment to calculate percent change
+means_per_treatment <- master.filtered %>%
+  group_by(treatment) %>%
+  summarise(mean_sym_bio = mean(Sym_AFDW.mg.cm2))
+
+means_per_treatment
+
 ```
 
-Main effects of timepoint and treatment are significant.
+Interaction of timepoint and treatment and main effects are significant.
 
 Type III Analysis of Variance Table with Satterthwaite's method
                     Sum Sq Mean Sq NumDF DenDF F value   Pr(>F)   
@@ -421,16 +429,22 @@ Generate a Type III Anova of model.
 anova(host_bio_model, type="III")
 
 # run post hoc on timepoints
-emm.host.bio<-emmeans(host_bio_model, ~ timepoint)
+emm.host.bio<-emmeans(host_bio_model, ~ timepoint:treatment)
 pairs(emm.host.bio)
 
 # Generate letter-based groupings
 cld_result_host_bio <- multcomp::cld(emm.host.bio, Letters = letters)
 letters_data_host_bio_og <- as.data.frame(cld_result_host_bio)
 
+# Calculate means per treatment to calculate percent change
+means_per_treatment <- master.filtered %>%
+  group_by(treatment) %>%
+  summarise(mean_host_bio = mean(Host_AFDW.mg.cm2))
+
+means_per_treatment
 ```
 
-Main effects of timepoint and treatment are significant.
+Interaction of timepoint and treatment and main effects are significant.
 
 Type III Analysis of Variance Table with Satterthwaite's method
                      Sum Sq Mean Sq NumDF DenDF F value   Pr(>F)   
