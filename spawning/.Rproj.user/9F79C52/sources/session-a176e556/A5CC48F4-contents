@@ -764,12 +764,31 @@ genotype_info_selected <- metadata %>%
   dplyr::select(coral_ID, genotype) %>%
   dplyr::rename(colony = coral_ID)
 
+# add cohort as a factor for mean bundle dataframe
+calc_bundle <- bundle %>%
+  group_by(colony, treatment, cohort) %>%
+  summarise(mean_bundle = mean(eggs.bundle),
+    .groups = 'drop')
+
 # Merge the selected genotype column with geno.bun dataframe
-geno.bun_merged <- merge(mean_bundle, genotype_info_selected, by = "colony")
+geno.bun_merged <- merge(calc_bundle, genotype_info_selected, by = "colony")
 
 # Rename tube ID to colony
 mean_egg_size <- mean_egg_size %>%
   dplyr::rename(colony = tube.ID)
+
+# Bring in original df
+size.dat <- read_csv("data/reproductive_ecology/egg_volume.csv")
+
+# add cohort as a factor for mean size dataframe
+# Calculate the mean egg size per colony per treatment
+calc_size <- size.dat %>%
+  group_by(tube.ID, treatment, date.photographed) %>%
+  summarise(
+    mean_width = mean(width),
+    mean_length = mean(length),
+    mean_volume = mean(volume),
+    .groups = 'drop')
 
 # Merge the selected genotype column with geno.size dataframe
 geno.size <- merge(mean_egg_size, genotype_info_selected, by = "colony")
