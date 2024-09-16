@@ -1,25 +1,769 @@
-﻿coral.ID,genotype,treatment,eggs.per.bundle,egg.size,fertilization.success,survivorship
-1,1,ambient,yes,yes ,yes,yes
-2,2,ambient,yes,yes ,yes,yes
-3,3,ambient,yes,yes ,yes,no
-4,4,ambient,yes,yes ,yes,yes
-5,5,ambient,yes,yes ,yes,yes
-6,6,ambient,yes,yes ,yes,no
-7,7,ambient,yes,yes ,yes,no
-8,8,ambient,yes,yes ,yes,yes
-9,9,ambient,yes,yes ,yes,yes
-10,10,ambient,yes,yes ,yes,yes
-11,11,ambient,yes,yes ,yes,no
-12,12,ambient,yes,yes ,yes,yes
-13,1,hot,yes,yes ,no,no
-14,2,hot,yes,yes ,yes,yes
-15,3,hot,yes,yes ,yes,yes
-16,4,hot,yes,yes ,yes,yes
-17,5,hot,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED
-18,6,hot,yes,yes ,yes,no
-19,7,hot,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED,NEVER RELEASED
-20,8,hot,yes,yes ,yes,yes
-21,9,hot,yes,no,no,no
-22,10,hot,yes,yes ,yes,no
-23,11,hot,yes,yes ,yes,no
-24,12,hot,yes,yes ,yes,yes
+﻿coral.ID,genotype,treatment,date,presence,response.type
+1,1,ambient,20221017,,egg size
+2,2,ambient,20221017,,egg size
+3,3,ambient,20221017,,egg size
+4,4,ambient,20221017,,egg size
+5,5,ambient,20221017,,egg size
+6,6,ambient,20221017,,egg size
+7,7,ambient,20221017,,egg size
+8,8,ambient,20221017,,egg size
+9,9,ambient,20221017,,egg size
+10,10,ambient,20221017,,egg size
+11,11,ambient,20221017,,egg size
+12,12,ambient,20221017,,egg size
+13,1,hot,20221017,,egg size
+14,2,hot,20221017,,egg size
+15,3,hot,20221017,,egg size
+16,4,hot,20221017,,egg size
+17,5,hot,20221017,NA,egg size
+18,6,hot,20221017,,egg size
+19,7,hot,20221017,NA,egg size
+20,8,hot,20221017,,egg size
+21,9,hot,20221017,,egg size
+22,10,hot,20221017,,egg size
+23,11,hot,20221017,,egg size
+24,12,hot,20221017,,egg size
+1,1,ambient,20221018,,egg size
+2,2,ambient,20221018,,egg size
+3,3,ambient,20221018,,egg size
+4,4,ambient,20221018,,egg size
+5,5,ambient,20221018,,egg size
+6,6,ambient,20221018,,egg size
+7,7,ambient,20221018,,egg size
+8,8,ambient,20221018,,egg size
+9,9,ambient,20221018,,egg size
+10,10,ambient,20221018,,egg size
+11,11,ambient,20221018,,egg size
+12,12,ambient,20221018,,egg size
+13,1,hot,20221018,,egg size
+14,2,hot,20221018,,egg size
+15,3,hot,20221018,,egg size
+16,4,hot,20221018,,egg size
+17,5,hot,20221018,NA,egg size
+18,6,hot,20221018,,egg size
+19,7,hot,20221018,NA,egg size
+20,8,hot,20221018,,egg size
+21,9,hot,20221018,,egg size
+22,10,hot,20221018,,egg size
+23,11,hot,20221018,,egg size
+24,12,hot,20221018,,egg size
+1,1,ambient,20221019,,egg size
+2,2,ambient,20221019,,egg size
+3,3,ambient,20221019,,egg size
+4,4,ambient,20221019,,egg size
+5,5,ambient,20221019,,egg size
+6,6,ambient,20221019,,egg size
+7,7,ambient,20221019,,egg size
+8,8,ambient,20221019,,egg size
+9,9,ambient,20221019,,egg size
+10,10,ambient,20221019,,egg size
+11,11,ambient,20221019,,egg size
+12,12,ambient,20221019,,egg size
+13,1,hot,20221019,,egg size
+14,2,hot,20221019,,egg size
+15,3,hot,20221019,,egg size
+16,4,hot,20221019,,egg size
+17,5,hot,20221019,NA,egg size
+18,6,hot,20221019,,egg size
+19,7,hot,20221019,NA,egg size
+20,8,hot,20221019,,egg size
+21,9,hot,20221019,,egg size
+22,10,hot,20221019,,egg size
+23,11,hot,20221019,,egg size
+24,12,hot,20221019,,egg size
+1,1,ambient,20221020,,egg size
+2,2,ambient,20221020,,egg size
+3,3,ambient,20221020,,egg size
+4,4,ambient,20221020,,egg size
+5,5,ambient,20221020,,egg size
+6,6,ambient,20221020,,egg size
+7,7,ambient,20221020,,egg size
+8,8,ambient,20221020,,egg size
+9,9,ambient,20221020,,egg size
+10,10,ambient,20221020,,egg size
+11,11,ambient,20221020,,egg size
+12,12,ambient,20221020,,egg size
+13,1,hot,20221020,,egg size
+14,2,hot,20221020,,egg size
+15,3,hot,20221020,,egg size
+16,4,hot,20221020,,egg size
+17,5,hot,20221020,NA,egg size
+18,6,hot,20221020,,egg size
+19,7,hot,20221020,NA,egg size
+20,8,hot,20221020,,egg size
+21,9,hot,20221020,,egg size
+22,10,hot,20221020,,egg size
+23,11,hot,20221020,,egg size
+24,12,hot,20221020,,egg size
+1,1,ambient,20221021,,egg size
+2,2,ambient,20221021,,egg size
+3,3,ambient,20221021,,egg size
+4,4,ambient,20221021,,egg size
+5,5,ambient,20221021,,egg size
+6,6,ambient,20221021,,egg size
+7,7,ambient,20221021,,egg size
+8,8,ambient,20221021,,egg size
+9,9,ambient,20221021,,egg size
+10,10,ambient,20221021,,egg size
+11,11,ambient,20221021,,egg size
+12,12,ambient,20221021,,egg size
+13,1,hot,20221021,,egg size
+14,2,hot,20221021,,egg size
+15,3,hot,20221021,,egg size
+16,4,hot,20221021,,egg size
+17,5,hot,20221021,NA,egg size
+18,6,hot,20221021,,egg size
+19,7,hot,20221021,NA,egg size
+20,8,hot,20221021,,egg size
+21,9,hot,20221021,,egg size
+22,10,hot,20221021,,egg size
+23,11,hot,20221021,,egg size
+24,12,hot,20221021,,egg size
+1,1,ambient,20221022,,egg size
+2,2,ambient,20221022,,egg size
+3,3,ambient,20221022,,egg size
+4,4,ambient,20221022,,egg size
+5,5,ambient,20221022,,egg size
+6,6,ambient,20221022,,egg size
+7,7,ambient,20221022,,egg size
+8,8,ambient,20221022,,egg size
+9,9,ambient,20221022,,egg size
+10,10,ambient,20221022,,egg size
+11,11,ambient,20221022,,egg size
+12,12,ambient,20221022,,egg size
+13,1,hot,20221022,,egg size
+14,2,hot,20221022,,egg size
+15,3,hot,20221022,,egg size
+16,4,hot,20221022,,egg size
+17,5,hot,20221022,NA,egg size
+18,6,hot,20221022,,egg size
+19,7,hot,20221022,NA,egg size
+20,8,hot,20221022,,egg size
+21,9,hot,20221022,,egg size
+22,10,hot,20221022,,egg size
+23,11,hot,20221022,,egg size
+24,12,hot,20221022,,egg size
+1,1,ambient,20221023,,egg size
+2,2,ambient,20221023,,egg size
+3,3,ambient,20221023,,egg size
+4,4,ambient,20221023,,egg size
+5,5,ambient,20221023,,egg size
+6,6,ambient,20221023,,egg size
+7,7,ambient,20221023,,egg size
+8,8,ambient,20221023,,egg size
+9,9,ambient,20221023,,egg size
+10,10,ambient,20221023,,egg size
+11,11,ambient,20221023,,egg size
+12,12,ambient,20221023,,egg size
+13,1,hot,20221023,,egg size
+14,2,hot,20221023,,egg size
+15,3,hot,20221023,,egg size
+16,4,hot,20221023,,egg size
+17,5,hot,20221023,NA,egg size
+18,6,hot,20221023,,egg size
+19,7,hot,20221023,NA,egg size
+20,8,hot,20221023,,egg size
+21,9,hot,20221023,,egg size
+22,10,hot,20221023,,egg size
+23,11,hot,20221023,,egg size
+24,12,hot,20221023,,egg size
+1,1,ambient,20221024,,egg size
+2,2,ambient,20221024,,egg size
+3,3,ambient,20221024,,egg size
+4,4,ambient,20221024,,egg size
+5,5,ambient,20221024,,egg size
+6,6,ambient,20221024,,egg size
+7,7,ambient,20221024,,egg size
+8,8,ambient,20221024,,egg size
+9,9,ambient,20221024,,egg size
+10,10,ambient,20221024,,egg size
+11,11,ambient,20221024,,egg size
+12,12,ambient,20221024,,egg size
+13,1,hot,20221024,,egg size
+14,2,hot,20221024,,egg size
+15,3,hot,20221024,,egg size
+16,4,hot,20221024,,egg size
+17,5,hot,20221024,NA,egg size
+18,6,hot,20221024,,egg size
+19,7,hot,20221024,NA,egg size
+20,8,hot,20221024,,egg size
+21,9,hot,20221024,,egg size
+22,10,hot,20221024,,egg size
+23,11,hot,20221024,,egg size
+24,12,hot,20221024,,egg size
+1,1,ambient,20221017,no,eggs per bundle
+2,2,ambient,20221017,no,eggs per bundle
+3,3,ambient,20221017,no,eggs per bundle
+4,4,ambient,20221017,no,eggs per bundle
+5,5,ambient,20221017,no,eggs per bundle
+6,6,ambient,20221017,no,eggs per bundle
+7,7,ambient,20221017,no,eggs per bundle
+8,8,ambient,20221017,no,eggs per bundle
+9,9,ambient,20221017,no,eggs per bundle
+10,10,ambient,20221017,yes,eggs per bundle
+11,11,ambient,20221017,yes,eggs per bundle
+12,12,ambient,20221017,no,eggs per bundle
+13,1,hot,20221017,no,eggs per bundle
+14,2,hot,20221017,no,eggs per bundle
+15,3,hot,20221017,no,eggs per bundle
+16,4,hot,20221017,no,eggs per bundle
+17,5,hot,20221017,NA,eggs per bundle
+18,6,hot,20221017,no,eggs per bundle
+19,7,hot,20221017,NA,eggs per bundle
+20,8,hot,20221017,no,eggs per bundle
+21,9,hot,20221017,no,eggs per bundle
+22,10,hot,20221017,no,eggs per bundle
+23,11,hot,20221017,yes,eggs per bundle
+24,12,hot,20221017,no,eggs per bundle
+1,1,ambient,20221018,no,eggs per bundle
+2,2,ambient,20221018,no,eggs per bundle
+3,3,ambient,20221018,no,eggs per bundle
+4,4,ambient,20221018,no,eggs per bundle
+5,5,ambient,20221018,no,eggs per bundle
+6,6,ambient,20221018,no,eggs per bundle
+7,7,ambient,20221018,no,eggs per bundle
+8,8,ambient,20221018,no,eggs per bundle
+9,9,ambient,20221018,no,eggs per bundle
+10,10,ambient,20221018,yes,eggs per bundle
+11,11,ambient,20221018,no,eggs per bundle
+12,12,ambient,20221018,no,eggs per bundle
+13,1,hot,20221018,no,eggs per bundle
+14,2,hot,20221018,yes,eggs per bundle
+15,3,hot,20221018,no,eggs per bundle
+16,4,hot,20221018,no,eggs per bundle
+17,5,hot,20221018,NA,eggs per bundle
+18,6,hot,20221018,no,eggs per bundle
+19,7,hot,20221018,NA,eggs per bundle
+20,8,hot,20221018,no,eggs per bundle
+21,9,hot,20221018,no,eggs per bundle
+22,10,hot,20221018,yes,eggs per bundle
+23,11,hot,20221018,yes,eggs per bundle
+24,12,hot,20221018,no,eggs per bundle
+1,1,ambient,20221019,no,eggs per bundle
+2,2,ambient,20221019,no,eggs per bundle
+3,3,ambient,20221019,no,eggs per bundle
+4,4,ambient,20221019,no,eggs per bundle
+5,5,ambient,20221019,no,eggs per bundle
+6,6,ambient,20221019,no,eggs per bundle
+7,7,ambient,20221019,no,eggs per bundle
+8,8,ambient,20221019,no,eggs per bundle
+9,9,ambient,20221019,no,eggs per bundle
+10,10,ambient,20221019,yes,eggs per bundle
+11,11,ambient,20221019,yes,eggs per bundle
+12,12,ambient,20221019,no,eggs per bundle
+13,1,hot,20221019,no,eggs per bundle
+14,2,hot,20221019,no,eggs per bundle
+15,3,hot,20221019,no,eggs per bundle
+16,4,hot,20221019,no,eggs per bundle
+17,5,hot,20221019,NA,eggs per bundle
+18,6,hot,20221019,no,eggs per bundle
+19,7,hot,20221019,NA,eggs per bundle
+20,8,hot,20221019,no,eggs per bundle
+21,9,hot,20221019,no,eggs per bundle
+22,10,hot,20221019,no,eggs per bundle
+23,11,hot,20221019,no,eggs per bundle
+24,12,hot,20221019,yes,eggs per bundle
+1,1,ambient,20221020,no,eggs per bundle
+2,2,ambient,20221020,yes,eggs per bundle
+3,3,ambient,20221020,no,eggs per bundle
+4,4,ambient,20221020,yes,eggs per bundle
+5,5,ambient,20221020,yes,eggs per bundle
+6,6,ambient,20221020,no,eggs per bundle
+7,7,ambient,20221020,no,eggs per bundle
+8,8,ambient,20221020,no,eggs per bundle
+9,9,ambient,20221020,no,eggs per bundle
+10,10,ambient,20221020,yes,eggs per bundle
+11,11,ambient,20221020,yes,eggs per bundle
+12,12,ambient,20221020,no,eggs per bundle
+13,1,hot,20221020,yes,eggs per bundle
+14,2,hot,20221020,no,eggs per bundle
+15,3,hot,20221020,no,eggs per bundle
+16,4,hot,20221020,no,eggs per bundle
+17,5,hot,20221020,NA,eggs per bundle
+18,6,hot,20221020,yes,eggs per bundle
+19,7,hot,20221020,NA,eggs per bundle
+20,8,hot,20221020,no,eggs per bundle
+21,9,hot,20221020,no,eggs per bundle
+22,10,hot,20221020,no,eggs per bundle
+23,11,hot,20221020,yes,eggs per bundle
+24,12,hot,20221020,no,eggs per bundle
+1,1,ambient,20221021,yes,eggs per bundle
+2,2,ambient,20221021,no,eggs per bundle
+3,3,ambient,20221021,no,eggs per bundle
+4,4,ambient,20221021,yes,eggs per bundle
+5,5,ambient,20221021,no,eggs per bundle
+6,6,ambient,20221021,no,eggs per bundle
+7,7,ambient,20221021,no,eggs per bundle
+8,8,ambient,20221021,no,eggs per bundle
+9,9,ambient,20221021,no,eggs per bundle
+10,10,ambient,20221021,yes,eggs per bundle
+11,11,ambient,20221021,yes,eggs per bundle
+12,12,ambient,20221021,no,eggs per bundle
+13,1,hot,20221021,yes,eggs per bundle
+14,2,hot,20221021,no,eggs per bundle
+15,3,hot,20221021,yes,eggs per bundle
+16,4,hot,20221021,no,eggs per bundle
+17,5,hot,20221021,NA,eggs per bundle
+18,6,hot,20221021,no,eggs per bundle
+19,7,hot,20221021,NA,eggs per bundle
+20,8,hot,20221021,no,eggs per bundle
+21,9,hot,20221021,no,eggs per bundle
+22,10,hot,20221021,no,eggs per bundle
+23,11,hot,20221021,no,eggs per bundle
+24,12,hot,20221021,no,eggs per bundle
+1,1,ambient,20221022,no,eggs per bundle
+2,2,ambient,20221022,yes,eggs per bundle
+3,3,ambient,20221022,no,eggs per bundle
+4,4,ambient,20221022,yes,eggs per bundle
+5,5,ambient,20221022,no,eggs per bundle
+6,6,ambient,20221022,no,eggs per bundle
+7,7,ambient,20221022,no,eggs per bundle
+8,8,ambient,20221022,no,eggs per bundle
+9,9,ambient,20221022,no,eggs per bundle
+10,10,ambient,20221022,yes,eggs per bundle
+11,11,ambient,20221022,no,eggs per bundle
+12,12,ambient,20221022,no,eggs per bundle
+13,1,hot,20221022,no,eggs per bundle
+14,2,hot,20221022,yes,eggs per bundle
+15,3,hot,20221022,yes,eggs per bundle
+16,4,hot,20221022,yes,eggs per bundle
+17,5,hot,20221022,NA,eggs per bundle
+18,6,hot,20221022,no,eggs per bundle
+19,7,hot,20221022,NA,eggs per bundle
+20,8,hot,20221022,no,eggs per bundle
+21,9,hot,20221022,no,eggs per bundle
+22,10,hot,20221022,no,eggs per bundle
+23,11,hot,20221022,no,eggs per bundle
+24,12,hot,20221022,no,eggs per bundle
+1,1,ambient,20221023,yes,eggs per bundle
+2,2,ambient,20221023,no,eggs per bundle
+3,3,ambient,20221023,no,eggs per bundle
+4,4,ambient,20221023,no,eggs per bundle
+5,5,ambient,20221023,yes,eggs per bundle
+6,6,ambient,20221023,no,eggs per bundle
+7,7,ambient,20221023,yes,eggs per bundle
+8,8,ambient,20221023,yes,eggs per bundle
+9,9,ambient,20221023,yes,eggs per bundle
+10,10,ambient,20221023,no,eggs per bundle
+11,11,ambient,20221023,no,eggs per bundle
+12,12,ambient,20221023,yes,eggs per bundle
+13,1,hot,20221023,no,eggs per bundle
+14,2,hot,20221023,no,eggs per bundle
+15,3,hot,20221023,no,eggs per bundle
+16,4,hot,20221023,yes,eggs per bundle
+17,5,hot,20221023,NA,eggs per bundle
+18,6,hot,20221023,no,eggs per bundle
+19,7,hot,20221023,NA,eggs per bundle
+20,8,hot,20221023,yes,eggs per bundle
+21,9,hot,20221023,no,eggs per bundle
+22,10,hot,20221023,yes,eggs per bundle
+23,11,hot,20221023,yes,eggs per bundle
+24,12,hot,20221023,yes,eggs per bundle
+1,1,ambient,20221024,no,eggs per bundle
+2,2,ambient,20221024,no,eggs per bundle
+3,3,ambient,20221024,yes,eggs per bundle
+4,4,ambient,20221024,no,eggs per bundle
+5,5,ambient,20221024,no,eggs per bundle
+6,6,ambient,20221024,yes,eggs per bundle
+7,7,ambient,20221024,yes,eggs per bundle
+8,8,ambient,20221024,no,eggs per bundle
+9,9,ambient,20221024,no,eggs per bundle
+10,10,ambient,20221024,no,eggs per bundle
+11,11,ambient,20221024,no,eggs per bundle
+12,12,ambient,20221024,no,eggs per bundle
+13,1,hot,20221024,no,eggs per bundle
+14,2,hot,20221024,no,eggs per bundle
+15,3,hot,20221024,no,eggs per bundle
+16,4,hot,20221024,no,eggs per bundle
+17,5,hot,20221024,NA,eggs per bundle
+18,6,hot,20221024,no,eggs per bundle
+19,7,hot,20221024,NA,eggs per bundle
+20,8,hot,20221024,no,eggs per bundle
+21,9,hot,20221024,yes,eggs per bundle
+22,10,hot,20221024,no,eggs per bundle
+23,11,hot,20221024,no,eggs per bundle
+24,12,hot,20221024,no,eggs per bundle
+1,1,ambient,20221017,,fertilization success
+2,2,ambient,20221017,,fertilization success
+3,3,ambient,20221017,,fertilization success
+4,4,ambient,20221017,,fertilization success
+5,5,ambient,20221017,,fertilization success
+6,6,ambient,20221017,,fertilization success
+7,7,ambient,20221017,,fertilization success
+8,8,ambient,20221017,,fertilization success
+9,9,ambient,20221017,,fertilization success
+10,10,ambient,20221017,,fertilization success
+11,11,ambient,20221017,,fertilization success
+12,12,ambient,20221017,,fertilization success
+13,1,hot,20221017,,fertilization success
+14,2,hot,20221017,,fertilization success
+15,3,hot,20221017,,fertilization success
+16,4,hot,20221017,,fertilization success
+17,5,hot,20221017,NA,fertilization success
+18,6,hot,20221017,,fertilization success
+19,7,hot,20221017,NA,fertilization success
+20,8,hot,20221017,,fertilization success
+21,9,hot,20221017,,fertilization success
+22,10,hot,20221017,,fertilization success
+23,11,hot,20221017,,fertilization success
+24,12,hot,20221017,,fertilization success
+1,1,ambient,20221018,,fertilization success
+2,2,ambient,20221018,,fertilization success
+3,3,ambient,20221018,,fertilization success
+4,4,ambient,20221018,,fertilization success
+5,5,ambient,20221018,,fertilization success
+6,6,ambient,20221018,,fertilization success
+7,7,ambient,20221018,,fertilization success
+8,8,ambient,20221018,,fertilization success
+9,9,ambient,20221018,,fertilization success
+10,10,ambient,20221018,,fertilization success
+11,11,ambient,20221018,,fertilization success
+12,12,ambient,20221018,,fertilization success
+13,1,hot,20221018,,fertilization success
+14,2,hot,20221018,,fertilization success
+15,3,hot,20221018,,fertilization success
+16,4,hot,20221018,,fertilization success
+17,5,hot,20221018,NA,fertilization success
+18,6,hot,20221018,,fertilization success
+19,7,hot,20221018,NA,fertilization success
+20,8,hot,20221018,,fertilization success
+21,9,hot,20221018,,fertilization success
+22,10,hot,20221018,,fertilization success
+23,11,hot,20221018,,fertilization success
+24,12,hot,20221018,,fertilization success
+1,1,ambient,20221019,,fertilization success
+2,2,ambient,20221019,,fertilization success
+3,3,ambient,20221019,,fertilization success
+4,4,ambient,20221019,,fertilization success
+5,5,ambient,20221019,,fertilization success
+6,6,ambient,20221019,,fertilization success
+7,7,ambient,20221019,,fertilization success
+8,8,ambient,20221019,,fertilization success
+9,9,ambient,20221019,,fertilization success
+10,10,ambient,20221019,,fertilization success
+11,11,ambient,20221019,,fertilization success
+12,12,ambient,20221019,,fertilization success
+13,1,hot,20221019,,fertilization success
+14,2,hot,20221019,,fertilization success
+15,3,hot,20221019,,fertilization success
+16,4,hot,20221019,,fertilization success
+17,5,hot,20221019,NA,fertilization success
+18,6,hot,20221019,,fertilization success
+19,7,hot,20221019,NA,fertilization success
+20,8,hot,20221019,,fertilization success
+21,9,hot,20221019,,fertilization success
+22,10,hot,20221019,,fertilization success
+23,11,hot,20221019,,fertilization success
+24,12,hot,20221019,,fertilization success
+1,1,ambient,20221020,,fertilization success
+2,2,ambient,20221020,,fertilization success
+3,3,ambient,20221020,,fertilization success
+4,4,ambient,20221020,,fertilization success
+5,5,ambient,20221020,,fertilization success
+6,6,ambient,20221020,,fertilization success
+7,7,ambient,20221020,,fertilization success
+8,8,ambient,20221020,,fertilization success
+9,9,ambient,20221020,,fertilization success
+10,10,ambient,20221020,,fertilization success
+11,11,ambient,20221020,,fertilization success
+12,12,ambient,20221020,,fertilization success
+13,1,hot,20221020,,fertilization success
+14,2,hot,20221020,,fertilization success
+15,3,hot,20221020,,fertilization success
+16,4,hot,20221020,,fertilization success
+17,5,hot,20221020,NA,fertilization success
+18,6,hot,20221020,,fertilization success
+19,7,hot,20221020,NA,fertilization success
+20,8,hot,20221020,,fertilization success
+21,9,hot,20221020,,fertilization success
+22,10,hot,20221020,,fertilization success
+23,11,hot,20221020,,fertilization success
+24,12,hot,20221020,,fertilization success
+1,1,ambient,20221021,,fertilization success
+2,2,ambient,20221021,,fertilization success
+3,3,ambient,20221021,,fertilization success
+4,4,ambient,20221021,,fertilization success
+5,5,ambient,20221021,,fertilization success
+6,6,ambient,20221021,,fertilization success
+7,7,ambient,20221021,,fertilization success
+8,8,ambient,20221021,,fertilization success
+9,9,ambient,20221021,,fertilization success
+10,10,ambient,20221021,,fertilization success
+11,11,ambient,20221021,,fertilization success
+12,12,ambient,20221021,,fertilization success
+13,1,hot,20221021,,fertilization success
+14,2,hot,20221021,,fertilization success
+15,3,hot,20221021,,fertilization success
+16,4,hot,20221021,,fertilization success
+17,5,hot,20221021,NA,fertilization success
+18,6,hot,20221021,,fertilization success
+19,7,hot,20221021,NA,fertilization success
+20,8,hot,20221021,,fertilization success
+21,9,hot,20221021,,fertilization success
+22,10,hot,20221021,,fertilization success
+23,11,hot,20221021,,fertilization success
+24,12,hot,20221021,,fertilization success
+1,1,ambient,20221022,,fertilization success
+2,2,ambient,20221022,,fertilization success
+3,3,ambient,20221022,,fertilization success
+4,4,ambient,20221022,,fertilization success
+5,5,ambient,20221022,,fertilization success
+6,6,ambient,20221022,,fertilization success
+7,7,ambient,20221022,,fertilization success
+8,8,ambient,20221022,,fertilization success
+9,9,ambient,20221022,,fertilization success
+10,10,ambient,20221022,,fertilization success
+11,11,ambient,20221022,,fertilization success
+12,12,ambient,20221022,,fertilization success
+13,1,hot,20221022,,fertilization success
+14,2,hot,20221022,,fertilization success
+15,3,hot,20221022,,fertilization success
+16,4,hot,20221022,,fertilization success
+17,5,hot,20221022,NA,fertilization success
+18,6,hot,20221022,,fertilization success
+19,7,hot,20221022,NA,fertilization success
+20,8,hot,20221022,,fertilization success
+21,9,hot,20221022,,fertilization success
+22,10,hot,20221022,,fertilization success
+23,11,hot,20221022,,fertilization success
+24,12,hot,20221022,,fertilization success
+1,1,ambient,20221023,,fertilization success
+2,2,ambient,20221023,,fertilization success
+3,3,ambient,20221023,,fertilization success
+4,4,ambient,20221023,,fertilization success
+5,5,ambient,20221023,,fertilization success
+6,6,ambient,20221023,,fertilization success
+7,7,ambient,20221023,,fertilization success
+8,8,ambient,20221023,,fertilization success
+9,9,ambient,20221023,,fertilization success
+10,10,ambient,20221023,,fertilization success
+11,11,ambient,20221023,,fertilization success
+12,12,ambient,20221023,,fertilization success
+13,1,hot,20221023,,fertilization success
+14,2,hot,20221023,,fertilization success
+15,3,hot,20221023,,fertilization success
+16,4,hot,20221023,,fertilization success
+17,5,hot,20221023,NA,fertilization success
+18,6,hot,20221023,,fertilization success
+19,7,hot,20221023,NA,fertilization success
+20,8,hot,20221023,,fertilization success
+21,9,hot,20221023,,fertilization success
+22,10,hot,20221023,,fertilization success
+23,11,hot,20221023,,fertilization success
+24,12,hot,20221023,,fertilization success
+1,1,ambient,20221024,,fertilization success
+2,2,ambient,20221024,,fertilization success
+3,3,ambient,20221024,,fertilization success
+4,4,ambient,20221024,,fertilization success
+5,5,ambient,20221024,,fertilization success
+6,6,ambient,20221024,,fertilization success
+7,7,ambient,20221024,,fertilization success
+8,8,ambient,20221024,,fertilization success
+9,9,ambient,20221024,,fertilization success
+10,10,ambient,20221024,,fertilization success
+11,11,ambient,20221024,,fertilization success
+12,12,ambient,20221024,,fertilization success
+13,1,hot,20221024,,fertilization success
+14,2,hot,20221024,,fertilization success
+15,3,hot,20221024,,fertilization success
+16,4,hot,20221024,,fertilization success
+17,5,hot,20221024,NA,fertilization success
+18,6,hot,20221024,,fertilization success
+19,7,hot,20221024,NA,fertilization success
+20,8,hot,20221024,,fertilization success
+21,9,hot,20221024,,fertilization success
+22,10,hot,20221024,,fertilization success
+23,11,hot,20221024,,fertilization success
+24,12,hot,20221024,,fertilization success
+1,1,ambient,20221017,,survivorship
+2,2,ambient,20221017,,survivorship
+3,3,ambient,20221017,,survivorship
+4,4,ambient,20221017,,survivorship
+5,5,ambient,20221017,,survivorship
+6,6,ambient,20221017,,survivorship
+7,7,ambient,20221017,,survivorship
+8,8,ambient,20221017,,survivorship
+9,9,ambient,20221017,,survivorship
+10,10,ambient,20221017,,survivorship
+11,11,ambient,20221017,,survivorship
+12,12,ambient,20221017,,survivorship
+13,1,hot,20221017,,survivorship
+14,2,hot,20221017,,survivorship
+15,3,hot,20221017,,survivorship
+16,4,hot,20221017,,survivorship
+17,5,hot,20221017,NA,survivorship
+18,6,hot,20221017,,survivorship
+19,7,hot,20221017,NA,survivorship
+20,8,hot,20221017,,survivorship
+21,9,hot,20221017,,survivorship
+22,10,hot,20221017,,survivorship
+23,11,hot,20221017,,survivorship
+24,12,hot,20221017,,survivorship
+1,1,ambient,20221018,,survivorship
+2,2,ambient,20221018,,survivorship
+3,3,ambient,20221018,,survivorship
+4,4,ambient,20221018,,survivorship
+5,5,ambient,20221018,,survivorship
+6,6,ambient,20221018,,survivorship
+7,7,ambient,20221018,,survivorship
+8,8,ambient,20221018,,survivorship
+9,9,ambient,20221018,,survivorship
+10,10,ambient,20221018,,survivorship
+11,11,ambient,20221018,,survivorship
+12,12,ambient,20221018,,survivorship
+13,1,hot,20221018,,survivorship
+14,2,hot,20221018,,survivorship
+15,3,hot,20221018,,survivorship
+16,4,hot,20221018,,survivorship
+17,5,hot,20221018,NA,survivorship
+18,6,hot,20221018,,survivorship
+19,7,hot,20221018,NA,survivorship
+20,8,hot,20221018,,survivorship
+21,9,hot,20221018,,survivorship
+22,10,hot,20221018,,survivorship
+23,11,hot,20221018,,survivorship
+24,12,hot,20221018,,survivorship
+1,1,ambient,20221019,,survivorship
+2,2,ambient,20221019,,survivorship
+3,3,ambient,20221019,,survivorship
+4,4,ambient,20221019,,survivorship
+5,5,ambient,20221019,,survivorship
+6,6,ambient,20221019,,survivorship
+7,7,ambient,20221019,,survivorship
+8,8,ambient,20221019,,survivorship
+9,9,ambient,20221019,,survivorship
+10,10,ambient,20221019,,survivorship
+11,11,ambient,20221019,,survivorship
+12,12,ambient,20221019,,survivorship
+13,1,hot,20221019,,survivorship
+14,2,hot,20221019,,survivorship
+15,3,hot,20221019,,survivorship
+16,4,hot,20221019,,survivorship
+17,5,hot,20221019,NA,survivorship
+18,6,hot,20221019,,survivorship
+19,7,hot,20221019,NA,survivorship
+20,8,hot,20221019,,survivorship
+21,9,hot,20221019,,survivorship
+22,10,hot,20221019,,survivorship
+23,11,hot,20221019,,survivorship
+24,12,hot,20221019,,survivorship
+1,1,ambient,20221020,,survivorship
+2,2,ambient,20221020,,survivorship
+3,3,ambient,20221020,,survivorship
+4,4,ambient,20221020,,survivorship
+5,5,ambient,20221020,,survivorship
+6,6,ambient,20221020,,survivorship
+7,7,ambient,20221020,,survivorship
+8,8,ambient,20221020,,survivorship
+9,9,ambient,20221020,,survivorship
+10,10,ambient,20221020,,survivorship
+11,11,ambient,20221020,,survivorship
+12,12,ambient,20221020,,survivorship
+13,1,hot,20221020,,survivorship
+14,2,hot,20221020,,survivorship
+15,3,hot,20221020,,survivorship
+16,4,hot,20221020,,survivorship
+17,5,hot,20221020,NA,survivorship
+18,6,hot,20221020,,survivorship
+19,7,hot,20221020,NA,survivorship
+20,8,hot,20221020,,survivorship
+21,9,hot,20221020,,survivorship
+22,10,hot,20221020,,survivorship
+23,11,hot,20221020,,survivorship
+24,12,hot,20221020,,survivorship
+1,1,ambient,20221021,,survivorship
+2,2,ambient,20221021,,survivorship
+3,3,ambient,20221021,,survivorship
+4,4,ambient,20221021,,survivorship
+5,5,ambient,20221021,,survivorship
+6,6,ambient,20221021,,survivorship
+7,7,ambient,20221021,,survivorship
+8,8,ambient,20221021,,survivorship
+9,9,ambient,20221021,,survivorship
+10,10,ambient,20221021,,survivorship
+11,11,ambient,20221021,,survivorship
+12,12,ambient,20221021,,survivorship
+13,1,hot,20221021,,survivorship
+14,2,hot,20221021,,survivorship
+15,3,hot,20221021,,survivorship
+16,4,hot,20221021,,survivorship
+17,5,hot,20221021,NA,survivorship
+18,6,hot,20221021,,survivorship
+19,7,hot,20221021,NA,survivorship
+20,8,hot,20221021,,survivorship
+21,9,hot,20221021,,survivorship
+22,10,hot,20221021,,survivorship
+23,11,hot,20221021,,survivorship
+24,12,hot,20221021,,survivorship
+1,1,ambient,20221022,,survivorship
+2,2,ambient,20221022,,survivorship
+3,3,ambient,20221022,,survivorship
+4,4,ambient,20221022,,survivorship
+5,5,ambient,20221022,,survivorship
+6,6,ambient,20221022,,survivorship
+7,7,ambient,20221022,,survivorship
+8,8,ambient,20221022,,survivorship
+9,9,ambient,20221022,,survivorship
+10,10,ambient,20221022,,survivorship
+11,11,ambient,20221022,,survivorship
+12,12,ambient,20221022,,survivorship
+13,1,hot,20221022,,survivorship
+14,2,hot,20221022,,survivorship
+15,3,hot,20221022,,survivorship
+16,4,hot,20221022,,survivorship
+17,5,hot,20221022,NA,survivorship
+18,6,hot,20221022,,survivorship
+19,7,hot,20221022,NA,survivorship
+20,8,hot,20221022,,survivorship
+21,9,hot,20221022,,survivorship
+22,10,hot,20221022,,survivorship
+23,11,hot,20221022,,survivorship
+24,12,hot,20221022,,survivorship
+1,1,ambient,20221023,,survivorship
+2,2,ambient,20221023,,survivorship
+3,3,ambient,20221023,,survivorship
+4,4,ambient,20221023,,survivorship
+5,5,ambient,20221023,,survivorship
+6,6,ambient,20221023,,survivorship
+7,7,ambient,20221023,,survivorship
+8,8,ambient,20221023,,survivorship
+9,9,ambient,20221023,,survivorship
+10,10,ambient,20221023,,survivorship
+11,11,ambient,20221023,,survivorship
+12,12,ambient,20221023,,survivorship
+13,1,hot,20221023,,survivorship
+14,2,hot,20221023,,survivorship
+15,3,hot,20221023,,survivorship
+16,4,hot,20221023,,survivorship
+17,5,hot,20221023,NA,survivorship
+18,6,hot,20221023,,survivorship
+19,7,hot,20221023,NA,survivorship
+20,8,hot,20221023,,survivorship
+21,9,hot,20221023,,survivorship
+22,10,hot,20221023,,survivorship
+23,11,hot,20221023,,survivorship
+24,12,hot,20221023,,survivorship
+1,1,ambient,20221024,,survivorship
+2,2,ambient,20221024,,survivorship
+3,3,ambient,20221024,,survivorship
+4,4,ambient,20221024,,survivorship
+5,5,ambient,20221024,,survivorship
+6,6,ambient,20221024,,survivorship
+7,7,ambient,20221024,,survivorship
+8,8,ambient,20221024,,survivorship
+9,9,ambient,20221024,,survivorship
+10,10,ambient,20221024,,survivorship
+11,11,ambient,20221024,,survivorship
+12,12,ambient,20221024,,survivorship
+13,1,hot,20221024,,survivorship
+14,2,hot,20221024,,survivorship
+15,3,hot,20221024,,survivorship
+16,4,hot,20221024,,survivorship
+17,5,hot,20221024,NA,survivorship
+18,6,hot,20221024,,survivorship
+19,7,hot,20221024,NA,survivorship
+20,8,hot,20221024,,survivorship
+21,9,hot,20221024,,survivorship
+22,10,hot,20221024,,survivorship
+23,11,hot,20221024,,survivorship
+24,12,hot,20221024,,survivorship

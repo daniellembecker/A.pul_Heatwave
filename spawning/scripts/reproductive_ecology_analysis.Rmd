@@ -59,6 +59,15 @@ library(PNWColors)
 
 In this project, physiological assays include eggs per bundle, egg size, fertilization success.  
 
+Load in metadata.
+```{r}
+# Metadata
+metadata <- read_csv("metadata/colony_ metadata.csv")
+
+```
+
+
+
 # **1. Eggs per bundle**  
 
 ## Import and manipulate data
@@ -748,4 +757,44 @@ ggsave("figures/reproductive_ecology/genotype_all_repro.png", plot = geno_repro_
 ```
 
 
+Run lmer models with genotype as a random effect
+```{r}
+# Select only the 'colony' and 'genotype' columns from the genotype_info dataframe
+genotype_info_selected <- metadata %>%
+  dplyr::select(coral_ID, genotype) %>%
+  dplyr::rename(colony = coral_ID)
+
+# Merge the selected genotype column with geno.bun dataframe
+geno.bun_merged <- merge(mean_bundle, genotype_info_selected, by = "colony")
+
+# Rename tube ID to colony
+mean_egg_size <- mean_egg_size %>%
+  dplyr::rename(colony = tube.ID)
+
+# Merge the selected genotype column with geno.size dataframe
+geno.size <- merge(mean_egg_size, genotype_info_selected, by = "colony")
+
+# Eggs per bundle
+# Run the linear mixed-effects model
+model.bun <- lmer(mean_bundle ~ treatment + (1 | genotype), data = geno.bun_merged)
+
+# View the model summary
+summary(model.bun)
+
+# Extract random effects
+random_effects <- rand(model.bun);random_effects
+
+# Egg size
+# Run the linear mixed-effects model
+model.size <- lmer(mean_volume ~ treatment + (1 | genotype), data = geno.size)
+
+# View the model summary
+summary(model.size)
+
+# Extract random effects
+random_effects <- rand(model.size);random_effects
+
+
+
+```
 
