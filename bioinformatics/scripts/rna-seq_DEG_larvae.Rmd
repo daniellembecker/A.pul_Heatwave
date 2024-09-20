@@ -60,6 +60,39 @@ library("EnhancedVolcano")
 library("cowplot")
 library("viridis")
 library("pheatmap")
+ 
+ 
+ trinotate <- read.delim("bioinformatics/data/myTrinotate_report.tsv", header = TRUE)
+unique_contigs <- length(unique(trinotate$transcript_id)) # Or use gene_id
+print(unique_contigs)
+
+
+# Define the annotation columns
+annotation_columns <- c("sprot_Top_BLASTX_hit", "infernal", "prot_id", "prot_coords", 
+                         "sprot_Top_BLASTP_hit", "Pfam", "SignalP", "TmHMM", "eggnog", 
+                         "Kegg", "gene_ontology_BLASTX", "gene_ontology_BLASTP", 
+                         "gene_ontology_Pfam", "EggNM.seed_ortholog", "EggNM.evalue", 
+                         "EggNM.score", "EggNM.eggNOG_OGs", "EggNM.max_annot_lvl", 
+                         "EggNM.COG_category", "EggNM.Description", "EggNM.Preferred_name", 
+                         "EggNM.GOs", "EggNM.EC", "EggNM.KEGG_ko", "EggNM.KEGG_Pathway", 
+                         "EggNM.KEGG_Module", "EggNM.KEGG_Reaction", "EggNM.KEGG_rclass", 
+                         "EggNM.BRITE", "EggNM.KEGG_TC", "EggNM.CAZy", "EggNM.BiGG_Reaction", 
+                         "EggNM.PFAMs", "transcript", "peptide")
+
+# Filter out gene IDs with non-empty annotations
+filtered_data <- trinotate%>%
+  group_by(X.gene_id) %>%
+  filter(if_any(all_of(annotation_columns), ~ !is.na(.) & . != ".")) %>%
+  summarise() %>%
+  ungroup()
+
+# Count unique gene IDs with annotations
+num_unique_genes <- n_distinct(filtered_data$X.gene_id)
+num_unique_genes
+
+
+
+
 library("PCAtools")
 ```
 
@@ -74,7 +107,7 @@ metadata$code<-paste0(metadata$treatment, "_", metadata$parent)
 head(metadata)
 
 #load gene count matrix generated from cluster computation
-gcount <- as.data.frame(read.csv("bioinformatics/data/gene_count_apul_matrix.csv", row.names="gene_id"), colClasses = double)
+gcount <- as.data.frame(read.csv("bioinformatics/data/gene_count_apul_matrix_transcriptome.csv", row.names="gene_id"), colClasses = double)
 head(gcount)
 ```
 

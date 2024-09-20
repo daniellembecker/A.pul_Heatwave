@@ -231,7 +231,7 @@ Spheroid: V = 4/3 * pi * a^3 where a is 1/2 the width (radius)
 
 Calculate the volume for each individual as a spheroid. Using this equation: V = 4/3 * pi * a^3 where a is 1/2 the width (radius)
 ```{r}
-# Define a function to calculate the volume based on life stage
+# Define a function to calculate the volume based on individual
 calculate_volume <- function(type, length, width) {
   case_when(
     type %in% c("egg") ~ (4/3) * pi * (width/2)^3,
@@ -239,7 +239,7 @@ calculate_volume <- function(type, length, width) {
   )
 }
 
-# Use mutate function to calculate volume based on life stage
+# Use mutate function to calculate volume based on individual
 size <- size %>% mutate(volume = calculate_volume(type, length, width))
 
 # Print the updated dataframe
@@ -405,8 +405,15 @@ calculate_fert_success%>%
 
 Plot data as a box plot.     
 ```{r}
-total_fert_success_plot <- calculate_fert_success %>%
-    ggplot(., aes(x = treatment, y = tot.fert.success, color = treatment)) +
+
+# Calculate total fert success by tube ID replicates
+mean_fert <- calculate_fert_success %>%
+  group_by(tube.ID, treatment) %>%
+  summarise(mean_fert = mean(tot.fert.success),
+    .groups = 'drop')
+
+total_fert_success_plot <- mean_fert %>%
+    ggplot(., aes(x = treatment, y = mean_fert, color = treatment)) +
     geom_boxplot(aes(colour=treatment), lwd=1) +
     geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
     xlab("") + 
@@ -415,7 +422,7 @@ total_fert_success_plot <- calculate_fert_success %>%
     ylab(expression(bold(paste("Fertilization Success (%)"))))+
   xlab(expression(bold(paste("Treatment"))))+
       scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
-    ggtitle("Kruskal-Wallis, p = 0.001") +
+    ggtitle("one-way anova, p = 0.03 ") +
       annotate("text", x = 1.45, y = 100, label = "*", size = 20) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
@@ -435,24 +442,19 @@ ggsave(plot=total_fert_success_plot, "figures/reproductive_ecology/total_fertili
 
 Run ANOVA test on fert success. 
 ```{r}
-tot_fert_model<-aov(tot.fert.success~treatment, data=calculate_fert_success)
+tot_fert_model<-aov(mean_fert~treatment, data=mean_fert)
 summary(tot_fert_model)
 qqPlot(residuals(tot_fert_model))
-leveneTest(residuals(tot_fert_model)~treatment, data=calculate_fert_success)
+leveneTest(residuals(tot_fert_model)~treatment, data=mean_fert)
 ```
-
-There appears to be a violation in variance assumptions but not normality. Conduct non-parametric test (Kruskal Wallis).  
-
-```{r}
-kruskal.test(tot.fert.success~treatment, data=calculate_fert_success)
-``` 
 
 There is a significant difference in fert success between groups with higher from hot treatment.
 
-	Kruskal-Wallis rank sum test
-
-data:  tot.fert.success by treatment
-Kruskal-Wallis chi-squared = 10.715, df = 1, p-value = 0.001063
+            Df Sum Sq Mean Sq F value Pr(>F)  
+treatment    1  999.4   999.4   5.872 0.0359 *
+Residuals   10 1701.9   170.2                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 
 # Calculate the means of proportions across clevage stages
@@ -751,13 +753,10 @@ geno_repro_plot <- geno_repro_plot + plot_annotation(tag_levels = 'A')  &
 geno_repro_plot
 
 ggsave("figures/reproductive_ecology/genotype_all_repro.png", plot = geno_repro_plot, width = 15, height = 8)
-
-
-
 ```
 
 
-Run lmer models with genotype as a random effect
+Run lmer models with genotype nested within day as a random effect
 ```{r}
 # Select only the 'colony' and 'genotype' columns from the genotype_info dataframe
 genotype_info_selected <- metadata %>%
@@ -773,29 +772,41 @@ calc_bundle <- bundle %>%
 # Merge the selected genotype column with geno.bun dataframe
 geno.bun_merged <- merge(calc_bundle, genotype_info_selected, by = "colony")
 
-# Rename tube ID to colony
-mean_egg_size <- mean_egg_size %>%
-  dplyr::rename(colony = tube.ID)
 
 # Bring in original df
 size.dat <- read_csv("data/reproductive_ecology/egg_volume.csv")
 
+# select columns
+size.dat <- size.dat %>%
+  dplyr::select(tube.ID, treatment, date.photographed,replicate, type, `width (mm)`, `length (mm)`) %>%
+  rename(width=`width (mm)`, length = `length (mm)`)%>%
+  drop_na() #remove na's that could not be measured
+
+#make factors
+size.dat$replicate<-as.factor(size.dat$replicate)
+size.dat$tube.ID<-as.factor(size.dat$tube.ID)
+size.dat$treatment<-as.factor(size.dat$treatment)
+size.dat$type<-as.factor(size.dat$type)
+
+# Use mutate function to calculate volume based on individual
+calc_size <- size.dat %>% mutate(volume = calculate_volume(type, length, width))
+
+# Rename tube ID to colony
+geno_egg_size <- calc_size %>%
+  dplyr::rename(colony = tube.ID)
+
 # add cohort as a factor for mean size dataframe
-# Calculate the mean egg size per colony per treatment
-calc_size <- size.dat %>%
-  group_by(tube.ID, treatment, date.photographed) %>%
-  summarise(
-    mean_width = mean(width),
-    mean_length = mean(length),
-    mean_volume = mean(volume),
+geno_size_dat <- geno_egg_size %>%
+  group_by(colony, treatment, date.photographed) %>%
+  summarise(mean_size = mean(volume),
     .groups = 'drop')
 
 # Merge the selected genotype column with geno.size dataframe
-geno.size <- merge(mean_egg_size, genotype_info_selected, by = "colony")
+geno.size <- merge(geno_size_dat, genotype_info_selected, by = "colony")
 
 # Eggs per bundle
-# Run the linear mixed-effects model
-model.bun <- lmer(mean_bundle ~ treatment + (1 | genotype), data = geno.bun_merged)
+# Run the linear mixed-effects model with genotype nested within day of release
+model.bun <- lmer(mean_bundle ~ treatment + (1 | cohort/genotype), data = geno.bun_merged)
 
 # View the model summary
 summary(model.bun)
@@ -805,15 +816,12 @@ random_effects <- rand(model.bun);random_effects
 
 # Egg size
 # Run the linear mixed-effects model
-model.size <- lmer(mean_volume ~ treatment + (1 | genotype), data = geno.size)
+model.size <- lmer(mean_size ~ treatment + (1 | date.photographed/genotype), data = geno.size)
 
 # View the model summary
 summary(model.size)
 
 # Extract random effects
 random_effects <- rand(model.size);random_effects
-
-
-
 ```
 
