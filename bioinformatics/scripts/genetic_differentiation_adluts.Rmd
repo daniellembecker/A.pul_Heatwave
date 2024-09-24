@@ -1,0 +1,30 @@
+---
+title: "genetic differentiation for RNAseq SNPs  in heatwave adults and offspring"
+author: "daniellembecker"
+date: "20240924"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Use genetic differentiation outputs from PLINK computed on HPC from URI Andromeda to compare genetic differentiation among samples. 
+
+## Install and load Libraries
+```{r message = FALSE, warning = FALSE}
+install.packages(c("SNPRelate", "gdsfmt", "hierfstat"))
+library(SNPRelate)
+library(gdsfmt)
+library(hierfstat)
+```
+
+## Read in genetic differentiation .vcf file made from original sample .bam files, called for SNP variants, and filtered
+```{r}
+# Convert filtered .vcf file to GDS format
+vcf.fn <- "filtered_output.vcf"  # Replace with your VCF file path
+gds.fn <- "your_study.gds"
+snpgdsVCF2GDS(vcf.fn, gds.fn, method="biallelic.only")
+
+
+
+```
+

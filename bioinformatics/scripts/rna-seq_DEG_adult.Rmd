@@ -73,7 +73,7 @@ metadata$code<-paste0(metadata$treatment, "_", metadata$parent)
 head(metadata)
 
 #load gene count matrix generated from cluster computation
-gcount <- as.data.frame(read.csv("bioinformatics/data/gene_count_apul_matrix.csv", row.names="gene_id"), colClasses = double)
+gcount <- as.data.frame(read.csv("bioinformatics/data/gene_count_apul_matrix_transcriptome.csv", row.names="gene_id"), colClasses = double)
 head(gcount)
 ```
 
@@ -338,6 +338,9 @@ cat("Downregulated genes:", downregulated_genes, "\n") #37
 
 # Add a new column 'direction' based on the log2FoldChange values
 adult_deg$direction <- ifelse(adult_deg$log2FoldChange > 0, "upregulated", "downregulated")
+
+# Save DEG dataframe 
+write.csv(adult_deg, "bioinformatics/output/adult_deg.csv")
 
 ```
 
