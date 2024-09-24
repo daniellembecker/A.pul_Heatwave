@@ -1,0 +1,28 @@
+{
+    "id": "A5CC48F4",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/spawning/scripts/reproductive_ecology_analysis.Rmd",
+    "project_path": "scripts/reproductive_ecology_analysis.Rmd",
+    "type": "r_markdown",
+    "hash": "171809995",
+    "contents": "",
+    "dirty": false,
+    "created": 1717190571823.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "760,56",
+        "scrollLine": "741",
+        "working_dir": "project"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1726839870,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1726839870898,
+    "read_only": false,
+    "read_only_alternatives": []
+}
