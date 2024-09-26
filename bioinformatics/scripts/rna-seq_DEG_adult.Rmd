@@ -37,8 +37,8 @@ if ("vegan" %in% rownames(installed.packages()) == 'FALSE') install.packages('ve
 if ("EnhancedVolcano" %in% rownames(installed.packages()) == 'FALSE') install.packages('EnhancedVolcano') 
 
 #BiocManager::install('apeglm')
-BiocManager::install('EnhancedVolcano')
-BiocManager::install('PCAtools')
+#BiocManager::install('EnhancedVolcano')
+#BiocManager::install('PCAtools')
 
 library("tidyverse")
 library("genefilter")
@@ -68,7 +68,7 @@ Import the data files.
 
 ```{r}
 #load metadata sheet with sample name and developmental stage information
-metadata <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",") %>% select(bioinf.ID, treatment, type, parent)
+metadata <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",") %>% dplyr::select(bioinf.ID, treatment, type, parent)
 metadata$code<-paste0(metadata$treatment, "_", metadata$parent)
 head(metadata)
 
@@ -83,9 +83,9 @@ Check that there are no genes with 0 counts across all samples.
 dim(gcount) 
 
 gcount<-gcount %>%
-     mutate(Total = rowSums(.[, 1:12]))%>%
+     dplyr::mutate(Total = rowSums(.[, 1:12]))%>%
     filter(!Total==0)%>%
-    select(!Total)
+    dplyr::select(!Total)
 
 dim(gcount)
 ```
@@ -189,6 +189,9 @@ gcount_filt_adult <- as.data.frame(adult_counts[which(rownames(adult_counts) %in
 #How many rows do we have before and after filtering?
 nrow(adult_counts) #Before
 nrow(gcount_filt_adult) #After
+
+# Save gcount filtered for adults 
+write.csv(gcount_filt_adult, "bioinformatics/output/gcount_filt_adult.csv")
 ```
 
 Before filtering, we had approximately 70,239 genes. After filtering for pOverA, we have approximately 19,157 genes. This indicates that there were 19,157 genes present in 100% of samples at <10 counts per gene.  

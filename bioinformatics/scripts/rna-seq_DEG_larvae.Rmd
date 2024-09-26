@@ -75,7 +75,7 @@ Import the data files.
 
 ```{r}
 #load metadata sheet with sample name and developmental stage information
-metadata <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",")%>%select(bioinf.ID, treatment, type, parent)
+metadata <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",") %>% dplyr::select(bioinf.ID, treatment, type, parent)
 metadata$code<-paste0(metadata$treatment, "_", metadata$parent)
 head(metadata)
 
@@ -90,9 +90,9 @@ Check that there are no genes with 0 counts across all samples.
 dim(gcount) 
 
 gcount<-gcount %>%
-     mutate(Total = rowSums(.[, 1:12]))%>%
+     dplyr::mutate(Total = rowSums(.[, 1:12]))%>%
     filter(!Total==0)%>%
-    select(!Total)
+    dplyr::select(!Total)
 
 dim(gcount)
 ```
@@ -197,6 +197,9 @@ gcount_filt_larvae <- as.data.frame(larvae_counts[which(rownames(larvae_counts) 
 #How many rows do we have before and after filtering?
 nrow(larvae_counts) #Before 70,239
 nrow(gcount_filt_larvae) #After 15,729
+
+# Save gcount filtered for adults 
+write.csv(gcount_filt_larvae, "bioinformatics/output/gcount_filt_larvae.csv")
 ```
 
 Conduct larvae Analysis

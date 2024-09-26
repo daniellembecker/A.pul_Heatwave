@@ -1,0 +1,159 @@
+---
+title: "GO MWU input"
+author: "Danielle Becker"
+date: "2024-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r install packages}
+#if ("rtracklayer" %in% rownames(installed.packages()) == 'FALSE') BiocManager::install("rtracklayer")
+#BiocManager::install("rrvgo")
+
+library(dplyr)
+library(ggplot2)
+library(rtracklayer)
+library(rrvgo)
+library(GO.db)
+library(tidyr)
+library(forcats)
+library(scales)
+sessionInfo() #list of packages after library-ing these packages
+```
+
+
+# Import the data files 
+```{r, echo=FALSE}
+# Read the Trinotate report, assuming it's tab-separated
+annot_GO <- read.csv("../../myTrinotate_report.tsv", sep="\t")[-1]
+
+# Reorganize trinotate report by gene level ID and go terms associated with each
+annot_edit <- annot_GO
+
+# Remove isoform designation (_iX part)
+annot_edit$gene_id <- str_remove(annot_edit$transcript_id, "_i\\d+")
+
+# Combine all GO term columns
+annotation_df <- annot_edit %>%
+  mutate(combined_GO_terms = paste(gene_ontology_BLASTX, gene_ontology_BLASTP, gene_ontology_Pfam, EggNM.GOs, sep = "; ")) %>%
+  # Remove any extra separators caused by missing values
+  mutate(combined_GO_terms = str_replace_all(combined_GO_terms, "(NA; |; NA|NA$)", ""))
+
+# Extract only the GO terms (e.g., GO:0044260)
+annotation_df$GO_IDs <- str_extract_all(annotation_df$combined_GO_terms, "GO:\\d{7}")
+
+# Select only 'gene_id' and 'combined_GO_terms'
+new_df <- annotation_df[, c("gene_id", "combined_GO_terms")]
+
+# Function to extract GO IDs
+extract_go_ids <- function(x) {
+  # Split the terms by semicolon, backtick, or comma, and trim whitespace
+  go_terms <- trimws(unlist(strsplit(x, "[;,`]+")))
+
+  # Use a regular expression to extract only valid GO IDs
+  go_ids <- gsub("^(GO:[0-9]+).*", "\\1", go_terms)
+
+  # Remove any entries that don't match a valid GO ID pattern
+  go_ids <- go_ids[grepl("^GO:[0-9]+$", go_ids)]
+
+  # Return unique GO IDs combined into a single string
+  return(paste(unique(go_ids), collapse = "; "))
+}
+
+# Apply the function to the combined_GO_terms column
+new_df$cleaned_GO_IDs <- sapply(new_df$combined_GO_terms, extract_go_ids) # duplicates also removed that is why some mismatch
+
+# Create a new dataframe with only gene_id and cleaned_GO_IDs
+cleaned_df <- new_df[, c("gene_id", "cleaned_GO_IDs")]
+
+# Combine GO terms per gene
+combined_go_terms <- cleaned_df %>%
+  group_by(gene_id) %>%
+  summarise(cleaned_GO_IDs = paste(unique(cleaned_GO_IDs), collapse = "; ")) %>%
+  ungroup()
+
+# Replace NA or empty values in the 'cleaned_GO_IDs' column with "unknown"
+combined_go_terms$cleaned_GO_IDs[is.na(combined_go_terms$cleaned_GO_IDs) | combined_go_terms$cleaned_GO_IDs == ""] <- "unknown"
+
+
+```
+
+# Identifying treatment and all expressed pver genes (poverA = 0.50,10)
+```{r}
+#treatment information
+treatmentinfo <-  read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv", header = TRUE, sep = ",") %>% dplyr::select(bioinf.ID, treatment, type, parent)
+str(treatmentinfo)
+head(treatmentinfo)
+
+#load DEG significant results for adults
+DEG.sig <- read.csv("bioinformatics/output/larvae_deg.csv")[,-1]
+# Rename 'gene' column to 'gene_id'
+colnames(DEG.sig)[colnames(DEG.sig) == "gene"] <- "gene_id"
+nrow(DEG.sig)
+
+# Load filtered gene count file for adults
+gcount_filt <- read.csv("bioinformatics/output/gcount_filt_adult.csv", header = TRUE, sep = ",")
+
+# Rename first column X to gene_id
+names(gcount_filt)[names(gcount_filt) == "X"] <- "gene_id"
+
+```
+
+### Isolating comparisons and using fold change 
+
+I'm going to isolate comparisons and then use fold change as input to GO MWU rather than a binary of 1 (DE) or 0 (not DE). 
+
+Match up genes in gene list file to annotation file
+```{r}
+names(combined_go_terms)
+
+gcount_filt2annot = match(gcount_filt$gene_id, combined_go_terms$gene_id) #match genes in gcount_filt to annot_GO
+
+# The following is the number of probes without annotation 
+sum(is.na(gcount_filt2annot))
+
+row_nas<-which(is.na(gcount_filt2annot))
+
+#view the genes that do not have a match in the annotation file
+missing<-as.data.frame(gcount_filt2annot[row_nas])
+#print(missing)
+```
+0 genes in gcount_filt do not have GO annotations because unknown is allowed to stay in go MWU analysis
+
+Reduce annotation file to only contain genes detected in our dataset.  
+```{r}
+filtered_Apul.annot <- combined_go_terms[combined_go_terms$gene_id %in% gcount_filt$gene_id, ]
+dim(filtered_Apul.annot)
+
+# Remove leading semicolon before the first GO term
+filtered_Apul.annot$cleaned_GO_IDs <- gsub("^;\\s+", "", filtered_Apul.annot$cleaned_GO_IDs)
+
+
+colnames(filtered_Apul.annot)[colnames(DEG.sig) == "cleaned_GO_IDs"] <- "GO.ID"
+```
+
+The annotation file now only contains genes that were detected in our dataset that have annotation information. This is 19,157 out of the 70,239 genes in our dataset. 
+
+19,157 genes were retained in the filtered GO dataset. Write table for GO MWU analysis 
+```{r}
+write.table(filtered_Apul.annot, "bioinformatics/scripts/goMWU/gene_to_go_DB.tab",row.names = FALSE, sep = "\t", quote = FALSE)
+```
+
+Filter the counts by the remaining annotations 
+```{r}
+# Counts 
+filt_counts_annot <- filtered_Apul.annot %>%
+  left_join(DEG.sig, by = "gene_id") %>%
+  dplyr::select(c("gene_id", "log2FoldChange")) %>% na.omit
+```
+2633 DEGs in filt_counts_annot
+
+Make GO_MWU input csv file with fold changes 
+```{r}
+write.csv(filt_counts_annot, "bioinformatics/scripts/goMWU/DEGs_sig.csv", row.names = FALSE, quote = FALSE)
+```
+
+
