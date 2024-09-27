@@ -405,7 +405,6 @@ x<-cbind(larvae.surv$larvae, larvae.surv$failures)
 
 model1d<-glmer(x~treatment * history * timepoint + (1|vial), family = binomial, data = larvae.surv) #model
 
-
 # Obtain estimated marginal means (emmeans)
 emmeans_model <- emmeans(model1d, ~history | treatment)
 
@@ -542,10 +541,9 @@ figure_surv_2 <- LarvalSurvPlot + labs(title = "",
                 subtitle = "Pooled Cohorts") 
 figure_surv_2
 
-ggsave(filename="figures/larval.survivorship/larvalsurv_pooled.pdf", plot=figure_surv_2, dpi=500, width=15
+ggsave(filename="spawning/figures/larval.survivorship/larvalsurv_pooled.pdf", plot=figure_surv_2, dpi=500, width=15
        , height=14, units="in")
-ggsave(filename="figures/larval.survivorship/larvalsurv_pooled.jpg", plot=figure_surv_2, dpi=500, width=15
+ggsave(filename="spawning/figures/larval.survivorship/larvalsurv_pooled.jpg", plot=figure_surv_2, dpi=500, width=15
        , height=14, units="in")
 
 ```
-

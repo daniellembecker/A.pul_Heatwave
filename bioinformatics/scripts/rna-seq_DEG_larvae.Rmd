@@ -326,7 +326,7 @@ View results by parental history effects. Create dataframe for each comparison a
 resultsNames(DEG_T_larvaes)
 #this shows the comparisons made (shown similar to lm output)
 
-larvae_deg<-results(DEG_T_larvaes, contrast=c("parent","heatwave","ambient"))
+larvae_deg <-results(DEG_T_larvaes, contrast=c("parent","heatwave","ambient"))
 larvae_deg <- as.data.frame(subset(larvae_deg))
 larvae_deg <- as.data.frame(subset(larvae_deg, padj<0.05))
 #larvae_deg <- as.data.frame(subset(larvae_deg, abs(log2FoldChange)>1.5))
@@ -347,6 +347,9 @@ cat("Downregulated genes:", downregulated_genes, "\n") #1207
 
 # Add a new column 'direction' based on the log2FoldChange values
 larvae_deg$direction <- ifelse(larvae_deg$log2FoldChange > 0, "upregulated", "downregulated")
+
+# Save DEG dataframe all 
+#write.csv(larvae_deg, "bioinformatics/output/larvae_deg_all.csv")
 
 # Save DEG dataframe 
 write.csv(larvae_deg, "bioinformatics/output/larvae_deg.csv")

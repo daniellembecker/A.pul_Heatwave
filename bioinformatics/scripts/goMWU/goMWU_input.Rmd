@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
 library(ggplot2)
+library(stringr)
 library(rtracklayer)
 library(rrvgo)
 library(GO.db)
@@ -29,6 +30,7 @@ sessionInfo() #list of packages after library-ing these packages
 ```{r, echo=FALSE}
 # Read the Trinotate report, assuming it's tab-separated
 annot_GO <- read.csv("../../myTrinotate_report.tsv", sep="\t")[-1]
+
 
 # Reorganize trinotate report by gene level ID and go terms associated with each
 annot_edit <- annot_GO
@@ -78,7 +80,12 @@ combined_go_terms <- cleaned_df %>%
 # Replace NA or empty values in the 'cleaned_GO_IDs' column with "unknown"
 combined_go_terms$cleaned_GO_IDs[is.na(combined_go_terms$cleaned_GO_IDs) | combined_go_terms$cleaned_GO_IDs == ""] <- "unknown"
 
+# Count the number of rows where 'cleaned_GO_IDs' is "unknown"
+unknown_count <- combined_go_terms %>%
+  filter(cleaned_GO_IDs == "unknown") %>%
+  nrow()
 
+write.csv(combined_go_terms, "bioinformatics/output/A.pul_transcriptome_functional_annotation.csv", row.names = FALSE, quote = FALSE)
 ```
 
 # Identifying treatment and all expressed pver genes (poverA = 0.50,10)
@@ -89,13 +96,13 @@ str(treatmentinfo)
 head(treatmentinfo)
 
 #load DEG significant results for adults
-DEG.sig <- read.csv("bioinformatics/output/larvae_deg.csv")[,-1]
+DEG.sig <- read.csv("bioinformatics/output/larvae_deg_all.csv")[,-1]
 # Rename 'gene' column to 'gene_id'
 colnames(DEG.sig)[colnames(DEG.sig) == "gene"] <- "gene_id"
 nrow(DEG.sig)
 
 # Load filtered gene count file for adults
-gcount_filt <- read.csv("bioinformatics/output/gcount_filt_adult.csv", header = TRUE, sep = ",")
+gcount_filt <- read.csv("bioinformatics/output/gcount_filt_larvae.csv", header = TRUE, sep = ",")
 
 # Rename first column X to gene_id
 names(gcount_filt)[names(gcount_filt) == "X"] <- "gene_id"
@@ -135,9 +142,9 @@ filtered_Apul.annot$cleaned_GO_IDs <- gsub("^;\\s+", "", filtered_Apul.annot$cle
 colnames(filtered_Apul.annot)[colnames(DEG.sig) == "cleaned_GO_IDs"] <- "GO.ID"
 ```
 
-The annotation file now only contains genes that were detected in our dataset that have annotation information. This is 19,157 out of the 70,239 genes in our dataset. 
+The annotation file now only contains genes that were detected in our dataset that have annotation information. This is 15,279 out of the 70,239 genes in our dataset. 
 
-19,157 genes were retained in the filtered GO dataset. Write table for GO MWU analysis 
+15,279 genes were retained in the filtered GO dataset. Write table for GO MWU analysis 
 ```{r}
 write.table(filtered_Apul.annot, "bioinformatics/scripts/goMWU/gene_to_go_DB.tab",row.names = FALSE, sep = "\t", quote = FALSE)
 ```
@@ -149,7 +156,7 @@ filt_counts_annot <- filtered_Apul.annot %>%
   left_join(DEG.sig, by = "gene_id") %>%
   dplyr::select(c("gene_id", "log2FoldChange")) %>% na.omit
 ```
-2633 DEGs in filt_counts_annot
+15279 DEGs in filt_counts_annot
 
 Make GO_MWU input csv file with fold changes 
 ```{r}
