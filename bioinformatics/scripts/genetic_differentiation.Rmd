@@ -97,7 +97,7 @@ fst_values.adult <- fst.adult$Fst
 # Summarize FST results
 summary(fst_values.adult)
 ```
-# FST = 0.05, at the upper limit of the low differentiation category, it suggests some level of population structure but not enough to indicate substantial genetic divergence.
+# FST < 0.05, indicating that there is nominal genetic differentiation between the samples
 
 # Run statistical test since it is on the cusp of genetic divergence
 ```{r}
@@ -118,10 +118,10 @@ permute_fst.adult <- function(genofile.adult, pop.adult, n_permutations = 1000) 
 }
 
 # Takes long to run, don't run everytime
-#result.adult <- permute_fst.adult(genofile.adult, pop.adult, n_permutations = 1000)
+result.adult <- permute_fst.adult(genofile.adult, pop.adult, n_permutations = 999)
 
-print(paste("Observed FST:", result.adult$observed_fst)) # Fst = 0.05
-print(paste("P-value from permutation test:", result.adult$p_value)) # 0.21 suggests not enough evidence to conclude the observed differentiation is statistically significant, could be due to natural variation
+print(paste("Observed FST:", result.adult$observed_fst)) # Fst < 0.05
+print(paste("P-value from permutation test:", result.adult$p_value)) # 0.093 
 
 ```
 
