@@ -472,11 +472,8 @@ flex_enrich <- flex_enrich %>%
     Annotated = "Annotated",
     Significant = "Significant",
 classicFisher = "Fisher p-value") %>%
-  colformat_double(j = "classicFisher", digits = 4) %>%
-  compose(j = "classicFisher", value = as_paragraph(
-    as_chunk(~ format_pvalue(classicFisher))
-  )) %>%
-  bold(j = "classicFisher", i = ~ as.numeric(classicFisher) < 0.05) %>%
+  colformat_double(digits = 4) %>%
+  bold(j = "classicFisher", i = ~ as.numeric(classicFisher) < 0.05) %>%  # Bold values < 0.05, including scientific notation
   add_header_lines(values = "Top 10 Enriched GO Terms (Cellular Components)") %>%
   autofit() %>%
   theme_box()
