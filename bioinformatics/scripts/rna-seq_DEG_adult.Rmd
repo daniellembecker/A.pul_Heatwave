@@ -342,6 +342,9 @@ cat("Downregulated genes:", downregulated_genes, "\n") #37
 # Add a new column 'direction' based on the log2FoldChange values
 adult_deg$direction <- ifelse(adult_deg$log2FoldChange > 0, "upregulated", "downregulated")
 
+# Save DEG dataframe all 
+#write.csv(adult_deg, "bioinformatics/output/adult_deg_all.csv")
+
 # Save DEG dataframe 
 write.csv(adult_deg, "bioinformatics/output/adult_deg.csv")
 

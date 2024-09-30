@@ -1,0 +1,149 @@
+---
+title: "genetic differentiation for RNAseq SNPs  in heatwave adults and offspring"
+author: "daniellembecker"
+date: "20240924"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Use genetic differentiation outputs from bcftools mpileup computed on HPC from URI Andromeda to compare genetic differentiation among samples.
+
+## Install and load Libraries
+```{r message = FALSE, warning = FALSE}
+#install.packages(c("SNPRelate", "gdsfmt", "hierfstat"))
+library(SNPRelate)
+library(gdsfmt)
+library(hierfstat)
+library(ggplot2)
+library(poolfstat)
+```
+
+## Read in genetic differentiation for adult .vcf file made from original sample .bam files, called for SNP variants, and filtered, convert to genomic data structure object
+```{r}
+# Convert filtered .vcf file to GDS format
+vcf.fn.adult <- "bioinformatics/data/filtered_adult_samples.vcf.gz"  # Replace with your VCF file path
+gds.fn.adult <- "bioinformatics/output/heatwave_adults.gds"
+snpgdsVCF2GDS(vcf.fn.adult, gds.fn.adult, method="biallelic.only")
+
+# Open gds
+genofile.adult <- snpgdsOpen(gds.fn.adult)
+
+sample.id.adult <- read.gdsn(index.gdsn(genofile.adult, "sample.id"))
+snp.id.adult <- read.gdsn(index.gdsn(genofile.adult, "snp.id"))
+genotypes.adult <- snpgdsGetGeno(genofile.adult)
+
+# Make sampl.ids from .vcf match bioinf.IDs from metadata
+sample_numbers.adult <- gsub(".*/(\\d+)_sorted\\.bam", "\\1", sample.id.adult)
+
+```
+
+# Create adult population between ambient and heatwave factor
+```{r}
+# Assuming you have a data frame 'sample_info' with columns 'sample' and 'population'
+sample_info <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv")
+
+# Create a mapping between sample numbers and treatments
+sample_data.adult <- sample_info[sample_info$bioinf.ID %in% sample_numbers.adult, ]
+sample_data.adult <- sample_data.adult[order(match(sample_data.adult$bioinf.ID, sample_numbers.adult)), ]
+
+# Create population factor
+pop.adult <- factor(sample_data.adult$treatment)
+
+# Verify the pop factor is corrrect
+data.frame(Sample = sample_numbers.adult, Treatment = pop.adult)
+```
+
+# Make PCA of samples
+```{r}
+# Run PCA without autosome restriction
+pca.adult <- snpgdsPCA(genofile.adult, autosome.only = FALSE, num.thread = 2)
+
+# Extract eigenvalues, eigenvectors, and proportion of variance explained
+eigenvalues.adult <- pca.adult$eigenval
+eigenvectors.adult <- pca.adult$eigenvect  # Principal component scores for samples
+variance_explained.adult <- eigenvalues.adult / sum(eigenvalues.adult) * 100  # Percentage of variance explained by each PC
+
+# Sample IDs
+sample_ids.adult <- read.gdsn(index.gdsn(genofile.adult, "sample.id"))
+
+
+# Create a data frame for the first two principal components
+pca_df.adult <- data.frame(PC1 = eigenvectors.adult[, 1], 
+                     PC2 = eigenvectors.adult[, 2], 
+                     Sample = sample_ids.adult)
+
+# Add treatment and genotype
+pca_df.adult$treatment_genotype <- c("Ambient_5", "Ambient_8", "Ambient_12", "Heatwave_4", "Heatwave_8", "Heatwave_12")
+
+# Plot the PCA
+pca_plot.adult <- ggplot(pca_df.adult, aes(x = PC1, y = PC2, label = treatment_genotype)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -1, hjust = 0.5) + 
+  labs(title = "PCA Plot", x = paste0("PC1 (", round(variance_explained.adult[1], 2), "%)"), 
+       y = paste0("PC2 (", round(variance_explained.adult[2], 2), "%)")) +
+  theme_minimal();pca_plot.adult
+
+```
+
+# Calculate Fst
+```{r}
+# Calculate FST for the ambient and heatwave populations
+fst.adult <- snpgdsFst(genofile.adult, population = pop.adult, method = "W&C84", autosome.only = FALSE)
+
+# Extract FST values
+fst_values.adult <- fst.adult$Fst
+
+# Summarize FST results
+summary(fst_values.adult)
+```
+# FST = 0.05, at the upper limit of the low differentiation category, it suggests some level of population structure but not enough to indicate substantial genetic divergence.
+
+# Run statistical test since it is on the cusp of genetic divergence
+```{r}
+permute_fst.adult <- function(genofile.adult, pop.adult, n_permutations = 1000) {
+    observed_fst.adult <- snpgdsFst(genofile.adult, population = pop.adult, method = "W&C84", autosome.only = FALSE)$Fst
+    fst_values.adult <- numeric(n_permutations)
+    
+    for (i in 1:n_permutations) {
+        # Shuffle the population labels
+        shuffled_pop.adult <- sample(pop.adult)
+        # Calculate FST for the shuffled populations
+        fst_values.adult[i] <- snpgdsFst(genofile.adult, population = shuffled_pop.adult, method = "W&C84", autosome.only = FALSE)$Fst
+    }
+    
+    # Calculate p-value
+    p_value.adult <- mean(fst_values.adult >= observed_fst.adult)
+    return(list(observed_fst = observed_fst.adult, p_value = p_value.adult))
+}
+
+# Takes long to run, don't run everytime
+#result.adult <- permute_fst.adult(genofile.adult, pop.adult, n_permutations = 1000)
+
+print(paste("Observed FST:", result.adult$observed_fst)) # Fst = 0.05
+print(paste("P-value from permutation test:", result.adult$p_value)) # 0.21 suggests not enough evidence to conclude the observed differentiation is statistically significant, could be due to natural variation
+
+```
+
+##############
+# Do this for larval pools now, need to use Fst calculations with the poolfstat package 
+
+## Read in genetic differentiation for larval .vcf file made from original sample .bam files, called for SNP variants, and filtered, convert to genomic data structure object
+```{r}
+# Define paths to the input files
+vcf_file <- "bioinformatics/data/filtered_larval_samples.vcf.gz"  # Your VCF file
+
+# Make poolsize where 50 larvae in each sample pool for VCF
+poolsize <- c(50, 50, 50, 50, 50, 50)  # Assuming all pools have 50 individuals
+
+# Convert the VCF file to pooldata format
+larval_pooldata <- vcf2pooldata(
+  vcf.file = vcf_file,
+  poolsize = poolsize,   # Provide pool sizes for all 6 samples
+  min.maf = 0.05,        # Minimum allele frequency
+  min.cov.per.pool = 10, # Minimum coverage per pool
+  verbose = TRUE         # Verbose output for debugging
+)
+
+```
+
