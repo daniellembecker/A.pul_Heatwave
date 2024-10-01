@@ -118,7 +118,7 @@ permute_fst.adult <- function(genofile.adult, pop.adult, n_permutations = 1000) 
 }
 
 # Takes long to run, don't run everytime
-result.adult <- permute_fst.adult(genofile.adult, pop.adult, n_permutations = 999)
+result.adult <- permute_fst.adult(genofile.adult, pop.adult, n_permutations = 1000)
 
 print(paste("Observed FST:", result.adult$observed_fst)) # Fst < 0.05
 print(paste("P-value from permutation test:", result.adult$p_value)) # 0.093 
@@ -132,18 +132,58 @@ print(paste("P-value from permutation test:", result.adult$p_value)) # 0.093
 ```{r}
 # Define paths to the input files
 vcf_file <- "bioinformatics/data/filtered_larval_samples.vcf.gz"  # Your VCF file
+gds_file <- "bioinformatics/data/filtered_larval_samples.gds"  # Path for GDS file
 
-# Make poolsize where 50 larvae in each sample pool for VCF
-poolsize <- c(50, 50, 50, 50, 50, 50)  # Assuming all pools have 50 individuals
+# Convert VCF to GDS
+snpgdsVCF2GDS(vcf_file, gds_file, method = "biallelic.only")
+
+# Open the GDS file
+gds_data <- openfn.gds(gds_file)
+
+# Print summary of GDS file to check data
+summary(gds_data)
+
+# Close the GDS object after checking
+closefn.gds(gds_data)
 
 # Convert the VCF file to pooldata format
+poolsize <- c(50, 50, 50, 50, 50, 50)  # Assuming all pools have 50 individuals
+
 larval_pooldata <- vcf2pooldata(
   vcf.file = vcf_file,
-  poolsize = poolsize,   # Provide pool sizes for all 6 samples
+  poolsize = poolsize,   # Provide pool sizes for all samples
   min.maf = 0.05,        # Minimum allele frequency
   min.cov.per.pool = 10, # Minimum coverage per pool
   verbose = TRUE         # Verbose output for debugging
 )
+
+# Print the pool data structure for verification
+print(larval_pooldata)
+
+# Load your sample data (make sure this is a data frame)
+# For example, load sample data from CSV or other source
+# sample_data.larval <- read.csv("path/to/sample_data.csv")
+
+# Define ambient and heatwave parental indices based on your sample data
+ambient_samples <- sample_data.larval$bioinf.ID[sample_data.larval$parent == "ambient"]
+heatwave_samples <- sample_data.larval$bioinf.ID[sample_data.larval$parent == "heatwave"]
+
+# Convert sample names to indices in the pool data
+ambient_indices <- match(ambient_samples, larval_pooldata$sample.names)
+heatwave_indices <- match(heatwave_samples, larval_pooldata$sample.names)
+
+# Calculate FST between ambient and heatwave parental populations
+larval_fst_parental_comparison <- computeFST(
+  pooldata = larval_pooldata,                # The pooldata object created from the VCF file
+  method = "Anova",                          # Anova method for FST computation
+  ci = TRUE,                                 # Include confidence intervals
+  iterations = 1000,                         # Number of iterations for bootstrapping (optional for CI)
+  groups = list(ambient_indices, heatwave_indices),  # Compare FST between parental groups
+  verbose = TRUE                             # Verbose output for debugging
+)
+
+# View the FST results
+print(larval_fst_parental_comparison)
 
 ```
 

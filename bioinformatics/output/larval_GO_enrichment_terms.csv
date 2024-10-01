@@ -1,0 +1,33 @@
+﻿GO.ID,Term,Annotated,Significant,Expected,classicFisher,ontology
+GO:0030154,cell differentiation,7,4,0.79,0.0039,BP
+GO:0048519,negative regulation of biological proces...,27,3,3.05,0.0135,BP
+GO:0007165,signal transduction,28,6,3.16,0.0257,BP
+GO:0065003,protein-containing complex assembly,7,2,0.33,0.038,BP
+GO:0005515,protein binding,421,73,50.99,0.0001,MF
+GO:0005509,calcium ion binding,40,10,4.85,0.0171,MF
+GO:0061630,ubiquitin protein ligase activity,6,3,0.73,0.0265,MF
+GO:0016747,"acyltransferase activity, transferring g...",12,4,1.45,0.0471,MF
+GO:0005524,ATP binding,48,9,3.52,0.0064,MF
+GO:0008092,cytoskeletal protein binding,11,3,0.81,0.0409,MF
+GO:0047869,dimethylpropiothetin dethiomethylase act...,5,2,0.37,0.0459,MF
+GO:0005930,axoneme,97,75,10.49,0.00001,CC
+GO:0005929,cilium,277,160,29.97,0.000012,CC
+GO:0022626,cytosolic ribosome,80,32,8.66,0.0000013,CC
+GO:0015934,large ribosomal subunit,50,20,5.41,0.0000004,CC
+GO:0001669,acrosomal vesicle,37,12,4,0.0003,CC
+GO:0016460,myosin II complex,5,3,0.54,0.0107,CC
+GO:0000786,nucleosome,24,9,1.99,0.00007,CC
+GO:0010494,cytoplasmic stress granule,19,7,1.58,0.00055,CC
+GO:0005789,endoplasmic reticulum membrane,257,34,21.33,0.00427,CC
+GO:0030118,clathrin coat,21,6,1.74,0.00587,CC
+GO:0030665,clathrin-coated vesicle membrane,16,5,1.33,0.00782,CC
+GO:0031462,Cul2-RING ubiquitin ligase complex,16,5,1.33,0.00782,CC
+GO:0030686,90S preribosome,19,5,1.58,0.01692,CC
+GO:0000307,cyclin-dependent protein kinase holoenzy...,13,4,1.08,0.01833,CC
+GO:0016282,eukaryotic 43S preinitiation complex,13,4,1.08,0.01833,CC
+GO:0005730,nucleolus,104,15,8.63,0.02417,CC
+GO:0005604,basement membrane,53,9,4.4,0.02885,CC
+GO:0030134,COPII-coated ER to Golgi transport vesic...,24,5,1.99,0.03061,CC
+GO:0098803,respiratory chain complex,15,4,1.24,0.03065,CC
+GO:0005746,mitochondrial respirasome,16,4,1.33,0.03825,CC
+GO:0005622,intracellular anatomical structure,6399,569,530.97,0.04942,CC

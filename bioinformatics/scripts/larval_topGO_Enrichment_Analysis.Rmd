@@ -483,3 +483,71 @@ png_file <- "bioinformatics/output/larval_DEG_top10_enrich_CC_table.png"
 save_as_image(flex_enrich, path = png_file)
 ```
 
+
+# Make plot with significant go terms
+```{r}
+larval.GO <- read.csv("bioinformatics/output/larval_GO_enrichment_terms.csv")
+
+# Load required libraries
+library(ggplot2)
+
+# Convert 'classicFisher' p-values to -log10 scale for better visualization
+larval.GO$log10Fisher <- -log10(larval.GO$classicFisher)
+
+# Calculate gene count: the sum of significant genes assigned to a specific GO term
+gene_counts <- larval.GO %>%
+  group_by(Term) %>%
+  summarise(GeneCount = sum(Significant)) %>%
+  ungroup()
+
+# Merge the gene counts back to the original dataframe
+larval.GO <- larval.GO %>%
+  left_join(gene_counts, by = "Term")
+
+# Calculate the gene ratio (Significant / Annotated)
+larval.GO <- larval.GO %>%
+  mutate(GeneRatio = Significant / Annotated)
+
+# Order GO Terms by GeneCount (decreasing order) for better visualization
+larval.GO$Term <- factor(larval.GO$Term, levels = larval.GO$Term[order(larval.GO$GeneCount)])
+
+# Ensure 'ontology' is a factor for proper plotting
+larval.GO$ontology <- factor(larval.GO$ontology, levels = c("BP", "MF", "CC"))
+
+# Create the plot
+ggplot(larval.GO, aes(x = GeneRatio, y = Term, size = GeneCount, fill = log10Fisher)) +
+  geom_point(shape = 21) +
+
+  # Set the size range for points and the color gradient for significance levels
+  scale_size(range = c(2.5, 12.5)) +
+  scale_fill_continuous(low = 'royalblue', high = 'red4') +
+
+  # Labels for axes and plot
+  xlab('Gene Ratio (Significant / Annotated)') + ylab('GO Term') +
+  labs(
+    subtitle = 'Larval Significant GO terms') +
+
+  # Customize the theme for better presentation
+  theme_bw(base_size = 14) +
+  theme(
+    legend.position = 'right',
+    plot.title = element_text(size = 16, face = 'bold'),
+    plot.subtitle = element_text(size = 14, face = 'bold'),
+    plot.caption = element_text(size = 12, face = 'bold'),
+    axis.text.x = element_text(size = 10, face = 'bold'),
+    axis.text.y = element_text(size = 10, face = 'bold'),
+    axis.title = element_text(size = 12, face = 'bold')) 
+
+  # Facet by ontology with wrapping
+  #facet_wrap(~ ontology, scales = 'free', ncol = 1) +
+
+  # Optionally flip coordinates if preferred
+ # coord_flip()
+
+# Save the plot
+ggplot2::ggsave("bioinformatics/output/larval_GO_Terms_by_Ontology_Fisher.pdf", height = 12, width = 12)
+
+
+
+```
+
