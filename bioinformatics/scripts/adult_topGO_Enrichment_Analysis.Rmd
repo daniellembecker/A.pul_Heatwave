@@ -483,3 +483,50 @@ png_file <- "bioinformatics/output/adult_DEG_top10_enrich_CC_table.png"
 save_as_image(flex_enrich, path = png_file)
 ```
 
+# Make plot with significant go terms
+```{r}
+adult.GO <- read.csv("bioinformatics/output/adult_GO_enrichment_terms.csv")
+
+# Calculate -log10(classicFisher) and order the data
+go_data_adult <- adult.GO %>%
+  mutate(neg_log10_fisher = -log10(classicFisher)) %>%
+  arrange(ontology, desc(neg_log10_fisher)) %>%
+  group_by(ontology) %>%
+  mutate(Term = factor(Term, levels = rev(Term))) %>%
+  ungroup() %>%
+  mutate(ontology = case_when(
+    ontology == "MF" ~ "Molecular Function",
+    ontology == "CC" ~ "Cellular Components"
+  ))
+
+# Create the ggplot
+ggplot(go_data_adult, aes(x = neg_log10_fisher, y = Term, fill = ontology)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c( "Molecular Function" = "lightblue", 
+                               "Cellular Components" = "lightgreen")) +
+  labs(x = "-log10(classic Fisher)", y = "Terms", fill = "Ontology") +
+  facet_grid(ontology ~ ., scales = "free_y", space = "free_y") +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 36),
+        axis.title.y = element_text(size = 40),
+        axis.title.x = element_text(size = 40),
+        axis.text.x = element_text(size = 36),
+        legend.position = "right",
+        legend.title = element_text(size = 38),
+        legend.text = element_text(size = 30),
+        plot.title = element_text(hjust = 0.5, size = 50),
+        strip.text = element_text(angle = 0, size = 30),
+        strip.placement = "outside",
+        strip.background = element_rect(fill = "white"),
+        panel.spacing = unit(1, "lines")) +
+  ggtitle("DEG Processes Enriched in Larval Heatwave Parental History")
+
+# Save the plot
+ggplot2::ggsave("bioinformatics/output/adult_GO_Terms_by_Ontology_Fisher.pdf", height = 28, width = 25)
+ggplot2::ggsave("bioinformatics/output/adult_GO_Terms_by_Ontology_Fisher.png", height = 28, width = 25)
+
+
+
+
+```
+
