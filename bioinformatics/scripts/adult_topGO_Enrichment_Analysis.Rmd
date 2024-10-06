@@ -502,8 +502,8 @@ go_data_adult <- adult.GO %>%
 # Create the ggplot
 ggplot(go_data_adult, aes(x = neg_log10_fisher, y = Term, fill = ontology)) +
   geom_bar(stat = "identity") +
-  scale_fill_manual(values = c( "Molecular Function" = "lightblue", 
-                               "Cellular Components" = "lightgreen")) +
+  scale_fill_manual(values = c( "Molecular Functions" = "lightgreen", 
+                               "Cellular Components" = "lightcoral")) +
   labs(x = "-log10(classic Fisher)", y = "Terms", fill = "Ontology") +
   facet_grid(ontology ~ ., scales = "free_y", space = "free_y") +
   theme_bw() +
@@ -519,7 +519,7 @@ ggplot(go_data_adult, aes(x = neg_log10_fisher, y = Term, fill = ontology)) +
         strip.placement = "outside",
         strip.background = element_rect(fill = "white"),
         panel.spacing = unit(1, "lines")) +
-  ggtitle("DEG Processes Enriched in Larval Heatwave Parental History")
+  ggtitle("DEG Processes Enriched in Parental Heatwave Treatment")
 
 # Save the plot
 ggplot2::ggsave("bioinformatics/output/adult_GO_Terms_by_Ontology_Fisher.pdf", height = 28, width = 25)

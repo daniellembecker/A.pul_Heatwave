@@ -126,64 +126,110 @@ print(paste("P-value from permutation test:", result.adult$p_value)) # 0.093
 ```
 
 ##############
-# Do this for larval pools now, need to use Fst calculations with the poolfstat package 
+# Do this for larval pools now
 
 ## Read in genetic differentiation for larval .vcf file made from original sample .bam files, called for SNP variants, and filtered, convert to genomic data structure object
 ```{r}
-# Define paths to the input files
-vcf_file <- "bioinformatics/data/filtered_larval_samples.vcf.gz"  # Your VCF file
-gds_file <- "bioinformatics/data/filtered_larval_samples.gds"  # Path for GDS file
+# Convert filtered .vcf file to GDS format
+vcf.fn.larvae <- "bioinformatics/data/filtered_larval_samples.vcf.gz"  # Replace with your VCF file path
+gds.fn.larvae <- "bioinformatics/output/heatwave_larval.gds"
+snpgdsVCF2GDS(vcf.fn.larvae, gds.fn.larvae, method="biallelic.only")
 
-# Convert VCF to GDS
-snpgdsVCF2GDS(vcf_file, gds_file, method = "biallelic.only")
+# Open gds
+genofile.larvae <- snpgdsOpen(gds.fn.larvae)
 
-# Open the GDS file
-gds_data <- openfn.gds(gds_file)
+sample.id.larvae <- read.gdsn(index.gdsn(genofile.larvae, "sample.id"))
+snp.id.larvae <- read.gdsn(index.gdsn(genofile.larvae, "snp.id"))
+genotypes.larvae <- snpgdsGetGeno(genofile.larvae)
 
-# Print summary of GDS file to check data
-summary(gds_data)
-
-# Close the GDS object after checking
-closefn.gds(gds_data)
-
-# Convert the VCF file to pooldata format
-poolsize <- c(50, 50, 50, 50, 50, 50)  # Assuming all pools have 50 individuals
-
-larval_pooldata <- vcf2pooldata(
-  vcf.file = vcf_file,
-  poolsize = poolsize,   # Provide pool sizes for all samples
-  min.maf = 0.05,        # Minimum allele frequency
-  min.cov.per.pool = 10, # Minimum coverage per pool
-  verbose = TRUE         # Verbose output for debugging
-)
-
-# Print the pool data structure for verification
-print(larval_pooldata)
-
-# Load your sample data (make sure this is a data frame)
-# For example, load sample data from CSV or other source
-# sample_data.larval <- read.csv("path/to/sample_data.csv")
-
-# Define ambient and heatwave parental indices based on your sample data
-ambient_samples <- sample_data.larval$bioinf.ID[sample_data.larval$parent == "ambient"]
-heatwave_samples <- sample_data.larval$bioinf.ID[sample_data.larval$parent == "heatwave"]
-
-# Convert sample names to indices in the pool data
-ambient_indices <- match(ambient_samples, larval_pooldata$sample.names)
-heatwave_indices <- match(heatwave_samples, larval_pooldata$sample.names)
-
-# Calculate FST between ambient and heatwave parental populations
-larval_fst_parental_comparison <- computeFST(
-  pooldata = larval_pooldata,                # The pooldata object created from the VCF file
-  method = "Anova",                          # Anova method for FST computation
-  ci = TRUE,                                 # Include confidence intervals
-  iterations = 1000,                         # Number of iterations for bootstrapping (optional for CI)
-  groups = list(ambient_indices, heatwave_indices),  # Compare FST between parental groups
-  verbose = TRUE                             # Verbose output for debugging
-)
-
-# View the FST results
-print(larval_fst_parental_comparison)
+# Make sampl.ids from .vcf match bioinf.IDs from metadata
+sample_numbers.larvae <- gsub(".*/(\\d+)_sorted\\.bam", "\\1", sample.id.larvae)
 
 ```
 
+# Create larvae population between ambient and heatwave factor
+```{r}
+# Assuming you have a data frame 'sample_info' with columns 'sample' and 'population'
+sample_info <- read.csv("bioinformatics/data/heatwave_CGA_extractions_metadata.csv")
+
+# Create a mapping between sample numbers and treatments
+sample_data.larvae <- sample_info[sample_info$bioinf.ID %in% sample_numbers.larvae, ]
+sample_data.larvae <- sample_data.larvae[order(match(sample_data.larvae$parent, sample_numbers.larvae)), ]
+
+# Create population factor
+pop.larvae <- factor(sample_data.larvae$treatment)
+
+# Verify the pop factor is corrrect
+data.frame(Sample = sample_numbers.larvae, Treatment = pop.larvae)
+```
+
+# Make PCA of samples
+```{r}
+# Run PCA without autosome restriction
+pca.larvae <- snpgdsPCA(genofile.larvae, autosome.only = FALSE, num.thread = 2)
+
+# Extract eigenvalues, eigenvectors, and proportion of variance explained
+eigenvalues.larvae <- pca.larvae$eigenval
+eigenvectors.larvae <- pca.larvae$eigenvect  # Principal component scores for samples
+variance_explained.larvae <- eigenvalues.larvae / sum(eigenvalues.larvae) * 100  # Percentage of variance explained by each PC
+
+# Sample IDs
+sample_ids.larvae <- read.gdsn(index.gdsn(genofile.larvae, "sample.id"))
+
+
+# Create a data frame for the first two principal components
+pca_df.larvae <- data.frame(PC1 = eigenvectors.larvae[, 1], 
+                     PC2 = eigenvectors.larvae[, 2], 
+                     Sample = sample_ids.larvae)
+
+# Add treatment and genotype
+pca_df.larvae$treatment_genotype <- c("Ambient_5", "Ambient_8", "Ambient_12", "Heatwave_4", "Heatwave_8", "Heatwave_12")
+
+# Plot the PCA
+pca_plot.larvae <- ggplot(pca_df.larvae, aes(x = PC1, y = PC2, label = treatment_genotype)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -1, hjust = 0.5) + 
+  labs(title = "PCA Plot", x = paste0("PC1 (", round(variance_explained.larvae[1], 2), "%)"), 
+       y = paste0("PC2 (", round(variance_explained.larvae[2], 2), "%)")) +
+  theme_minimal();pca_plot.larvae
+
+```
+
+# Calculate Fst
+```{r}
+# Calculate FST for the ambient and heatwave populations
+fst.larvae <- snpgdsFst(genofile.larvae, population = pop.larvae, method = "W&C84", autosome.only = FALSE)
+
+# Extract FST values
+fst_values.larvae <- fst.larvae$Fst
+
+# Summarize FST results
+summary(fst_values.larvae)
+```
+# FST < 0.05, indicating that there is nominal genetic differentiation between the samples
+
+# Run statistical test since it is on the cusp of genetic divergence
+```{r}
+permute_fst.larvae <- function(genofile.larvae, pop.larvae, n_permutations = 1000) {
+    observed_fst.larvae <- snpgdsFst(genofile.larvae, population = pop.larvae, method = "W&C84", autosome.only = FALSE)$Fst
+    fst_values.larvae <- numeric(n_permutations)
+    
+    for (i in 1:n_permutations) {
+        # Shuffle the population labels
+        shuffled_pop.larvae <- sample(pop.larvae)
+        # Calculate FST for the shuffled populations
+        fst_values.larvae[i] <- snpgdsFst(genofile.larvae, population = shuffled_pop.larvae, method = "W&C84", autosome.only = FALSE)$Fst
+    }
+    
+    # Calculate p-value
+    p_value.larvae <- mean(fst_values.larvae >= observed_fst.larvae)
+    return(list(observed_fst = observed_fst.larvae, p_value = p_value.larvae))
+}
+
+# Takes long to run, don't run everytime
+result.larvae <- permute_fst.larvae(genofile.larvae, pop.larvae, n_permutations = 1000)
+
+print(paste("Observed FST:", result.larvae$observed_fst)) # Fst < 0.05
+print(paste("P-value from permutation test:", result.larvae$p_value)) # 0.093 
+
+```

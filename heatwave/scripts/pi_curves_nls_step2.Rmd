@@ -44,7 +44,7 @@ library("broom")
 
 # Import data
 ```{r import_data}
-Data <- read.csv(file = '../output/pi_curves/PI.curve.rates.csv', row.names = 1)
+Data <- read.csv(file = 'output/PI.curve.rates.csv', row.names = 1)
 #Data <- Data[1:40,]
 ```
 
@@ -104,7 +104,7 @@ nls_data <- Data %>%
   group_by(colony_id) %>%
   dplyr::summarise(Am=mean(Am), AQY=mean(AQY), Rd=mean(Rd))%>%
   #mutate(timepoint="timepoint")%>%
-  write_csv(., "../output/pi_curves/PI_curve_pars_NLS.csv")
+  write_csv(., "output/PI_curve_pars_NLS.csv")
 ```
 
 Plot curve over data points.  
@@ -118,16 +118,26 @@ augmented <- Data %>%
   unnest(augmented)
 
 
-#all colonies together
+# Plot PI curves with Ik vertical line
 PI_curves <- augmented %>%
-  group_by(colony_id)%>%
-  qplot(PAR, Pc, data = ., geom = 'point', colour = colony_id) +
-  geom_line(aes(y=.fitted))+
-  theme_classic()+
-  theme(legend.position="none");PI_curves
+  group_by(colony_id) %>%
+  ggplot(aes(x = PAR, y = Pc, colour = colony_id)) +
+  geom_point() +  # Plot the points for each colony's PAR vs Pc
+  geom_line(aes(y = .fitted)) +  # Add the fitted line
+  geom_vline(xintercept = 645.2079, linetype = "dashed", color = "red", size = 1) +  # Add vertical line for Ik
+  annotate("text", x = 650, y = max(augmented$Pc), label = "Ik = 645", color = "red", hjust = 0) +  # Annotate Ik value
+  labs(
+    x = expression(paste('PAR (', mu, "mol photons m"^-2, 's'^-1,")")),
+    y = expression(paste('Photosynthetic rate (', mu, "mol O2 cm"^-2, 'h'^-1,")")),
+    title = "PI Curves with Saturating Irradiance (Ik)"
+  ) +
+  theme_classic() +
+  theme(legend.position = "none"); PI_curves
 
+# Save the plot
+ggsave("output/PI_curves_plot.pdf", plot = PI_curves)
+ggsave("output/PI_curves_plot.png", plot = PI_curves)
 
-ggsave("../output/pi_curves/PI_curves_plot.pdf")
 
 
 #view individual plots

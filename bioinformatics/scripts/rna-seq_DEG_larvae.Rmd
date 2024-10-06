@@ -46,6 +46,7 @@ if (!require("ggplot2")) install.packages("ggplot2", dependencies=TRUE)
 library("VennDiagram")
 library("ggplot2")
 library("tidyverse")
+library("ggvenn")
 library("mixOmics")
 library("genefilter")
 library("DESeq2")
@@ -463,58 +464,25 @@ adult_degs <- read.csv("bioinformatics/output/adult_deg_sig.csv")[-1]
 # Load in larvae DEGS so dont need to run entire code above
 larval_degs <- read.csv("bioinformatics/output/larvae_deg_sig.csv")[-1]
 
-# Extract gene IDs from larvae dataset
-larvae_genes <- larval_degs$gene
+# Extract the unique genes from each dataset
+adult.genes <- unique(adult_degs$gene)
+larvae.genes <- unique(larval_degs$gene)
 
-# Extract gene IDs from adult dataset (replace with your actual adult dataset)
-adult_genes <- adult_degs$gene
+# Create a list containing both gene sets
+gene_sets <- list(
+  "Adult DEGs" = adult.genes,
+  "Larval DEGs" = larvae.genes)
 
-# Find the overlapping genes
-overlapping_genes <- intersect(adult_genes, larvae_genes)
-
-# Display the overlapping genes
-overlapping_genes
-
-# For adults
-overlapping_adult_df <- adult_degs[adult_degs$gene %in% overlapping_genes, ]
-
-# For larvae
-overlapping_larvae_df <- larval_degs[larval_degs$gene %in% overlapping_genes, ]
-
-# Optionally, you can merge these two dataframes based on the 'gene' column for comparison
-overlapping_df <- merge(overlapping_adult_df, overlapping_larvae_df, by = "gene", suffixes = c("_adult", "_larvae"))
-
-# Show the resulting dataframe
-print(overlapping_df)
+# Create a Venn diagram
+venn_degs <- ggvenn(gene_sets, 
+       fill_color = c("#408EC6", "#7A2048", "#1E2761"),
+       show_percentage = F,
+       stroke_size = 0.5, 
+       set_name_size = 5); venn_degs
 
 
-# Generate Venn diagram with improved aesthetics
-venn.plot <- venn.diagram(
-  x = list(Adults = adult_genes, Larvae = larvae_genes),
-  category.names = c("Adults", "Larvae"),
-  filename = NULL, # To display the plot in the R plotting window
-  output = TRUE,
-  fill = c("red", "blue"), # Colors for adult and larvae
-  alpha = 0.5, # Transparency
-  cex = 2, # Text size for the numbers in the diagram
-  cat.cex = 1.5, # Category label size
-  cat.pos = c(-20, 20), # Adjust positions of category labels
-  cat.dist = c(0.05, 0.05), # Distance of category labels from the circles
-  margin = 0.1, # Adjust margins
-  main = "Overlap of DEGs Between Adults and Larvae",
-  main.cex = 2, # Size of the main title
-  lwd = 2, # Line width of the circles
-  fontfamily = "serif", # Font family for a nicer appearance
-  fontface = "bold" # Bold font for a clearer view
-)
-
-# Plot the Venn diagram
-grid.draw(venn.plot)
-
-# Save the Venn diagram as a PNG
-png(filename = "bioinformatics/output/DEG_overlap_venn.png", width = 1000, height = 900, res = 150)
-grid.draw(venn.plot) # Draw the Venn diagram to the current PNG device
-dev.off()  # Close the device to finalize the file
+# Save the Venn diagram as a PNG file
+ggsave("bioinformatics/output/venn_degs.png", venn_degs, width = 6, height = 6, dpi = 300)
 
 
 
