@@ -1,0 +1,7 @@
+[1,"Installing 'chron' ...\n"]
+[2,"trying URL 'https://cran.rstudio.com/bin/macosx/big-sur-x86_64/contrib/4.4/chron_2.3-61.tgz'\n"]
+[2,"Content type 'application/x-gzip' length 194935 bytes (190 KB)\n============================================"]
+[2,"======\ndownloaded 190 KB\n\n"]
+[1,"The downloaded binary packages are in\n"]
+[1,"\t/var/folders/74/4c5gkj7n77g4q6x2ptp3k8qm0000gn/T//RtmpEraKCV/downloaded_packages\n"]
+[2,"\n\n✔ Package 'chron' successfully installed.\n"]

@@ -37,6 +37,7 @@ library(survminer)
 library(graphics)
 library(grid)
 library(jstable)
+library(lmerTest)
 library(GGally)
 library("car") #levenes test
 library("plotrix") #plotting
@@ -61,7 +62,7 @@ library("patchwork") #combine plots
 Load datasets for larval survivorship for cohort 1022.   
 ```{r}
 #load and manipulate data sets
-larvae1022 <-read.csv("spawning/data/survivorship/cohort_survivorship/cohort1022_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
+larvae1022 <-read.csv("data/survivorship/cohort_survivorship/cohort1022_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
 
 ```
 
@@ -132,6 +133,18 @@ library(lmerTest)
 summary(model1a) #summary of model
 car::Anova(model1a, type="II") #anova of model
 ```
+
+Analysis of Deviance Table (Type II Wald chisquare tests)
+
+Response: x
+                              Chisq Df Pr(>Chisq)    
+treatment                   392.908 23  < 2.2e-16 ***
+history                      98.648 31  5.620e-09 ***
+timepoint                   765.303 42  < 2.2e-16 ***
+treatment:history            23.182 15    0.08036 .  
+treatment:timepoint         118.729 21  1.221e-15 ***
+history:timepoint            43.159 29    0.04401 *  
+treatment:history:timepoint  10.001 16    0.86659  
 
 Play around with effect plot  
 ```{r}
@@ -205,7 +218,7 @@ LarvalSurvPlot_1022<-ggplot(data=larvae1022_surv_table, aes(x=timepoint, y=mean,
 Load datasets for larval survivorship for cohort 1023.   
 ```{r}
 #load and manipulate data sets
-larvae1023 <-read.csv("spawning/data/survivorship/cohort_survivorship/cohort1023_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
+larvae1023 <-read.csv("data/survivorship/cohort_survivorship/cohort1023_survivorship.data.csv", header=T, na.strings="NA") #load larval survivorship dataset
 
 ```
 
@@ -276,6 +289,17 @@ library(lmerTest)
 summary(model1c) #summary of model
 car::Anova(model1c, type="II") #anova of model
 ```
+Response: x
+                               Chisq Df Pr(>Chisq)    
+treatment                   494.4629 24  < 2.2e-16 ***
+history                      56.9484 32   0.004279 ** 
+timepoint                   926.4914 43  < 2.2e-16 ***
+treatment:history            12.6769 16   0.696220    
+treatment:timepoint         306.7368 22  < 2.2e-16 ***
+history:timepoint            14.0737 30   0.994017    
+treatment:history:timepoint   4.4596 16   0.997854    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Play around with effect plot  
 ```{r}
@@ -362,6 +386,10 @@ ggsave(filename="figures/larvalsurv_1022_1023.pdf", plot=figure_surv, dpi=500, w
 
 Load datasets for larval survivorship for cohort 1023 and 1022.   
 ```{r}
+# remove the notes column from larvae22
+larvae1022 <- larvae1022 %>% dplyr::select(-notes)
+
+
 #load and manipulate data sets
 larvae.surv <- rbind(larvae1022, larvae1023)
 
@@ -432,6 +460,15 @@ summary(effect("history", model1d))
 
 ```
 
+Response: x
+                                Chisq Df Pr(>Chisq)    
+treatment                    746.4784 24  < 2.2e-16 ***
+history                       66.2481 32  0.0003511 ***
+timepoint                   1700.4479 43  < 2.2e-16 ***
+treatment:history             11.3656 16  0.7863746    
+treatment:timepoint          421.6815 22  < 2.2e-16 ***
+history:timepoint             19.0664 30  0.9386062    
+treatment:history:timepoint    7.3346 16  0.9662603   
 
 Play around with effect plot  
 ```{r}
@@ -541,9 +578,9 @@ figure_surv_2 <- LarvalSurvPlot + labs(title = "",
                 subtitle = "Pooled Cohorts") 
 figure_surv_2
 
-ggsave(filename="spawning/figures/larval.survivorship/larvalsurv_pooled.pdf", plot=figure_surv_2, dpi=500, width=15
+ggsave(filename="figures/larval.survivorship/larvalsurv_pooled.pdf", plot=figure_surv_2, dpi=500, width=15
        , height=14, units="in")
-ggsave(filename="spawning/figures/larval.survivorship/larvalsurv_pooled.jpg", plot=figure_surv_2, dpi=500, width=15
+ggsave(filename="figures/larval.survivorship/larvalsurv_pooled.jpg", plot=figure_surv_2, dpi=500, width=15
        , height=14, units="in")
 
 ```

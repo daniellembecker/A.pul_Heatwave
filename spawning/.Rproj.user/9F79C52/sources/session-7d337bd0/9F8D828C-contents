@@ -1,0 +1,827 @@
+---
+title: "Reproductive Ecology Analysis: spawning success, egg size, eggs per bundle, and fertilization success"
+author: "DM Becker-Polinski"
+date: "2023" 
+output:
+  html_document:
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
+  pdf_document:
+    keep_tex: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+This script analyzes spawning success, egg size, and fertilization success as physiology metrics in the *A. pulchra* heatwave time series and reproductive ecology between control and heatwave colonies during spawning October 2022.    
+
+# **Setup**  
+
+Set up workspace, set options, and load required packages.    
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r setup, include = FALSE}
+## install packages if you dont already have them
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+if (!require("car")) install.packages("car")
+if (!require("emmeans")) install.packages("emmeans")
+if (!require("multcomp")) install.packages("multcomp")
+if (!require("knitr")) install.packages("knitr")
+if (!require("kableExtra")) install.packages("kableExtra")
+if (!require("lme4")) install.packages("lme4")
+if (!require("GGally")) install.packages("GGally")
+if (!require("lmerTest")) install.packages("lmerTest")
+if (!require("cowplot")) install.packages("cowplot")
+if (!require("PNWColors")) install.packages("PNWColors")
+
+# load packages
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(car)
+library(emmeans)
+library(multcomp)
+library(knitr)
+library(kableExtra)
+library(lme4)
+library(GGally)
+library(lmerTest)
+library(cowplot)
+library(patchwork)
+library(ggsignif)
+library(Hmisc)
+library(PNWColors)
+```
+
+In this project, physiological assays include eggs per bundle, egg size, fertilization success.  
+
+Load in metadata.
+```{r}
+# Metadata
+metadata <- read_csv("metadata/colony_ metadata.csv")
+
+```
+
+
+
+# **1. Eggs per bundle**  
+
+## Import and manipulate data
+
+Load in data.
+```{r}
+# Egg size data
+bundle <- read_csv("data/reproductive_ecology/eggs_bundle.csv")
+
+# select columns
+bundle <- bundle %>%
+  dplyr::select(colony, treatment, cohort, well, eggs.bundle)%>%
+  drop_na() #remove na's that could not be measured
+
+bundle$well<-as.factor(bundle$well)
+bundle$colony<-as.factor(bundle$colony)
+bundle$treatment<-as.factor(bundle$treatment)
+bundle$cohort<-as.factor(bundle$cohort)
+
+```
+
+Remove na's from data frame.  
+```{r}
+bundle <- bundle %>%
+  dplyr::select(colony, treatment, cohort, well, eggs.bundle)%>%
+  drop_na() #remove na's that could not be measured
+```
+
+
+## Plot eggs per bundle   
+
+Plot data with mean and standard error for each treatment 
+```{r}
+bundle %>%
+  ggplot(aes(x = treatment, y = eggs.bundle, color = treatment)) +
+  labs(x = "",y = "Eggs per Bundle") +
+  geom_jitter(width = 0.1) +                                            # Plot all points
+  stat_summary(fun.data = mean_cl_normal, fun.args = list(mult = 1),    # Plot standard error
+               geom = "errorbar", color = "black", width = 0.5) +
+  stat_summary(fun = mean, geom = "point", color = "black") + # Plot mean
+  theme_classic()
+```
+
+# Calculate the means of eggs per bundle
+
+```{r}
+#Select only the columns we need for eggs per bundle 
+calculate_bundle <- bundle %>% 
+  dplyr::select(colony, treatment, eggs.bundle)%>%
+  drop_na() #remove na's that could not be measured
+```
+
+Present means and standard error of each group and save summary table.  
+
+```{r}
+calculate_bundle%>%
+  group_by(treatment)%>%
+  summarise(n=length(eggs.bundle),
+            Mean=format(round(mean(eggs.bundle), 3), 3), 
+            SE=format(round(sd(eggs.bundle)/sqrt(length(eggs.bundle)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  kbl(caption="Descriptive statistics of eggs per bundle between treatments")%>%
+  kable_classic(full_width=FALSE, html_font="Arial")%>%
+  row_spec(0, bold = TRUE) 
+
+#need to output to csv 
+calculate_bundle%>%
+  group_by(treatment)%>%
+  summarise(n=length(eggs.bundle),
+            Mean=format(round(mean(eggs.bundle), 3), 3), 
+            SE=format(round(sd(eggs.bundle)/sqrt(length(eggs.bundle)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  write_csv(., "output/reproductive_ecology/eggs.bundle.csv")
+```
+
+Plot data as a box plot.     
+
+```{r}
+
+# Calculate the mean egg size per colony per treatment
+mean_bundle <- bundle %>%
+  group_by(colony, treatment) %>%
+  summarise(mean_bundle = mean(eggs.bundle),
+    .groups = 'drop')
+
+bundle_plot <- mean_bundle %>%
+    ggplot(., aes(x = treatment, y = mean_bundle, colour=treatment)) +
+    geom_boxplot(aes(colour=treatment), lwd=1) +
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
+    xlab("") + 
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Eggs per Bundle"))))+
+  xlab(expression(bold(paste("Treatment"))))+
+    scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
+   scale_y_continuous(expand = c(0, 0), limits = c(0, 10)) +
+        ggtitle("one-way anova, ns") +
+      annotate("text", x = 1.45, y = 9.5, label = "", size = 20) +
+    theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
+      legend.position="none",
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20));bundle_plot
+
+ggsave(plot=bundle_plot, "figures/reproductive_ecology/bundle.png",height=8, width=8)
+ggsave(plot=bundle_plot, "figures/reproductive_ecology/bundle.pdf",height=8, width=8)
+```
+
+
+## Statistical analysis  
+
+Run ANOVA test on eggs per bundle.
+```{r}
+bundle_model <-aov(mean_bundle~treatment, data=mean_bundle)
+summary(bundle_model)
+qqPlot(residuals(bundle_model))
+leveneTest(residuals(bundle_model)~treatment, data=mean_bundle)
+```
+
+Meets assumptions for normality and homogeneity of variance but eggs per bundle are not significantly higher in the heated parental history treatment.
+
+           Df Sum Sq Mean Sq F value Pr(>F)
+treatment    1  1.359  1.3590   1.923  0.181
+Residuals   20 14.138  0.7069      
+
+
+
+# **2. Egg Size/Volume**  
+
+First, plot and analyze egg size measured as volume. Volume is calculated as a prolate spheroid using the length and width measurements of each individual sampled across heatwave spawning project.     
+
+## Import and manipulate data
+
+Load in data.
+```{r}
+# Egg size data
+size <- read_csv("data/reproductive_ecology/egg_volume.csv")
+
+# select columns
+size <- size %>%
+  dplyr::select(tube.ID, treatment, replicate, type, `width (mm)`, `length (mm)`) %>%
+  rename(width=`width (mm)`, length = `length (mm)`)%>%
+  drop_na() #remove na's that could not be measured
+
+#make factors
+size$replicate<-as.factor(size$replicate)
+size$tube.ID<-as.factor(size$tube.ID)
+size$treatment<-as.factor(size$treatment)
+size$type<-as.factor(size$type)
+
+```
+
+
+## Calculate volume  
+
+Calculate the volume of each treatment. For eggs, we will use a spheroid equation. This best approximates the shape of each life stage.  
+
+Spheroid: V = 4/3 * pi * a^3 where a is 1/2 the width (radius)
+
+Calculate the volume for each individual as a spheroid. Using this equation: V = 4/3 * pi * a^3 where a is 1/2 the width (radius)
+```{r}
+# Define a function to calculate the volume based on individual
+calculate_volume <- function(type, length, width) {
+  case_when(
+    type %in% c("egg") ~ (4/3) * pi * (width/2)^3,
+    TRUE ~ NA_real_
+  )
+}
+
+# Use mutate function to calculate volume based on individual
+size <- size %>% mutate(volume = calculate_volume(type, length, width))
+
+# Print the updated dataframe
+print(size)
+```
+
+## Plot larval volume    
+
+Plot data with mean and standard error for each treatment 
+```{r}
+size %>%
+  ggplot(aes(x = treatment, y = volume, color = type)) +
+  labs(x = "",y = "Mean Larval Volume (mm^3)") +
+  geom_jitter(width = 0.1) +                                            # Plot all points
+  stat_summary(fun.data = mean_cl_normal, fun.args = list(mult = 1),    # Plot standard error
+               geom = "errorbar", color = "black", width = 0.5) +
+  stat_summary(fun = mean, geom = "point", color = "black") + # Plot mean
+  theme_classic()
+```
+
+Present means and standard error of each group and save summary table.  
+
+```{r}
+size%>%
+  group_by(treatment)%>%
+  summarise(n=length(volume),
+            Mean=format(round(mean(volume), 3), 3), 
+            SE=format(round(sd(volume)/sqrt(length(volume)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  kbl(caption="Descriptive statistics egg size")%>%
+  kable_classic(full_width=FALSE, html_font="Arial")%>%
+  row_spec(0, bold = TRUE) 
+
+#need to output to csv 
+size%>%
+  group_by(treatment)%>%
+  summarise(n=length(volume),
+            Mean=format(round(mean(volume), 3), 3), 
+            SE=format(round(sd(volume)/sqrt(length(volume)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  write_csv(., "output/reproductive_ecology/egg_volume_table.csv")
+```
+
+Plot data as a box plot.     
+```{r}
+
+# Calculate the mean egg size per colony per treatment
+mean_egg_size <- size %>%
+  group_by(tube.ID, treatment) %>%
+  summarise(
+    mean_width = mean(width),
+    mean_length = mean(length),
+    mean_volume = mean(volume),
+    .groups = 'drop')
+
+size_plot<- mean_egg_size %>%
+    ggplot(., aes(x = treatment, y = mean_volume)) +
+    geom_boxplot(aes(colour=treatment), lwd=1) +
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
+    xlab("") + 
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Egg Size (mm"^3, ")"))))+
+   xlab(expression(bold(paste("Treatment"))))+
+    scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
+    ggtitle("one-way anova, p < 0.001") +
+      annotate("text", x = 1.45, y = 0.16, label = "*", size = 20) +
+    theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
+      legend.position="none",
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20)); size_plot
+
+ggsave(plot=size_plot, "figures/reproductive_ecology/egg_size.png",height=8, width=8)
+ggsave(plot=size_plot, "figures/reproductive_ecology/egg_size.pdf",height=8, width=8)
+```
+
+
+
+## Statistical analysis  
+
+Run ANOVA test on egg size. 
+```{r}
+size_model<-aov(log(mean_volume)~treatment, data=mean_egg_size)
+summary(size_model)
+qqPlot(residuals(size_model))
+leveneTest(residuals(size_model)~treatment, data=mean_egg_size)
+```
+
+Meets normality and variance assumptions, run  anova
+            Df Sum Sq Mean Sq F value   Pr(>F)    
+treatment    1  1.787  1.7873   18.63 0.000372 ***
+Residuals   19  1.822  0.0959  
+
+
+# **3. Fertilization Success**  
+
+First, plot and analyze 2, 4, and more cell fertilizartion success propotions. The fertilization success rate is determined for each concentration as the quantity of normally fertilized eggs, divided by the total eggs added.  
+
+## Import and manipulate data
+
+Load in data.
+```{r}
+# fertilization success data
+fert <- read_csv("data/reproductive_ecology/fertilization_success.csv")
+
+```
+
+
+## Calculate fertilization success rate (%) for each morph 
+
+Calculate the fertilization success rate for each stage of cleavage. 
+```{r}
+# Define a function to calculate the fert success at each stage or section
+#make fert a data frame due to error in ops.data.frame error from calculation in line 267
+fert <- as.data.frame(fert)
+
+#calcualte fert success per clev stage, using mutate to take columns from egg to deformed embryos, and divide each column by the total number of eggs column * 100 to get fert success per clevage stage
+calculate_fert_success <- fert %>% mutate_at(vars(egg:deformed.embryos),list(prop=~./num.eggs*100))
+
+# Print the updated dataframe
+print(calculate_fert_success)
+```
+
+## Plot total fertilization success by treatment  
+
+Plot data with mean and standard error for each treatment 
+```{r}
+calculate_fert_success %>%
+  ggplot(aes(x = treatment, y = tot.fert.success)) +
+  labs(x = "",y = "Fertilization Success Rate (%)") +
+  geom_jitter(width = 0.1) +                                            # Plot all points
+  stat_summary(fun.data = mean_cl_normal, fun.args = list(mult = 1),    # Plot standard error
+               geom = "errorbar", color = "black", width = 0.5) +
+  stat_summary(fun = mean, geom = "point", color = "black") + # Plot mean
+  theme_classic()
+```
+
+Present means and standard error of each group and save summary table.  
+
+```{r}
+calculate_fert_success%>%
+  group_by(treatment)%>%
+  summarise(n=length(tot.fert.success),
+            Mean=format(round(mean(tot.fert.success), 3), 3), 
+            SE=format(round(sd(tot.fert.success)/sqrt(length(tot.fert.success)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  kbl(caption="Descriptive statistics of fertilization success rate between treatments")%>%
+  kable_classic(full_width=FALSE, html_font="Arial")%>%
+  row_spec(0, bold = TRUE) 
+
+#need to output to csv 
+calculate_fert_success%>%
+  group_by(treatment)%>%
+  summarise(n=length(tot.fert.success),
+            Mean=format(round(mean(tot.fert.success), 3), 3), 
+            SE=format(round(sd(tot.fert.success)/sqrt(length(tot.fert.success)),3),3))%>%
+  dplyr::rename(Treatment=treatment)%>%
+  write_csv(., "output/reproductive_ecology/total.fert.success.csv")
+```
+
+Plot data as a box plot.     
+```{r}
+
+# Calculate total fert success by tube ID replicates
+mean_fert <- calculate_fert_success %>%
+  group_by(tube.ID, treatment) %>%
+  summarise(mean_fert = mean(tot.fert.success),
+    .groups = 'drop')
+
+total_fert_success_plot <- mean_fert %>%
+    ggplot(., aes(x = treatment, y = mean_fert, color = treatment)) +
+    geom_boxplot(aes(colour=treatment), lwd=1) +
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
+    xlab("") + 
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Fertilization Success (%)"))))+
+  xlab(expression(bold(paste("Treatment"))))+
+      scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
+    ggtitle("one-way anova, p = 0.03 ") +
+      annotate("text", x = 1.45, y = 100, label = "*", size = 20) +
+    theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
+      legend.position="none",
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20)); total_fert_success_plot
+
+
+ggsave(plot=total_fert_success_plot, "figures/reproductive_ecology/total_fertilization_success.png",height=8, width=8)
+ggsave(plot=total_fert_success_plot, "figures/reproductive_ecology/total_fertilization_success.pdf",height=8, width=8)
+```
+
+
+## Statistical analysis  
+
+Run ANOVA test on fert success. 
+```{r}
+tot_fert_model<-aov(mean_fert~treatment, data=mean_fert)
+summary(tot_fert_model)
+qqPlot(residuals(tot_fert_model))
+leveneTest(residuals(tot_fert_model)~treatment, data=mean_fert)
+```
+
+There is a significant difference in fert success between groups with higher from hot treatment.
+
+            Df Sum Sq Mean Sq F value Pr(>F)  
+treatment    1  999.4   999.4   5.872 0.0359 *
+Residuals   10 1701.9   170.2                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+# Calculate the means of proportions across clevage stages
+
+```{r}
+#Select only the columns we need for each proportion in each stage 
+cleav <- calculate_fert_success %>% 
+  dplyr::select(tube.ID, treatment, replicate, egg_prop, two.cells_prop, four.cells_prop, more.cells_prop)%>%
+  drop_na() #remove na's that could not be measured
+
+#change from wide to long format for easier plots below
+cleav_long <- gather(cleav, stage, tot.fert, egg_prop:more.cells_prop, factor_key=TRUE)
+
+```
+
+
+Present means and standard error of each group and save summary table.  
+
+```{r}
+cleav_long%>%
+  group_by(stage, treatment)%>%
+  summarise(n=length(tot.fert),
+            Mean=format(round(mean(tot.fert), 3), 3), 
+            SE=format(round(sd(tot.fert)/sqrt(length(tot.fert)),3),3))%>%
+   dplyr::rename(Stage=stage, Treatment=treatment)%>%
+  kbl(caption="Descriptive statistics of total fertilization success rate across developmental stage")%>%
+  kable_classic(full_width=FALSE, html_font="Arial")%>%
+  row_spec(0, bold = TRUE) 
+
+#need to output to csv 
+cleav_long%>%
+  group_by(stage, treatment)%>%
+  summarise(n=length(tot.fert),
+            Mean=format(round(mean(tot.fert), 3), 3), 
+            SE=format(round(sd(tot.fert)/sqrt(length(tot.fert)),3),3))%>%
+  dplyr::rename(Stage=stage, Treatment=treatment)%>%
+  write_csv(., "output/toal_fert_table.csv")
+```
+
+Plot data as a box plot.     
+```{r}
+
+#use PNW color palette, build palette
+pal=pnw_palette("Moth", type = "discrete")
+
+cleav_plot <- cleav_long %>%
+    ggplot(., aes(x = treatment, y = tot.fert, color = stage)) +
+    geom_boxplot(aes(colour=stage), lwd=1) +
+    geom_point(aes(fill=stage), colour="black", pch = 21, size=4, position = position_jitterdodge(0.5), alpha=0.6) + 
+    scale_colour_manual(name="Stage", values=pal, labels=c("One Cell", "Two Cells", "Four Cells", "> Four Cells" )) +
+    scale_fill_manual(name="Stage", values=pal, labels=c("One Cell","Two Cells", "Four Cells", "> Four Cells" )) +
+    ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
+    xlab(expression(bold(paste("Treatment"))))+
+    ggtitle("") +
+    theme_classic() + 
+    theme(
+      legend.position="right",
+      axis.title=element_text(face="bold", size=14),
+      axis.text=element_text(size=12, color="black"), 
+      legend.title=element_text(face="bold", size=14), 
+      legend.text=element_text(size=12), 
+      axis.text.x=element_text(angle=45, hjust=1)
+      ); cleav_plot
+
+
+ggsave(plot=cleav_plot, "figures/reproductive_ecology/cleav_fertilization_success.png",height=8, width=8)
+ggsave(plot=cleav_plot, "figures/reproductive_ecology/cleav_fertilization_success.pdf",height=8, width=8)
+```
+
+Plot data as a mean and standard error plot.     
+```{r}
+cleav_plot_mean <- cleav_long %>%
+  group_by(treatment, stage)%>%
+  summarise(mean=mean(tot.fert, na.rm=TRUE), 
+            n=length(tot.fert),
+            se=sd(tot.fert, na.rm=TRUE)/sqrt(length(tot.fert)))%>%
+
+    ggplot(., aes(x = stage, y = mean, fill = treatment)) +
+     geom_bar(position="dodge", stat="identity") +
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2,position=position_dodge(.9))+
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Fertilization Success Rate (%)"))))+
+    xlab(expression(bold(paste("Stage"))))+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 30)) +
+  scale_x_discrete(labels=c("egg_prop" = "One Cell", "two.cells_prop" = "Two Cells", "four.cells_prop" = "Four Cells", "more.cells_prop" = "> Four Cells")) +
+    theme_classic() + 
+    #annotate("text", x = 1.4, y = 95, label = "*", size = 12) +
+    theme(legend.position = c(.97, .99),
+    legend.justification = c("right", "top"),
+      legend.title=element_text(face="bold", size=30),
+      legend.text=element_text(size=28),
+      axis.title=element_text(face="bold", size=30),
+      axis.text=element_text(size=30, color="black"), 
+      strip.text.x=element_text(face="italic", size=20)
+      ); cleav_plot_mean
+
+ggsave(plot=cleav_plot_mean, "figures/reproductive_ecology/cleav_fert_success_mean.png",height=6, width=6)
+ggsave(plot=cleav_plot_mean, "figures/reproductive_ecology/cleav_fert_success_mean.pdf",height=6, width=6)
+```
+
+Plot data as a mean and standard error plot, stacked bar plot.     
+```{r}
+#use PNW color palette, build palette
+pal=pnw_palette("Moth", type = "discrete")
+
+stacked_plot <- cleav_long %>%
+    ggplot(., aes(x = treatment, y = tot.fert, fill = stage)) +
+  geom_bar(stat="identity", position="fill") +
+    scale_colour_manual(name="Cleavage", values=pal, labels=c("egg_prop" = "One Cell", "two.cells_prop" = "Two Cells", "four.cells_prop" = "Four Cells", "more.cells_prop" = "> Four Cells")) +
+    scale_fill_manual(name="Cleavage", values=pal, labels=c("egg_prop" = "One Cell", "two.cells_prop" = "Two Cells", "four.cells_prop" = "Four Cells", "more.cells_prop" = "> Four Cells")) +
+    ylab(expression(bold(paste("Proportion of embryos at each cleavage stage"))))+
+    xlab(expression(bold(paste("Treatment"))))+
+    scale_y_continuous(expand = c(0, 0)) +
+  scale_x_discrete(labels = c("ambient" = "Ambient", "hot" = "Hot")) +
+    theme_classic() + 
+  ggtitle("Cleavage") +
+    theme(plot.title = element_text(face = "bold", size = 28, hjust = 0.5),
+      legend.position="top",
+      axis.title=element_text(face="bold", size=28),
+      axis.text=element_text(size=28, color="black"), 
+      legend.title=element_blank(),
+      legend.text=element_text(size=28), 
+      #axis.text.x=element_text(angle=45, hjust=1)
+      ); stacked_plot
+
+ggsave(plot=stacked_plot, "figures/reproductive_ecology/cleav_stacked_plot.png",height=20, width=10)
+ggsave(plot=stacked_plot, "figures/reproductive_ecology/cleav_stacked_plot.pdf",height=20, width=10)
+```
+
+
+Join all plots for each normalization together.  
+
+```{r}
+fert_final <- plot_grid(total_fert_success_plot, stacked_plot, ncol=2, nrow=1, labels = c('A', 'B'),rel_heights= c(1,1,1,1), rel_widths = c(1,1,1,1.2), label_y=1, align="h", label_size = 60)
+
+ggsave(filename="figures/reproductive_ecology/fert_clev_Figure.pdf", plot=fert_final, dpi=300, width=20, height=15, units="in")
+ggsave(filename="figures/reproductive_ecology/fert_clev_Figure.png", plot=fert_final, dpi=300, width=20, height=15, units="in")
+```
+
+
+#combine eggs per bundle, egg size, and fertilization success
+
+```{r}
+#generate figure with larval survival
+
+repro_plot <- bundle_plot | size_plot | total_fert_success_plot
+
+repro_plot <- repro_plot + plot_annotation(tag_levels = 'A')  &
+  theme(plot.tag = element_text(face = "bold", size = 20)) # Customize tag appearance
+ 
+
+repro_plot
+
+ggsave("figures/reproductive_ecology/all_repro.png", plot = repro_plot, width = 15, height = 8)
+ggsave("figures/reproductive_ecology/all_repro.pdf", plot = repro_plot, width = 20, height = 12)
+
+
+```
+
+###Run stats and figures on genetype filtered treatments for EPB, ES, and fertilization success
+
+Filtered eggs per bundle plot and stats
+```{r}
+filtered.EPB <- mean_bundle[!mean_bundle$colony %in% c("ACR-5", "ACR-7"), ]
+
+genotype_bundle_plot <- filtered.EPB %>%
+    ggplot(., aes(x = treatment, y = mean_bundle, colour=treatment)) +
+    geom_boxplot(aes(colour=treatment), lwd=1) +
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
+    xlab("") + 
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Eggs per Bundle"))))+
+  xlab(expression(bold(paste("Treatment"))))+
+    scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
+   scale_y_continuous(expand = c(0, 0), limits = c(0, 10)) +
+        ggtitle("one-way anova, ns") +
+      annotate("text", x = 1.45, y = 9.5, label = "", size = 20) +
+    theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
+      legend.position="none",
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20));genotype_bundle_plot
+
+ggsave(plot=genotype_bundle_plot, "figures/reproductive_ecology/genotype_bundle.png",height=8, width=8)
+
+```
+
+## Statistical analysis  
+
+Run ANOVA test on genotype spewcific eggs per bundle.
+```{r}
+geno_bundle_model <-aov(mean_bundle~treatment, data=filtered.EPB)
+summary(geno_bundle_model)
+qqPlot(residuals(geno_bundle_model))
+leveneTest(residuals(geno_bundle_model)~treatment, data=filtered.EPB)
+```
+
+Meets assumptions for normality and homogeneity of variance but eggs per bundle are not significantly higher in the heated parental history treatment.
+
+           Df Sum Sq Mean Sq F value Pr(>F)
+treatment    1  1.359  1.3590   1.923  0.181
+Residuals   20 14.138  0.7069      
+
+
+Filtered size plot and stats
+```{r}
+filtered.size <- mean_egg_size[!mean_egg_size$tube.ID %in% c("ACR-5", "ACR-7", "ACR-9"), ]
+
+geno_size_plot<- filtered.size %>%
+    ggplot(., aes(x = treatment, y = mean_volume)) +
+    geom_boxplot(aes(colour=treatment), lwd=1) +
+    geom_point(aes(fill=treatment), colour="black", pch = 21, size=4, position = position_jitterdodge(0.1), alpha=0.6) + 
+    xlab("") + 
+    scale_colour_manual(name="Treatment", values=c("darkblue", "red"))+
+    scale_fill_manual(name="Treatment", values=c("darkblue", "red"))+
+    ylab(expression(bold(paste("Egg Size (mm"^3, ")"))))+
+   xlab(expression(bold(paste("Treatment"))))+
+    scale_x_discrete(labels=c("ambient" = "Ambient", "hot" = "Hot")) +
+    ggtitle("one-way anova, p = 0.002") +
+      annotate("text", x = 1.45, y = 0.16, label = "*", size = 20) +
+    theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, vjust = -0.1),
+      legend.position="none",
+      axis.title=element_text(face="bold", size=20, color="black"),
+      axis.text=element_text(size=20, color="black"), 
+      legend.title=element_text(face="bold", size=20), 
+      legend.text=element_text(size=20)); geno_size_plot
+
+ggsave(plot=geno_size_plot, "figures/reproductive_ecology/genotype_egg_size.png",height=8, width=8)
+
+```
+
+
+## Statistical analysis  
+
+Run ANOVA test on egg size. 
+```{r}
+geno_size_model<-aov(log(mean_volume)~treatment, data=filtered.size)
+summary(geno_size_model)
+qqPlot(residuals(geno_size_model))
+leveneTest(residuals(geno_size_model)~treatment, data=filtered.size)
+```
+
+Meets normality and variance assumptions, run  anova
+            Df Sum Sq Mean Sq F value  Pr(>F)   
+treatment    1  1.482  1.4815   13.51 0.00205 **
+Residuals   16  1.755  0.1097                   
+
+
+Create fertilization plot showing genotype distribution across cohort dates
+```{r}
+geno.fert <- calculate_fert_success
+
+# Convert date.photographed to Date format
+geno.fert$treatment <- factor(geno.fert$treatment)  # Ensure treatment is a factor
+geno.fert$date.photographed <- as.Date(as.character(geno.fert$date.photographed), format = "%Y%m%d")
+
+geno_total_fert_success_plot <- ggplot(geno.fert, aes(x = factor(date.photographed), y = tot.fert.success, fill = treatment)) +
+  geom_boxplot() +
+  labs(x = "Date Photographed", y = "Total Fertilization Success (%)", title = "Fertilization Success by Treatment") +
+  scale_fill_manual(values = c("ambient" = "darkblue", "hot" = "red")) +  # Custom colors for treatments
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for readability
+  scale_x_discrete(name = "Date Photographed");geno_total_fert_success_plot  # Make sure date is treated as a discrete value
+
+
+# run stats with date photographed (aka day of release) as random effect
+# Fit linear mixed-effects model with date.photographed as a random effect
+tot_fert_model_lme <- lmer(tot.fert.success ~ treatment + (1 | date.photographed), data = calculate_fert_success)
+# Summarize the model
+summary(tot_fert_model_lme)
+# ANOVA table for fixed effects
+anova(tot_fert_model_lme)
+# Check residuals for normality
+qqPlot(residuals(tot_fert_model_lme))
+# Check for homogeneity of variances
+leveneTest(residuals(tot_fert_model_lme) ~ treatment, data = calculate_fert_success)
+
+```
+
+#combine eggs per bundle, egg size, and fertilization success
+
+```{r}
+#generate figure with larval survival
+
+geno_repro_plot <- genotype_bundle_plot | geno_size_plot | geno_total_fert_success_plot
+
+geno_repro_plot <- geno_repro_plot + plot_annotation(tag_levels = 'A')  &
+  theme(plot.tag = element_text(face = "bold", size = 20)) # Customize tag appearance
+ 
+
+geno_repro_plot
+
+ggsave("figures/reproductive_ecology/genotype_all_repro.png", plot = geno_repro_plot, width = 15, height = 8)
+```
+
+
+Run lmer models with genotype nested within day as a random effect
+```{r}
+# Select only the 'colony' and 'genotype' columns from the genotype_info dataframe
+genotype_info_selected <- metadata %>%
+  dplyr::select(coral_ID, genotype) %>%
+  dplyr::rename(colony = coral_ID)
+
+# add cohort as a factor for mean bundle dataframe
+calc_bundle <- bundle %>%
+  group_by(colony, treatment, cohort) %>%
+  summarise(mean_bundle = mean(eggs.bundle),
+    .groups = 'drop')
+
+# Merge the selected genotype column with geno.bun dataframe
+geno.bun_merged <- merge(calc_bundle, genotype_info_selected, by = "colony")
+
+
+# Bring in original df
+size.dat <- read_csv("data/reproductive_ecology/egg_volume.csv")
+
+# select columns
+size.dat <- size.dat %>%
+  dplyr::select(tube.ID, treatment, date.photographed,replicate, type, `width (mm)`, `length (mm)`) %>%
+  rename(width=`width (mm)`, length = `length (mm)`)%>%
+  drop_na() #remove na's that could not be measured
+
+#make factors
+size.dat$replicate<-as.factor(size.dat$replicate)
+size.dat$tube.ID<-as.factor(size.dat$tube.ID)
+size.dat$treatment<-as.factor(size.dat$treatment)
+size.dat$type<-as.factor(size.dat$type)
+
+# Use mutate function to calculate volume based on individual
+calc_size <- size.dat %>% mutate(volume = calculate_volume(type, length, width))
+
+# Rename tube ID to colony
+geno_egg_size <- calc_size %>%
+  dplyr::rename(colony = tube.ID)
+
+# add cohort as a factor for mean size dataframe
+geno_size_dat <- geno_egg_size %>%
+  group_by(colony, treatment, date.photographed) %>%
+  summarise(mean_size = mean(volume),
+    .groups = 'drop')
+
+# Merge the selected genotype column with geno.size dataframe
+geno.size <- merge(geno_size_dat, genotype_info_selected, by = "colony")
+
+# Eggs per bundle
+# Run the linear mixed-effects model with genotype nested within day of release
+model.bun <- lmer(mean_bundle ~ treatment + (1 | cohort/genotype), data = geno.bun_merged)
+
+# View the model summary
+summary(model.bun)
+
+# Extract random effects
+random_effects <- rand(model.bun);random_effects
+
+# Egg size
+# Run the linear mixed-effects model
+model.size <- lmer(mean_size ~ treatment + (1 | date.photographed/genotype), data = geno.size)
+
+# View the model summary
+summary(model.size)
+
+# Extract random effects
+random_effects <- rand(model.size);random_effects
+```
+

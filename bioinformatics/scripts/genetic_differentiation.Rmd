@@ -157,7 +157,7 @@ sample_data.larvae <- sample_info[sample_info$bioinf.ID %in% sample_numbers.larv
 sample_data.larvae <- sample_data.larvae[order(match(sample_data.larvae$parent, sample_numbers.larvae)), ]
 
 # Create population factor
-pop.larvae <- factor(sample_data.larvae$treatment)
+pop.larvae <- factor(sample_data.larvae$parent)
 
 # Verify the pop factor is corrrect
 data.frame(Sample = sample_numbers.larvae, Treatment = pop.larvae)
@@ -183,10 +183,10 @@ pca_df.larvae <- data.frame(PC1 = eigenvectors.larvae[, 1],
                      Sample = sample_ids.larvae)
 
 # Add treatment and genotype
-pca_df.larvae$treatment_genotype <- c("Ambient_5", "Ambient_8", "Ambient_12", "Heatwave_4", "Heatwave_8", "Heatwave_12")
+pca_df.larvae$parent <- c("Ambient", "Ambient", "Ambient", "Heatwave", "Heatwave", "Heatwave")
 
 # Plot the PCA
-pca_plot.larvae <- ggplot(pca_df.larvae, aes(x = PC1, y = PC2, label = treatment_genotype)) +
+pca_plot.larvae <- ggplot(pca_df.larvae, aes(x = PC1, y = PC2, label = parent)) +
   geom_point(size = 3) +
   geom_text(vjust = -1, hjust = 0.5) + 
   labs(title = "PCA Plot", x = paste0("PC1 (", round(variance_explained.larvae[1], 2), "%)"), 

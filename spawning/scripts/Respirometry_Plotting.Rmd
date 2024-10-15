@@ -292,6 +292,18 @@ qqPlot(residuals(Rmodel1))
 leveneTest(residuals(Rmodel1)~Meas.Temp*Treatment.Temp*Cohort, data=PRdata)
 ```
 
+                                 Df   Sum Sq   Mean Sq F value  Pr(>F)    
+Meas.Temp                         1 0.000206 0.0002064   1.563  0.2128    
+Treatment.Temp                    2 0.000267 0.0001334   1.010  0.3662    
+Cohort                            5 0.004887 0.0009774   7.399 2.2e-06 ***
+Meas.Temp:Treatment.Temp          2 0.000620 0.0003100   2.347  0.0983 .  
+Meas.Temp:Cohort                  5 0.001276 0.0002553   1.933  0.0905 .  
+Treatment.Temp:Cohort             3 0.000632 0.0002106   1.594  0.1920    
+Meas.Temp:Treatment.Temp:Cohort   3 0.000059 0.0000197   0.149  0.9300    
+Residuals                       198 0.026156 0.0001321                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
 ### Generate summary tables of mean and SE for all variables  
 
 Generate summary of all respiration data.  

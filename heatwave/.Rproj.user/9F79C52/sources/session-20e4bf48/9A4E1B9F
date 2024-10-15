@@ -1,0 +1,28 @@
+{
+    "id": "9A4E1B9F",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave/scripts/pi_curves_nls_step2.Rmd",
+    "project_path": "scripts/pi_curves_nls_step2.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1728049248945.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "136,15",
+        "scrollLine": "131",
+        "working_dir": "project",
+        "last_setup_crc32": "20e4bf48e441efb1"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1728049675,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1728049675247,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,28 @@
+{
+    "id": "BC4CF218",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/spawning/scripts/survivorship.Rmd",
+    "project_path": "scripts/survivorship.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1729027105143.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "460,0",
+        "scrollLine": "446",
+        "working_dir": "project"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1729027670,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1729027670831,
+    "read_only": false,
+    "read_only_alternatives": []
+}

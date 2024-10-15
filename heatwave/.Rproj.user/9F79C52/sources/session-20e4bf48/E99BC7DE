@@ -1,0 +1,28 @@
+{
+    "id": "E99BC7DE",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave/scripts/photosynthesis_parameters_nls_step3.Rmd",
+    "project_path": "scripts/photosynthesis_parameters_nls_step3.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1728049046465.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "last_setup_crc32": "20e4bf4822e527f5",
+        "working_dir": "project",
+        "cursorPosition": "75,0",
+        "scrollLine": "57"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710175631,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1728049214600,
+    "read_only": false,
+    "read_only_alternatives": []
+}

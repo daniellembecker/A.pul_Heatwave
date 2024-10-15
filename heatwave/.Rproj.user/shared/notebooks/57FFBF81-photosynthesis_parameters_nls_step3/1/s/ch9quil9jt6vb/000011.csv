@@ -1,0 +1,4 @@
+"0","pars <- read_csv(""../output/pi_curves/PI_curve_pars_NLS.csv"")
+"
+"2","Error: '../output/pi_curves/PI_curve_pars_NLS.csv' does not exist in current working directory ('/Users/Danielle/Desktop/Putnam_Lab/A.pul_Heatwave/heatwave').
+"

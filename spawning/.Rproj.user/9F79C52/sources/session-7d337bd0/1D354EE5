@@ -1,0 +1,28 @@
+{
+    "id": "1D354EE5",
+    "path": "~/Desktop/Putnam_Lab/A.pul_Heatwave/spawning/scripts/Respirometry_Plotting.Rmd",
+    "project_path": "scripts/Respirometry_Plotting.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1728050837353.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "chunk_output_type": "console",
+        "source_window_id": "",
+        "Source": "Source",
+        "working_dir": "project",
+        "cursorPosition": "301,62",
+        "scrollLine": "273"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1729026202,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1729026202803,
+    "read_only": false,
+    "read_only_alternatives": []
+}
